@@ -1,0 +1,157 @@
+"""
+MQTTany Modules
+"""
+
+from importlib import import_module
+import multiprocessing as mproc
+
+import logger
+log = logger.get_logger()
+from common import POISON_PILL
+
+all = [ "load", "unload" ]
+
+ATTR_INIT = "init"
+ATTR_UNINIT = "uninit"
+ATTR_LOOP = "loop"
+ATTR_STOP = "stop"
+ATTR_QUEUE = "queue"
+
+modules_list = [
+    "mqtt",
+    "gpio"
+]
+modules_loaded = []
+
+
+def load():
+    """
+    Loads each module in ``modules_list`` and spawns a process for them
+    """
+    for module_name in modules_list:
+        log.debug("Loading module '{name}'".format(name=module_name))
+        try:
+            module = import_module("modules.{}".format(module_name))
+        except ImportError as err:
+            log.error("Failed to import module '{name}'".format(name=module_name))
+            log.error("  {error}".format(error=err))
+            log.error("Module '{name}' was not loaded".format(name=module_name))
+        except ImportWarning as err:
+            log.warn("Warnings occured when importing module '{name}'".format(name=module_name))
+            log.warn("  {error}".format(error=err))
+            log.error("Module '{name}' was not loaded".format(name=module_name))
+        else:
+            if not _validate_module(module):
+                log.error("Module '{name}' is not valid, skipping".format(name=module.__name__))
+                continue
+
+            if not _call_func(module, ATTR_INIT): # call module init
+                log.warn("Module '{name}' not initialized".format(name=module.__name__))
+                continue
+
+            if not _start_proc(module): # start subprocess
+                log.error("Failed to start process for module '{name}'".format(name=module.__name__))
+                continue
+
+            log.info("Module '{name}' loaded successfully".format(name=module.__name__))
+            modules_loaded.append(module)
+
+    return modules_loaded
+
+
+def unload():
+    """
+    Unloads each module in ``modules_loaded`` and terminates processes
+    """
+    for i in range(len(modules_loaded)-1, -1, -1): # reverse order in case of dependecies
+        module = modules_loaded[i]
+        if module:
+            log.debug("Unloading module '{name}'".format(name=module.__name__))
+            _stop_proc(module)
+            _call_func(module, ATTR_UNINIT)
+            log.info("Module '{name}' unloaded".format(name=module.__name__))
+
+
+def _validate_module(module):
+    """
+    Confirms that a module has all required functions
+    """
+    valid = True
+
+    init = getattr(module, ATTR_INIT, None)
+    if init is None or not callable(init):
+        log.debug("Module '{name}' has no function called 'init'".format(name=module.__name__))
+
+    uninit = getattr(module, ATTR_UNINIT, None)
+    if uninit is None or not callable(uninit):
+        log.debug("Module '{name}' has no function called 'uninit'".format(name=module.__name__))
+
+    loop = getattr(module, ATTR_LOOP, None)
+    if loop is None or not callable(loop):
+        log.error("Module '{name}' has no function called 'loop'".format(name=module.__name__))
+        valid = False
+
+    queue = getattr(module, ATTR_QUEUE, None)
+    if queue is None or not isinstance(queue, mproc.queues.Queue):
+        log.error("Module '{name}' has no Queue called 'queue'".format(name=module.__name__))
+        valid = False
+
+    return valid
+
+
+def _call_func(module, name):
+    """
+    Calls ``name`` if define in ``module``
+    """
+    func = getattr(module, name, None)
+    if func is not None:
+        if callable(func):
+            return func()
+
+
+def _start_proc(module):
+    """
+    Starts a subprocess for ``module``
+    """
+    try:
+        log.debug("Creating process for '{name}'".format(name=module.__name__))
+        module.process = mproc.Process(target=getattr(module, ATTR_LOOP), name=module.__name__)
+    except Exception as err:
+        log.error("Failed to create process for module '{name}'".format(name=module.__name__))
+        log.error("  {}".format(err))
+        return False
+    else:
+        log.debug("Process created successfully for module '{name}'".format(name=module.__name__))
+        try:
+            log.debug("Starting process for '{name}'".format(name=module.__name__))
+            module.process.start()
+        except Exception as err:
+            log.error("Failed to start process for module '{name}'".format(name=module.__name__))
+            log.error("  {}".format(err))
+            return False
+        else:
+            log.debug("Process started successfully for module '{name}'".format(name=module.__name__))
+            return True
+
+
+def _stop_proc(module):
+    """
+    Stops the subprocess for ``module``
+    """
+    if hasattr(module, "process"):
+        if module.process.is_alive():
+            log.debug("Stopping subprocess for '{name}' with 10s timeout".format(name=module.__name__))
+            module.queue.put_nowait(POISON_PILL)
+            module.process.join(10)
+            if module.process.is_alive():
+                log.warn("Subprocess for module '{name}' did not stop when requested, terminating forcefully".format(name=module.__name__))
+                module.process.terminate()
+                module.process.join(10) # make sure cleanup is done
+                log.debug("Subprocess terminated forcefully for module '{name}'".format(name=module.__name__))
+            else:
+                log.debug("Subproccess for module '{name}' stopped cleanly".format(name=module.__name__))
+        else:
+            module.process.join(10)
+            log.warn("Subprocess for module '{name}' was not running".format(name=module.__name__))
+    else:
+        log.debug("Module '{name}' does not have a subprocess".format(name=module.__name__))

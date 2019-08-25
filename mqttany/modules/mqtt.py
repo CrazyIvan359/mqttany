@@ -1,0 +1,318 @@
+"""
+MQTTany
+
+MQTT module
+"""
+
+import socket, time
+import multiprocessing as mproc
+from queue import Empty as QueueEmptyError
+import paho.mqtt.client as mqtt
+
+from mqttany import logger
+log = logger.get_logger("mqtt")
+from mqttany import queue as main_queue
+from config import load_config
+from common import POISON_PILL
+
+all = [
+    "publish", "subscribe", "unsubscribe",
+    "add_message_callback", "remove_message_callback"
+    "register_on_connect_callback", "register_on_disconnect_callback"
+]
+
+CONF_FILE = "mqtt.conf"
+CONF_KEY_HOST = "host"
+CONF_KEY_PORT = "port"
+CONF_KEY_CLIENTID = "client id"
+CONF_KEY_USERNAME = "username"
+CONF_KEY_PASSWORD = "password"
+CONF_KEY_QOS = "qos"
+CONF_KEY_RETAIN = "retain"
+CONF_KEY_TOPIC_ROOT = "root topic"
+CONF_KEY_TOPIC_STATUS = "status topic"
+CONF_KEY_TOPIC_LWT = "lwt topic"
+CONF_OPTIONS = {
+    "MQTT": {
+        CONF_KEY_HOST: {},
+        CONF_KEY_PORT: {"type": int, "default": 1883},
+        CONF_KEY_CLIENTID: {"default": "{hostname}"},
+        CONF_KEY_USERNAME: {"default": ""},
+        CONF_KEY_PASSWORD: {"default": ""},
+        CONF_KEY_QOS: {"type": int, "default": 0},
+        CONF_KEY_RETAIN: {"type": bool, "default": False},
+        CONF_KEY_TOPIC_ROOT: {"default": "{client_id}"},
+        CONF_KEY_TOPIC_STATUS: {"default": "status"},
+        CONF_KEY_TOPIC_LWT: {"default": "lwt"},
+    }
+}
+
+MQTT_MAX_RETRIES = 10
+
+config = None
+hostname = socket.gethostname()
+queue = mproc.Queue()
+client = None
+retries = MQTT_MAX_RETRIES
+subscriptions = []
+on_message_callbacks = []
+on_connect_callbacks = []
+on_disconnect_callbacks = []
+
+
+def init():
+    """
+    Initializes the module
+    """
+    global config
+    log.debug("Loading config")
+    config = load_config(CONF_FILE, CONF_OPTIONS, log)
+    if config:
+        log.debug("Config loaded")
+        config = config["MQTT"]
+
+        config[CONF_KEY_CLIENTID] = config[CONF_KEY_CLIENTID].format(hostname=hostname)
+        config[CONF_KEY_TOPIC_ROOT] = config[CONF_KEY_TOPIC_ROOT].format(
+                hostname=hostname, client_id=config[CONF_KEY_CLIENTID])
+        config[CONF_KEY_TOPIC_LWT] = config[CONF_KEY_TOPIC_LWT].format(
+                hostname=hostname, client_id=config[CONF_KEY_CLIENTID])
+        if config[CONF_KEY_TOPIC_LWT][0] != "/":
+            config[CONF_KEY_TOPIC_LWT] = "{}/{}".format(config[CONF_KEY_TOPIC_ROOT], config[CONF_KEY_TOPIC_LWT])
+
+        return True
+    else:
+        log.error("Error loading config")
+        return False
+
+
+def loop():
+    """
+    Main function loops until it gets 'poison pill'
+    """
+    global client
+    log.debug("Creating MQTT client")
+    client = mqtt.Client(
+            client_id=config[CONF_KEY_CLIENTID],
+            clean_session=False
+        )
+    client.username_pw_set(
+            username=config[CONF_KEY_USERNAME],
+            password=config[CONF_KEY_PASSWORD]
+        )
+    client.will_set(
+            topic=config[CONF_KEY_TOPIC_LWT],
+            payload="0",
+            qos=config[CONF_KEY_QOS],
+            retain=config[CONF_KEY_RETAIN]
+        )
+    client.reconnect_delay_set(
+            min_delay=1,
+            max_delay=60
+        )
+
+    log.debug("Attaching callbacks")
+    client._on_connect = _on_connect
+    client.on_disconnect = on_disconnect
+    client.on_message = on_message # called for messages without a specfic subscriber
+    client.enable_logger(logger=logger.get_logger("mqtt.client"))
+
+    log.debug("Queuing connect event")
+    client.connect_async(
+            host=config[CONF_KEY_HOST],
+            port=config[CONF_KEY_PORT],
+            keepalive=15
+        )
+
+    log.debug("Starting MQTT client loop")
+    client.loop_start()
+
+    poison_pill = False
+    while not poison_pill:
+        try:
+            message = queue.get_nowait()
+        except QueueEmptyError:
+            time.sleep(0.025) # 25ms
+        else:
+            if message == POISON_PILL:
+                poison_pill = True # terminate signal
+                log.debug("Received poison pill")
+            else:
+                log.debug("Publishing message [{message}]".format(message=message))
+                client.publish(**message)
+
+    log.debug("Disconnecting")
+    discon_msg = client.publish(
+            topic=config[CONF_KEY_TOPIC_LWT],
+            payload="0",
+            qos=config[CONF_KEY_QOS],
+            retain=config[CONF_KEY_RETAIN]
+        )
+    if discon_msg.rc == mqtt.MQTT_ERR_SUCCESS: discon_msg.wait_for_publish()
+    client.disconnect()
+    log.debug("Stopping MQTT client loop")
+    client.loop_stop()
+
+    log.info("Process terminated")
+
+def publish(topic, payload, qos=None, retain=None):
+    """
+    Publish a message
+    """
+    queue.put_nowait({
+            "topic": topic,
+            "payload": payload,
+            "qos": qos if qos is not None else config[CONF_KEY_QOS],
+            "retain": retain if retain is not None else config[CONF_KEY_RETAIN]
+        })
+
+def subscribe(topic, qos=0, callback=None):
+    """
+    Adds a subscription, can use wildcard topics.
+    If ``callback`` is specified a ``message_callback`` will be added.
+    """
+    log.debug("Subscribing to topic '{topic}'".format(topic=topic))
+    if not [sub for sub in subscriptions if sub["topic"] == topic]:
+        subscriptions.append({"topic": topic, "qos": qos})
+    client.subscribe(topic, qos=qos)
+
+    if callback: add_message_callback(topic, callback)
+
+
+def unsubscribe(topic, callback=None):
+    """
+    Removes a subscription.
+    If ``callback`` is specified it will also remove the ``message_callback``
+    matching the ``topic`` and ``callback``.
+    """
+    log.debug("Removing subscription to topic '{topic}'".format(topic=topic))
+    subs = [sub for sub in subscriptions if sub["topic"] == topic]
+    for sub in subs: subscriptions.remove(sub)
+    client.unsubscribe(topic)
+
+    if callback: remove_message_callback(topic)
+
+
+def add_message_callback(topic, callback):
+    """
+    Adds a message callback
+    """
+    if not [cb for cb in on_message_callbacks if cb["topic"] == topic]:
+        log.debug("Adding callback '{callback}' for messages matching topic '{topic}'".format(
+                callback=callback.__name__, topic=topic))
+        on_message_callbacks.append({"topic": topic, "func": callback})
+        client.message_callback_add(topic, callback)
+    else:
+        log.debug("Failed to register callback '{callback}', a callback for the topic string '{topic}' already exists".format(
+                callback=callback.__name__, topic=topic))
+
+
+def remove_message_callback(topic):
+    """
+    Removes a message callback
+    """
+    log.debug("Removing callback for messages matching topic '{topic}'".format(topic=topic))
+    cbs = [cb for cb in on_message_callbacks if cb["topic"] == topic]
+    for cb in cbs: on_message_callbacks.remove(cb)
+    client.message_callback_remove(topic)
+
+
+def register_on_connect_callback(callback, args=[], kwargs={}):
+    """
+    Registers a callback to be called when MQTT connects
+    """
+    if not [cb for cb in on_connect_callbacks if cb["func"] == callback]:
+        log.debug("Adding on-connect callback '{callback}'".format(callback=callback.__name__))
+        on_connect_callbacks.append({
+                "func": callback,
+                "args": args,
+                "kwargs": kwargs
+            })
+    else:
+        log.debug("Failed to register on-connect callback '{callback}', already exists".format(
+                callback=callback.__name__))
+
+
+def register_on_disconnect_callback(callback, args=[], kwargs={}):
+    """
+    Registers a callback to be called when MQTT disconnects
+    """
+    if not [cb for cb in on_disconnect_callbacks if cb["func"] == callback]:
+        log.debug("Adding on-disconnect callback '{callback}'".format(callback=callback.__name__))
+        on_disconnect_callbacks.append({
+                "func": callback,
+                "args": args,
+                "kwargs": kwargs
+            })
+    else:
+        log.debug("Failed to register on-disconnect callback '{callback}', already exists".format(
+                callback=callback.__name__))
+
+
+def _on_connect(client, userdata, flags, rc):
+    """
+    Gets called when the client connect attempt finishes
+    """
+    global retries
+
+    if rc == 0: # connected successfully
+        log.info("Connected to broker '{host}:{port}'".format(
+                host=config[CONF_KEY_HOST], port=config[CONF_KEY_PORT]))
+        retries = MQTT_MAX_RETRIES # reset max retries counter
+        log.debug("Resuming previous session" if flags["session present"] else "Starting new session")
+        client.publish(
+            topic=config[CONF_KEY_TOPIC_LWT],
+            payload="1",
+            qos=config[CONF_KEY_QOS],
+            retain=config[CONF_KEY_RETAIN]
+        )
+        for sub in subscriptions:
+            subscribe(**sub)
+        for callback in on_connect_callbacks:
+            callback["func"](*callback.get("args", []), **callback.get("kwargs", {}))
+
+    elif rc == 1: # refused: incorrect mqtt protocol version
+        log.error("Connection refused: broker uses a different MQTT protocol version")
+        client.disconnect()
+        main_queue.put_nowait(POISON_PILL)
+
+    elif rc == 2: # refused: client_id invalid
+        log.error("Connection refused: client_id '{client_id}' is invalid".format(client_id=config[CONF_KEY_CLIENTID]))
+        client.disconnect()
+        main_queue.put_nowait(POISON_PILL)
+
+    elif rc == 3: # refused: server unavailable
+        retries -= 1
+        if retries > 0:
+            log.warn("Connection attempt failed, server did not respond. {retries} retries left".format(retries=retries))
+        else: # too many retries, give up
+            log.error("Connection to broker failed, server did not respond.")
+            client.disconnect()
+            main_queue.put_nowait(POISON_PILL)
+
+    elif rc == 4: # refused: bad username and/or password
+        log.error("Connection refused: username or password incorrect")
+        client.disconnect()
+        main_queue.put_nowait(POISON_PILL)
+
+    elif rc == 5: # refused: not authorized
+        log.error("Connection refused: you are not authorized on this broker")
+        client.disconnect()
+        main_queue.put_nowait(POISON_PILL)
+
+    else: # invalid rc
+        log.error("Connection failed: invalid return code '{code}' received".format(code=rc))
+        client.disconnect()
+        main_queue.put_nowait(POISON_PILL)
+
+def on_disconnect(client, userdata, rc):
+    """
+    Gets called when the client disconnects from the broker
+    """
+    for callback in on_disconnect_callbacks:
+        callback["func"](*callback.get("args", []), **callback.get("kwargs", {}))
+
+def on_message(client, userdata, message):
+    """
+    Gets called when a message is received on a topic without a specific listener
+    """
+    log.debug("Received message without specific listener: [{message}]".format(message=message))
