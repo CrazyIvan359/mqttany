@@ -57,17 +57,23 @@ if __name__ == '__main__':
 
     log.info("MQTTany starting")
     log.info("Version: {version}".format(version=__version__))
-    if not modules.load(): exit(1)
 
-    while not killer.kill_now:
-        try: # to get an item from the queue
-            message = queue.get_nowait()
-        except QueueEmptyError:
-            time.sleep(0.1) # 100ms
-        else:
-            poison_pill = True
-            log.debug("Received poison pill")
+    try:
+        if not modules.load(): exit(1)
 
-    log.info("MQTTany stopping")
-    modules.unload()
-    exit(1 if poison_pill else 0)
+        while not killer.kill_now:
+            try: # to get an item from the queue
+                message = queue.get_nowait()
+            except QueueEmptyError:
+                time.sleep(0.1) # 100ms
+            else:
+                poison_pill = True
+                log.debug("Received poison pill")
+
+        log.info("MQTTany stopping")
+        modules.unload()
+        exit(1 if poison_pill else 0)
+
+    except:
+        modules.unload()
+        raise
