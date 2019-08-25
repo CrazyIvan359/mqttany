@@ -69,7 +69,7 @@ CONF_OPTIONS = {
     }
 }
 CONF_OPTIONS_PIN = {
-    "optional": True,
+    "required": True,
     CONF_KEY_DIRECTION: {},
     CONF_KEY_TOPIC: {"default": "{pin}"},
     CONF_KEY_INTERRUPT: {"default": None},
@@ -110,10 +110,11 @@ def init():
         log.error("Unknown platform")
         return False
 
+    log.debug("Loading config")
+
     for pin in GPIO_PINS:
         CONF_OPTIONS[str(pin)] = CONF_OPTIONS_PIN
 
-    log.debug("Loading config")
     raw_config = load_config(CONF_FILE, CONF_OPTIONS, log)
     if raw_config:
         log.debug("Config loaded")
