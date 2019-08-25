@@ -1,10 +1,31 @@
 """
-MQTTany
+***********
+MQTT Module
+***********
 
-MQTT module
+:Author: Michael Murton
 """
+# Copyright (c) 2019 MQTTany contributors
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-import socket, time
+import socket, time, sys
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 import paho.mqtt.client as mqtt
@@ -16,7 +37,7 @@ from config import load_config
 from common import POISON_PILL
 
 all = [
-    "publish", "subscribe", "unsubscribe",
+    "resolve_topic", "publish", "subscribe", "unsubscribe",
     "add_message_callback", "remove_message_callback"
     "register_on_connect_callback", "register_on_disconnect_callback"
 ]
@@ -42,14 +63,13 @@ CONF_OPTIONS = {
         CONF_KEY_QOS: {"type": int, "default": 0},
         CONF_KEY_RETAIN: {"type": bool, "default": False},
         CONF_KEY_TOPIC_ROOT: {"default": "{client_id}"},
-        CONF_KEY_TOPIC_STATUS: {"default": "status"},
         CONF_KEY_TOPIC_LWT: {"default": "lwt"},
     }
 }
 
 MQTT_MAX_RETRIES = 10
 
-config = None
+config = {}
 hostname = socket.gethostname()
 queue = mproc.Queue()
 client = None
@@ -64,20 +84,15 @@ def init():
     """
     Initializes the module
     """
-    global config
     log.debug("Loading config")
-    config = load_config(CONF_FILE, CONF_OPTIONS, log)
-    if config:
+    raw_config = load_config(CONF_FILE, CONF_OPTIONS, log)
+    if raw_config:
         log.debug("Config loaded")
-        config = config["MQTT"]
+        config.update(raw_config["MQTT"])
 
         config[CONF_KEY_CLIENTID] = config[CONF_KEY_CLIENTID].format(hostname=hostname)
         config[CONF_KEY_TOPIC_ROOT] = config[CONF_KEY_TOPIC_ROOT].format(
                 hostname=hostname, client_id=config[CONF_KEY_CLIENTID])
-        config[CONF_KEY_TOPIC_LWT] = config[CONF_KEY_TOPIC_LWT].format(
-                hostname=hostname, client_id=config[CONF_KEY_CLIENTID])
-        if config[CONF_KEY_TOPIC_LWT][0] != "/":
-            config[CONF_KEY_TOPIC_LWT] = "{}/{}".format(config[CONF_KEY_TOPIC_ROOT], config[CONF_KEY_TOPIC_LWT])
 
         return True
     else:
@@ -142,7 +157,7 @@ def loop():
 
     log.debug("Disconnecting")
     discon_msg = client.publish(
-            topic=config[CONF_KEY_TOPIC_LWT],
+            topic=resolve_topic(config[CONF_KEY_TOPIC_LWT]),
             payload="0",
             qos=config[CONF_KEY_QOS],
             retain=config[CONF_KEY_RETAIN]
@@ -154,22 +169,50 @@ def loop():
 
     log.info("Process terminated")
 
-def publish(topic, payload, qos=None, retain=None):
+
+def resolve_topic(topic, module_topic="", substitutions={}):
+    """
+    Resolves an absolute topic (wildcards preserved).
+    Absolute topics start with ``/`` (it will be stripped).
+    Relative topics will have ``{root}/{module}/`` prepended if ``module_topic``
+    has a value, otherwise ``{root}/`` will be prepended.
+    Will sub in ``{root}``, ``{hostname}``, ``{client_id}``, and anything in
+    ``substitutions``.
+    """
+    if topic[0] != "/": # relative topic
+        if topic.split("/")[0] not in ["{root}", config[CONF_KEY_TOPIC_ROOT]]: # topic already starts with root topic
+            if module_topic:
+                topic = "{module}/" + topic
+            topic = "{root}/" + topic
+
+    topic = topic.format(
+        root=config[CONF_KEY_TOPIC_ROOT],
+        module=module_topic,
+        hostname=hostname,
+        client_id=config[CONF_KEY_CLIENTID],
+        **substitutions
+    ).strip("/") # remove leading or trailing slash
+    return topic
+
+
+def publish(topic, payload, qos=None, retain=None, module_topic="", substitutions={}):
     """
     Publish a message
     """
     queue.put_nowait({
-            "topic": topic,
+            "topic": resolve_topic(topic, module_topic=module_topic, substitutions=substitutions),
             "payload": payload,
             "qos": qos if qos is not None else config[CONF_KEY_QOS],
             "retain": retain if retain is not None else config[CONF_KEY_RETAIN]
         })
 
-def subscribe(topic, qos=0, callback=None):
+def subscribe(topic, qos=0, callback=None, module_topic="", substitutions={}):
     """
     Adds a subscription, can use wildcard topics.
     If ``callback`` is specified a ``message_callback`` will be added.
     """
+    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+
     log.debug("Subscribing to topic '{topic}'".format(topic=topic))
     if not [sub for sub in subscriptions if sub["topic"] == topic]:
         subscriptions.append({"topic": topic, "qos": qos})
@@ -178,12 +221,14 @@ def subscribe(topic, qos=0, callback=None):
     if callback: add_message_callback(topic, callback)
 
 
-def unsubscribe(topic, callback=None):
+def unsubscribe(topic, callback=None, module_topic="", substitutions={}):
     """
     Removes a subscription.
     If ``callback`` is specified it will also remove the ``message_callback``
     matching the ``topic`` and ``callback``.
     """
+    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+
     log.debug("Removing subscription to topic '{topic}'".format(topic=topic))
     subs = [sub for sub in subscriptions if sub["topic"] == topic]
     for sub in subs: subscriptions.remove(sub)
@@ -192,10 +237,12 @@ def unsubscribe(topic, callback=None):
     if callback: remove_message_callback(topic)
 
 
-def add_message_callback(topic, callback):
+def add_message_callback(topic, callback, module_topic="", substitutions={}):
     """
     Adds a message callback
     """
+    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+
     if not [cb for cb in on_message_callbacks if cb["topic"] == topic]:
         log.debug("Adding callback '{callback}' for messages matching topic '{topic}'".format(
                 callback=callback.__name__, topic=topic))
@@ -206,10 +253,12 @@ def add_message_callback(topic, callback):
                 callback=callback.__name__, topic=topic))
 
 
-def remove_message_callback(topic):
+def remove_message_callback(topic, module_topic="", substitutions={}):
     """
     Removes a message callback
     """
+    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+
     log.debug("Removing callback for messages matching topic '{topic}'".format(topic=topic))
     cbs = [cb for cb in on_message_callbacks if cb["topic"] == topic]
     for cb in cbs: on_message_callbacks.remove(cb)
@@ -260,7 +309,7 @@ def _on_connect(client, userdata, flags, rc):
         retries = MQTT_MAX_RETRIES # reset max retries counter
         log.debug("Resuming previous session" if flags["session present"] else "Starting new session")
         client.publish(
-            topic=config[CONF_KEY_TOPIC_LWT],
+            topic=resolve_topic(config[CONF_KEY_TOPIC_LWT]),
             payload="1",
             qos=config[CONF_KEY_QOS],
             retain=config[CONF_KEY_RETAIN]
