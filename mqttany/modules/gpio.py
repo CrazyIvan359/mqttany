@@ -58,7 +58,7 @@ CONF_MAP_RESISTOR = {"pullup": GPIO.PUD_UP, "up": GPIO.PUD_UP, "pulldown": GPIO.
 CONF_KEY_INVERT = "invert"
 CONF_OPTIONS = {
     "GPIO": {
-        CONF_KEY_TOPIC: {},
+        CONF_KEY_TOPIC: {"default": "gpio"},
         CONF_KEY_TOPIC_SETTER: {"default": "set"},
         CONF_KEY_TOPIC_GETTER: {"default": "get"},
         CONF_KEY_TOPIC_POLL: {"default": "poll"},
