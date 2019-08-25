@@ -7,8 +7,8 @@ Type=simple
 ;User=
 ;Group=
 WorkingDirectory=/opt/bin/mqttany/
-ExecStart=/usr/bin/python mqttany.py
-StandardOutput=syslog
+ExecStart=/usr/bin/python3 mqttany.py
+;StandardOutput=syslog
 StandardError=syslog
 
 [Install]
