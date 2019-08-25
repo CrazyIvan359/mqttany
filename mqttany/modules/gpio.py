@@ -70,8 +70,8 @@ CONF_OPTIONS = {
 }
 CONF_OPTIONS_PIN = {
     "required": False,
-    CONF_KEY_DIRECTION: {},
     CONF_KEY_TOPIC: {"default": "{pin}"},
+    CONF_KEY_DIRECTION: {},
     CONF_KEY_INTERRUPT: {"default": None},
     CONF_KEY_RESISTOR: {"default": None},
     CONF_KEY_INVERT: {"type": bool, "default": False},
