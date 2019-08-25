@@ -48,7 +48,9 @@ def load_config(filename, options, log):
         if raw_config.has_section(section):
             config[section] = {}
             for key in options[section]:
-                if options[section][key].get("type", None) == int:
+                if not isinstance(options[section][key], dict):
+                    continue
+                elif options[section][key].get("type", None) == int:
                     value = raw_config.getint(section, key, fallback=None)
                 elif options[section][key].get("type", None) == float:
                     value = raw_config.getfloat(section, key, fallback=None)
@@ -69,8 +71,10 @@ def load_config(filename, options, log):
                     log.debug("Got value '{value}' for config option '{option}' in section '{section}'".format(
                             value="*"*len(value) if "pass" in key.lower() else value, option=key, section=section))
                     config[section][key] = value
-        else:
+        elif options[section].get("required", True):
             log.error("No section in config named '{section}'".format(section=section))
             valid = False
+        else:
+            log.debug("No section in config named '{section}'".format(section=section))
 
     return config if valid else False
