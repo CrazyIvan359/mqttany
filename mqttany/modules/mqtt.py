@@ -84,7 +84,6 @@ def init():
     """
     Initializes the module
     """
-    log.debug("Loading config")
     raw_config = load_config(CONF_FILE, CONF_OPTIONS, log)
     if raw_config:
         log.debug("Config loaded")
@@ -152,8 +151,12 @@ def loop():
                 poison_pill = True # terminate signal
                 log.debug("Received poison pill")
             else:
-                log.debug("Publishing message [{message}]".format(message=message))
-                client.publish(**message)
+                log.debug("Received message [{message}]".format(message=message))
+                func = getattr(sys.modules[__name__], message["func"])
+                if func:
+                    func(*message["args"], **message["kwargs"])
+                else:
+                    log.warn("Unrecognized function '{func}'".format(func=message["func"]))
 
     log.debug("Disconnecting")
     discon_msg = client.publish(
@@ -194,31 +197,53 @@ def resolve_topic(topic, module_topic="", substitutions={}):
     ).strip("/") # remove leading or trailing slash
     return topic
 
-
 def publish(topic, payload, qos=None, retain=None, module_topic="", substitutions={}):
     """
     Publish a message
     """
     queue.put_nowait({
-            "topic": resolve_topic(topic, module_topic=module_topic, substitutions=substitutions),
-            "payload": payload,
-            "qos": qos if qos is not None else config[CONF_KEY_QOS],
-            "retain": retain if retain is not None else config[CONF_KEY_RETAIN]
+            "func": "_publish",
+            "args": [topic, payload],
+            "kwargs": {
+                "qos": qos,
+                "retain": retain,
+                "module_topic": module_topic,
+                "substitutions": substitutions
+            }
         })
+
+def _publish(topic, payload, qos=None, retain=None, module_topic="", substitutions={}):
+    client.publish(
+            resolve_topic(topic, module_topic=module_topic, substitutions=substitutions),
+            payload=payload,
+            qos=qos if qos is not None else config[CONF_KEY_QOS],
+            retain=retain if retain is not None else config[CONF_KEY_RETAIN]
+        )
+
 
 def subscribe(topic, qos=0, callback=None, module_topic="", substitutions={}):
     """
     Adds a subscription, can use wildcard topics.
     If ``callback`` is specified a ``message_callback`` will be added.
     """
-    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+    queue.put_nowait({
+            "func": "_subscribe",
+            "args": [topic],
+            "kwargs": {
+                "qos": qos,
+                "callback": callback,
+                "module_topic": module_topic,
+                "substitutions": substitutions
+            }
+        })
 
+def _subscribe(topic, qos=0, callback=None, module_topic="", substitutions={}):
+    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
     log.debug("Subscribing to topic '{topic}'".format(topic=topic))
     if not [sub for sub in subscriptions if sub["topic"] == topic]:
         subscriptions.append({"topic": topic, "qos": qos})
     client.subscribe(topic, qos=qos)
-
-    if callback: add_message_callback(topic, callback)
+    if callback: _add_message_callback(topic, callback)
 
 
 def unsubscribe(topic, callback=None, module_topic="", substitutions={}):
@@ -227,22 +252,40 @@ def unsubscribe(topic, callback=None, module_topic="", substitutions={}):
     If ``callback`` is specified it will also remove the ``message_callback``
     matching the ``topic`` and ``callback``.
     """
-    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+    queue.put_nowait({
+            "func": "_unsubscribe",
+            "args": [topic],
+            "kwargs": {
+                "callback": callback,
+                "module_topic": module_topic,
+                "substitutions": substitutions
+            }
+        })
 
+def _unsubscribe(topic, callback=None, module_topic="", substitutions={}):
+    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
     log.debug("Removing subscription to topic '{topic}'".format(topic=topic))
     subs = [sub for sub in subscriptions if sub["topic"] == topic]
     for sub in subs: subscriptions.remove(sub)
     client.unsubscribe(topic)
-
-    if callback: remove_message_callback(topic)
+    if callback: _remove_message_callback(topic)
 
 
 def add_message_callback(topic, callback, module_topic="", substitutions={}):
     """
     Adds a message callback
     """
-    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+    queue.put_nowait({
+            "func": "_add_message_callback",
+            "args": [topic, callback],
+            "kwargs": {
+                "module_topic": module_topic,
+                "substitutions": substitutions
+            }
+        })
 
+def _add_message_callback(topic, callback, module_topic="", substitutions={}):
+    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
     if not [cb for cb in on_message_callbacks if cb["topic"] == topic]:
         log.debug("Adding callback '{callback}' for messages matching topic '{topic}'".format(
                 callback=callback.__name__, topic=topic))
@@ -257,8 +300,17 @@ def remove_message_callback(topic, module_topic="", substitutions={}):
     """
     Removes a message callback
     """
-    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+    queue.put_nowait({
+            "func": "_remove_message_callback",
+            "args": [topic],
+            "kwargs": {
+                "module_topic": module_topic,
+                "substitutions": substitutions
+            }
+        })
 
+def _remove_message_callback(topic, module_topic="", substitutions={}):
+    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
     log.debug("Removing callback for messages matching topic '{topic}'".format(topic=topic))
     cbs = [cb for cb in on_message_callbacks if cb["topic"] == topic]
     for cb in cbs: on_message_callbacks.remove(cb)
@@ -269,6 +321,16 @@ def register_on_connect_callback(callback, args=[], kwargs={}):
     """
     Registers a callback to be called when MQTT connects
     """
+    queue.put_nowait({
+        "func": "_register_on_connect_callback",
+        "args": [callback],
+        "kwargs": {
+            "args": args,
+            "kwargs": kwargs
+        }
+    })
+
+def _register_on_connect_callback(callback, args=[], kwargs={}):
     if not [cb for cb in on_connect_callbacks if cb["func"] == callback]:
         log.debug("Adding on-connect callback '{callback}'".format(callback=callback.__name__))
         on_connect_callbacks.append({
@@ -285,6 +347,16 @@ def register_on_disconnect_callback(callback, args=[], kwargs={}):
     """
     Registers a callback to be called when MQTT disconnects
     """
+    queue.put_nowait({
+            "func": "_register_on_disconnect_callback",
+            "args": [callback],
+            "kwargs": {
+                "args": args,
+                "kwargs": kwargs
+            }
+        })
+
+def _register_on_disconnect_callback(callback, args=[], kwargs={}):
     if not [cb for cb in on_disconnect_callbacks if cb["func"] == callback]:
         log.debug("Adding on-disconnect callback '{callback}'".format(callback=callback.__name__))
         on_disconnect_callbacks.append({
