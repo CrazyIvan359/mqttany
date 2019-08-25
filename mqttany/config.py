@@ -69,7 +69,7 @@ def load_config(filename, options, log):
                     log.debug("Got value '{value}' for config option '{option}' in section '{section}'".format(
                             value="*"*len(value) if "pass" in key.lower() else value, option=key, section=section))
                     config[section][key] = value
-        else:
+        elif options[section].get("optional", False):
             log.error("No section in config named '{section}'".format(section=section))
             valid = False
 

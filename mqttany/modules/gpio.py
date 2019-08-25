@@ -69,6 +69,7 @@ CONF_OPTIONS = {
     }
 }
 CONF_OPTIONS_PIN = {
+    "optional": True,
     CONF_KEY_DIRECTION: {},
     CONF_KEY_TOPIC: {"default": "{pin}"},
     CONF_KEY_INTERRUPT: {"default": None},
