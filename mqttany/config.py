@@ -74,5 +74,7 @@ def load_config(filename, options, log):
         elif options[section].get("required", True):
             log.error("No section in config named '{section}'".format(section=section))
             valid = False
+        else:
+            log.debug("No section in config named '{section}'".format(section=section))
 
     return config if valid else False
