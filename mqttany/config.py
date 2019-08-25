@@ -46,6 +46,10 @@ def load_config(filename, options, log):
 
     for section in options:
         if raw_config.has_section(section):
+            if not isinstance(options[section], dict):
+                # shouldn't happen, but "optional" comes up True for has_section()
+                continue
+
             config[section] = {}
             for key in options[section]:
                 if options[section][key].get("type", None) == int:
