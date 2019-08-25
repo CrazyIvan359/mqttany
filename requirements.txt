@@ -1,0 +1,2 @@
+paho-mqtt==1.4.0
+Adafruit_GPIO==1.0.3
