@@ -191,6 +191,9 @@ def loop():
         polling_timer = Timer(config[CONF_KEY_POLL_INT], poll_interval)
         polling_timer.start()
 
+    log.debug("Publishing initial pin states")
+    poll_all()
+
     poison_pill = False
     while not poison_pill:
         try:
@@ -288,7 +291,7 @@ def read_pin(pin):
     """
     Read the state from a pin
     """
-    state = bool(gpio.input(int(pin))) ^ pins[pin][CONF_KEY_INVERT] # apply the invert flag
+    state = bool(gpio.input(int(pin))) ^ pins[str(pin)][CONF_KEY_INVERT] # apply the invert flag
     log.debug("Read state '{state}' from GPIO{pin}".format(
             state=state, pin=pin))
     return state
@@ -299,7 +302,7 @@ def poll_all():
     Polls all configured pins and publishes states
     """
     log.debug("Polling all pins")
-    publish_states({pin:read_pin(int(pin)) for pin in pins})
+    publish_states({pin:read_pin(pin) for pin in pins})
 
 
 def poll_interval():
