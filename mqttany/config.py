@@ -53,7 +53,7 @@ def parse_config(data, options, log=log):
     Parse and validate config and values
     """
     def parse_dict(data, options):
-        global valid
+        valid = True
         config = {}
         for key in options:
             if not isinstance(options[key], dict):
@@ -67,7 +67,8 @@ def parse_config(data, options, log=log):
                     log.debug("No section in config named '{section}'".format(section=key))
 
             elif isinstance(data.get(key, None), dict):
-                config[key] = parse_dict(data[key], options[key])
+                section_valid, config[key] = parse_dict(data[key], options[key])
+                valid = valid and section_valid
             else:
                 value = data.get(key, "**NO DATA**")
                 if value == "**NO DATA**" and "default" not in options[key]:
@@ -81,6 +82,10 @@ def parse_config(data, options, log=log):
                 else:
                     if "type" in options[key] and not isinstance(value, options[key]["type"]):
                         value = resolve_type(value)
+                    if "type" in options[key] and not isinstance(value, options[key]["type"]):
+                        try:
+                            value = options[key]["type"](value)
+                        except: pass
 
                     if isinstance(value, options[key].get("type", type(value))):
                         log.debug("Got value '{value}' for config option '{option}'".format(
@@ -91,12 +96,11 @@ def parse_config(data, options, log=log):
                                 value=value, option=key, type=options[key]["type"]))
                         valid = False
 
-        return config
+        return valid, config
 
     log.debug("Parsing config")
 
-    valid = True
-    config = parse_dict(data, options)
+    valid, config = parse_dict(data, options)
 
     return config if valid else False
 
