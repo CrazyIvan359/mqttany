@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.3.0
+
+* __BREAKING CHANGE__: Move to single YAML configuration file instead of per module CONF files.
+* __Fixed__: GPIO pin locks now work correctly, using `multiprocessing.Lock`s
+
 ## 0.2.0
 
 * __Fixed__: Wrap `modules.load()` call in try/except to avoid issues where the main process crashes but children survive.
