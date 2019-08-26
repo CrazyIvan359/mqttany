@@ -26,7 +26,7 @@ GPIO Module
 # SOFTWARE.
 
 import time, os
-from threading import Timer
+from threading import Timer, ThreadError
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 from Adafruit_GPIO import GPIO, Platform
@@ -34,7 +34,7 @@ from Adafruit_GPIO import GPIO, Platform
 import logger
 log = logger.get_logger("gpio")
 from config import parse_config
-from common import POISON_PILL, acquire_gpio_lock, release_gpio_lock
+from common import POISON_PILL, gpio_lock
 
 from modules.mqtt import resolve_topic, publish, subscribe, add_message_callback
 
@@ -143,17 +143,17 @@ def loop():
     """
     log.debug("Setting up hardware")
     for pin in pins:
-        log.debug("  Setting up GPIO{pin} with options [{options}]".format(
+        log.debug("Setting up GPIO{pin} with options [{options}]".format(
                 pin=pin, options=pins[pin]))
 
-        if not acquire_gpio_lock(pin, __name__):
+        if not gpio_lock[pin].acquire(False):
             log.error("Failed to acquire a lock on GPIO{pin}".format(pin=pin))
-            continue
+            pins.pop(pin)
 
         gpio.setup(pin, pins[pin][CONF_KEY_DIRECTION], pull_up_down=pins[pin][CONF_KEY_RESISTOR])
 
         if pins[pin][CONF_KEY_DIRECTION] == GPIO.IN and pins[pin][CONF_KEY_INTERRUPT] is not None:
-            log.debug("    Adding interrupt event for GPIO{pin} with edge trigger '{edge}'".format(
+            log.debug("Adding interrupt event for GPIO{pin} with edge trigger '{edge}'".format(
                     pin=pin, edge=pins[pin][CONF_KEY_INTERRUPT]))
             gpio.add_event_detect(
                     pin,
@@ -162,7 +162,7 @@ def loop():
                     bouncetime=config[CONF_KEY_DEBOUNCE]
                 )
         elif pins[pin][CONF_KEY_DIRECTION] == GPIO.OUT:
-            log.debug("    Adding MQTT subscriptions for GPIO{pin}".format(pin=pin))
+            log.debug("Adding MQTT subscriptions for GPIO{pin}".format(pin=pin))
             subscribe(
                     pins[pin][CONF_KEY_TOPIC] + "/{setter}",
                     callback=on_message,
@@ -250,7 +250,10 @@ def loop():
 
     gpio.cleanup()
     for pin in pins:
-        release_gpio_lock(pin, __name__)
+        try:
+            gpio_lock[pin].release()
+        except ThreadError:
+            log.error("Failed to release lock on GPIO{pin}".format(pin=pin))
 
 
 def interrupt_handler(pin):

@@ -25,44 +25,62 @@ Common
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from mqttany import logger
-log = logger.get_logger("mqttany")
+import multiprocessing as mproc
 
 all = [
     "POISON_PILL",
-    "acquire_gpio_lock", "release_gpio_lock"
+    "gpio_lock",
 ]
 
 POISON_PILL = {"stop": True}
 
-
-
-_gpio_locked = {}
-
-def acquire_gpio_lock(pin, module):
-    """
-    Acquire lock on GPIO pins
-    """
-    if str(pin) in _gpio_locked:
-        log.warn("Module '{module}' attempted to acquire a lock on GPIO{pin} but '{owner}' already has a lock on it".format(
-                module=module, pin=pin, owner=_gpio_locked[pin]))
-        return False
-    else:
-        _gpio_locked[str(pin)] = module
-        return True
-
-def release_gpio_lock(pin, module):
-    """
-    Release lock on GPIO pin
-    """
-    if str(pin) in _gpio_locked:
-        # prevent releasing a lock a module doesn't have
-        if _gpio_locked[str(pin)] == module:
-            _gpio_locked.pop(str(pin))
-            return True
-        else:
-            log.warn("Module '{module}' attempted to release a lock on GPIO{pin} but it is locked by '{owner}'".format(
-                module=module, pin=pin, owner=_gpio_locked[pin]))
-            return False
-    else:
-        return True
+gpio_lock = [ # GPIO pin locks
+    mproc.Lock(), # Pin 0
+    mproc.Lock(), # Pin 1
+    mproc.Lock(), # Pin 2
+    mproc.Lock(), # Pin 3
+    mproc.Lock(), # Pin 4
+    mproc.Lock(), # Pin 5
+    mproc.Lock(), # Pin 6
+    mproc.Lock(), # Pin 7
+    mproc.Lock(), # Pin 8
+    mproc.Lock(), # Pin 9
+    mproc.Lock(), # Pin 10
+    mproc.Lock(), # Pin 11
+    mproc.Lock(), # Pin 12
+    mproc.Lock(), # Pin 13
+    mproc.Lock(), # Pin 14
+    mproc.Lock(), # Pin 15
+    mproc.Lock(), # Pin 16
+    mproc.Lock(), # Pin 17
+    mproc.Lock(), # Pin 18
+    mproc.Lock(), # Pin 19
+    mproc.Lock(), # Pin 20
+    mproc.Lock(), # Pin 21
+    mproc.Lock(), # Pin 22
+    mproc.Lock(), # Pin 23
+    mproc.Lock(), # Pin 24
+    mproc.Lock(), # Pin 25
+    mproc.Lock(), # Pin 26
+    mproc.Lock(), # Pin 27
+    mproc.Lock(), # Pin 28
+    mproc.Lock(), # Pin 29
+    mproc.Lock(), # Pin 30
+    mproc.Lock(), # Pin 31
+    mproc.Lock(), # Pin 32
+    mproc.Lock(), # Pin 33
+    mproc.Lock(), # Pin 34
+    mproc.Lock(), # Pin 35
+    mproc.Lock(), # Pin 36
+    mproc.Lock(), # Pin 37
+    mproc.Lock(), # Pin 38
+    mproc.Lock(), # Pin 39
+    mproc.Lock(), # Pin 40
+    mproc.Lock(), # Pin 41
+    mproc.Lock(), # Pin 42
+    mproc.Lock(), # Pin 43
+    mproc.Lock(), # Pin 44
+    mproc.Lock(), # Pin 45
+    mproc.Lock(), # Pin 46
+    mproc.Lock(), # Pin 47
+]
