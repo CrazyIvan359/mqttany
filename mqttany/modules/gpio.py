@@ -110,7 +110,7 @@ def init(config_data={}):
         return False
 
     for pin in GPIO_PINS:
-        CONF_OPTIONS[str(pin)] = CONF_OPTIONS_PIN
+        CONF_OPTIONS[pin] = CONF_OPTIONS_PIN
     raw_config = parse_config(config_data, CONF_OPTIONS, log)
     if raw_config:
         log.debug("Config loaded")
@@ -150,13 +150,13 @@ def loop():
             log.error("Failed to acquire a lock on GPIO{pin}".format(pin=pin))
             continue
 
-        gpio.setup(int(pin), pins[pin][CONF_KEY_DIRECTION], pull_up_down=pins[pin][CONF_KEY_RESISTOR])
+        gpio.setup(pin, pins[pin][CONF_KEY_DIRECTION], pull_up_down=pins[pin][CONF_KEY_RESISTOR])
 
         if pins[pin][CONF_KEY_DIRECTION] == GPIO.IN and pins[pin][CONF_KEY_INTERRUPT] is not None:
             log.debug("    Adding interrupt event for GPIO{pin} with edge trigger '{edge}'".format(
                     pin=pin, edge=pins[pin][CONF_KEY_INTERRUPT]))
             gpio.add_event_detect(
-                    int(pin),
+                    pin,
                     pins[pin][CONF_KEY_INTERRUPT],
                     callback=interrupt_handler,
                     bouncetime=config[CONF_KEY_DEBOUNCE]
@@ -222,7 +222,7 @@ def loop():
                                     continue
 
                                 state = state ^ pins[pin][CONF_KEY_INVERT]
-                                gpio.output(int(pin), state)
+                                gpio.output(pin, state)
                                 log.debug("Set GPIO{pin} to '{state}'".format(pin=pin, state=int(state)))
                                 publish_states({pin: state})
                             else:
@@ -258,7 +258,7 @@ def interrupt_handler(pin):
     Handles GPIO pin interrupt callbacks
     """
     log.debug("Interrupt triggered on GPIO{pin}".format(pin=pin))
-    publish_states({str(pin):read_pin(pin)})
+    publish_states({pin:read_pin(pin)})
 
 
 def on_message(client, userdata, message):
@@ -290,7 +290,7 @@ def read_pin(pin):
     """
     Read the state from a pin
     """
-    state = bool(gpio.input(int(pin))) ^ pins[str(pin)][CONF_KEY_INVERT] # apply the invert flag
+    state = bool(gpio.input(pin)) ^ pins[pin][CONF_KEY_INVERT] # apply the invert flag
     log.debug("Read state '{state}' from GPIO{pin}".format(
             state=state, pin=pin))
     return state
