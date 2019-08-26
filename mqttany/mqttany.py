@@ -70,10 +70,17 @@ if __name__ == '__main__':
                 poison_pill = True
                 log.debug("Received poison pill")
 
-        log.info("MQTTany stopping")
-        modules.unload()
-        exit(1 if poison_pill else 0)
-
     except:
         modules.unload()
         raise
+
+    else:
+        log.info("MQTTany stopping")
+        modules.unload()
+
+        if poison_pill:
+            log.info("MQTTany exiting with errors")
+            exit(1)
+        else:
+            log.info("MQTTany stopped")
+            exit(0)
