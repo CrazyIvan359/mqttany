@@ -1,0 +1,83 @@
+######## Configuration for MQTTany ########
+
+# All optional values are commented out and default values are shown
+
+# Notes on Topics:
+# - topics starting with '/' will not have the root topic and module prepended
+# - '{root}', '{hostname}', '{client_id}', and '{module}' will be replaced with
+#   the real values, regardless of leading '/'s
+
+######## MQTT Module ########
+mqtt:
+
+  ### Broker
+  host:  # address or hostname
+  #port: 1883
+
+  ### User Data
+  #client id: '{hostname}'
+  #username:
+  #password:
+
+  ### Session Options
+  #qos: 0
+  #retain: false
+
+  ### Topics
+  #root topic: '{client_id}' # Root topic
+  #lwt topic: 'lwt' # Last Will topic
+
+
+######## GPIO Module ########
+#gpio:
+
+  ### Module Topic
+  #topic: gpio
+
+  ### Setter Topic
+  # messages sent here will set a pin if it's configured as an output
+  # default resolves to '{root}/{module}/{pin}/set'
+  #topic set: 'set'
+
+  ### Getter Topic
+  # any message here will cause pin state to be published
+  # default resolves to '{root}/{module}/{pin}/set'
+  #topic get: 'get'
+
+  ### Poll Topic
+  # any message here will cause all pin states to be published
+  # default resolves to '{root}/{module}/poll'
+  #topic poll: 'poll'
+
+  ### ON Payload
+  #payload on: 'ON' # message for pin ON
+
+  ### OFF Payload
+  #payload off: 'OFF' # message for pin OFF
+
+  ### Polling Interval
+  #polling interval: 0.0 # interval in seconds to poll all pins
+
+  ### Interrupt Debounce
+  #debounce: 200 # in milliseconds
+
+  ### Pin Configurations
+  # Pin number is section key
+  #13:
+
+    ### Pin Topic
+    # '{pin}' will be replaced with pin number
+    #topic: '{pin}'
+
+    ### Pin Direction
+    #direction: 'input' # can be 'input' or 'output'
+
+    ### Pin Interrupt
+    #interrupt: 'none' # can be 'rising', 'falling', 'both', or 'none'
+
+    ### Pin Resistor
+    #resistor: 'off' # can be 'pullup', 'pulldown', or 'off'
+
+    ### Pin Invert
+    # true means pin states ON=LOW, OFF=HIGH
+    #invert: false # can be true or false

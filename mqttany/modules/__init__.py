@@ -30,6 +30,7 @@ import multiprocessing as mproc
 
 import logger
 log = logger.get_logger()
+from config import load_config
 from common import POISON_PILL
 
 all = [ "load", "unload" ]
@@ -40,10 +41,6 @@ ATTR_LOOP = "loop"
 ATTR_STOP = "stop"
 ATTR_QUEUE = "queue"
 
-modules_list = [
-    "mqtt",
-    "gpio"
-]
 modules_loaded = []
 
 
@@ -51,7 +48,8 @@ def load():
     """
     Loads each module in ``modules_list`` and spawns a process for them
     """
-    for module_name in modules_list:
+    config = load_config()
+    for module_name in [key for key in config if isinstance(config[key], dict)]:
         log.debug("Loading module '{name}'".format(name=module_name))
         try:
             module = import_module("modules.{}".format(module_name))
@@ -68,7 +66,7 @@ def load():
                 log.error("Module '{name}' is not valid, skipping".format(name=module.__name__))
                 continue
 
-            if not _call_func(module, ATTR_INIT): # call module init
+            if not _call_func(module, ATTR_INIT, config_data=config[module_name]): # call module init
                 log.warn("Module '{name}' not initialized".format(name=module.__name__))
                 continue
 
@@ -122,14 +120,14 @@ def _validate_module(module):
     return valid
 
 
-def _call_func(module, name):
+def _call_func(module, name, **kwargs):
     """
     Calls ``name`` if define in ``module``
     """
     func = getattr(module, name, None)
     if func is not None:
         if callable(func):
-            return func()
+            return func(**kwargs)
 
 
 def _start_proc(module):

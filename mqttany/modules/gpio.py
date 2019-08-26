@@ -31,9 +31,9 @@ import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 from Adafruit_GPIO import GPIO, Platform
 
-from mqttany import logger
+import logger
 log = logger.get_logger("gpio")
-from config import load_config
+from config import parse_config
 from common import POISON_PILL, acquire_gpio_lock, release_gpio_lock
 
 from modules.mqtt import resolve_topic, publish, subscribe, add_message_callback
@@ -48,7 +48,7 @@ CONF_KEY_TOPIC_POLL = "topic poll"
 CONF_KEY_PAYLOAD_ON = "payload on"
 CONF_KEY_PAYLOAD_OFF = "payload off"
 CONF_KEY_POLL_INT = "polling interval"
-CONF_KEY_DEBOUNCE = "debounce time"
+CONF_KEY_DEBOUNCE = "debounce"
 CONF_KEY_DIRECTION = "direction"
 CONF_MAP_DIRECTION = {"input": GPIO.IN, "in": GPIO.IN, "output": GPIO.OUT, "out": GPIO.OUT}
 CONF_KEY_INTERRUPT = "interrupt"
@@ -57,18 +57,17 @@ CONF_KEY_RESISTOR = "resistor"
 CONF_MAP_RESISTOR = {"pullup": GPIO.PUD_UP, "up": GPIO.PUD_UP, "pulldown": GPIO.PUD_DOWN, "down": GPIO.PUD_DOWN, "off": GPIO.PUD_OFF, "none": GPIO.PUD_OFF}
 CONF_KEY_INVERT = "invert"
 CONF_OPTIONS = {
-    "GPIO": {
-        CONF_KEY_TOPIC: {"default": "gpio"},
-        CONF_KEY_TOPIC_SETTER: {"default": "set"},
-        CONF_KEY_TOPIC_GETTER: {"default": "get"},
-        CONF_KEY_TOPIC_POLL: {"default": "poll"},
-        CONF_KEY_PAYLOAD_ON: {"default": "ON"},
-        CONF_KEY_PAYLOAD_OFF: {"default": "OFF"},
-        CONF_KEY_POLL_INT: {"type": float, "default": 0.0},
-        CONF_KEY_DEBOUNCE: {"type": int, "default": 200},
-    }
+    CONF_KEY_TOPIC: {"default": "gpio"},
+    CONF_KEY_TOPIC_SETTER: {"default": "set"},
+    CONF_KEY_TOPIC_GETTER: {"default": "get"},
+    CONF_KEY_TOPIC_POLL: {"default": "poll"},
+    CONF_KEY_PAYLOAD_ON: {"default": "ON"},
+    CONF_KEY_PAYLOAD_OFF: {"default": "OFF"},
+    CONF_KEY_POLL_INT: {"type": float, "default": 0.0},
+    CONF_KEY_DEBOUNCE: {"type": int, "default": 200},
 }
 CONF_OPTIONS_PIN = {
+    "type": "section",
     "required": False,
     CONF_KEY_TOPIC: {"default": "{pin}"},
     CONF_KEY_DIRECTION: {},
@@ -87,7 +86,7 @@ pins = {}
 polling_timer = None
 
 
-def init():
+def init(config_data={}):
     """
     Initializes the module
     """
@@ -112,19 +111,16 @@ def init():
 
     for pin in GPIO_PINS:
         CONF_OPTIONS[str(pin)] = CONF_OPTIONS_PIN
-    raw_config = load_config(CONF_FILE, CONF_OPTIONS, log)
+    raw_config = parse_config(config_data, CONF_OPTIONS, log)
     if raw_config:
         log.debug("Config loaded")
 
-        config.update(raw_config.pop("GPIO"))
-
-        for pin in raw_config:
+        for pin in [key for key in raw_config if isinstance(raw_config[key], dict)]:
             raw_config[pin][CONF_KEY_TOPIC] = resolve_topic(
                     raw_config[pin][CONF_KEY_TOPIC],
-                    module_topic=config[CONF_KEY_TOPIC],
+                    module_topic=raw_config[CONF_KEY_TOPIC],
                     substitutions={"pin": pin}
                 )
-
             pins[pin] = {
                 CONF_KEY_DIRECTION: CONF_MAP_DIRECTION[str(raw_config[pin][CONF_KEY_DIRECTION]).lower()],
                 CONF_KEY_TOPIC: raw_config[pin][CONF_KEY_TOPIC],
@@ -132,6 +128,9 @@ def init():
                 CONF_KEY_RESISTOR: CONF_MAP_RESISTOR[str(raw_config[pin][CONF_KEY_RESISTOR]).lower()],
                 CONF_KEY_INVERT: raw_config[pin][CONF_KEY_INVERT]
             }
+            raw_config.pop(pin)
+
+        config.update(raw_config)
 
         return True
     else:

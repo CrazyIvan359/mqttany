@@ -33,7 +33,7 @@ import paho.mqtt.client as mqtt
 from mqttany import logger
 log = logger.get_logger("mqtt")
 from mqttany import queue as main_queue
-from config import load_config
+from config import parse_config
 from common import POISON_PILL
 
 all = [
@@ -54,17 +54,15 @@ CONF_KEY_TOPIC_ROOT = "root topic"
 CONF_KEY_TOPIC_STATUS = "status topic"
 CONF_KEY_TOPIC_LWT = "lwt topic"
 CONF_OPTIONS = {
-    "MQTT": {
-        CONF_KEY_HOST: {},
-        CONF_KEY_PORT: {"type": int, "default": 1883},
-        CONF_KEY_CLIENTID: {"default": "{hostname}"},
-        CONF_KEY_USERNAME: {"default": ""},
-        CONF_KEY_PASSWORD: {"default": ""},
-        CONF_KEY_QOS: {"type": int, "default": 0},
-        CONF_KEY_RETAIN: {"type": bool, "default": False},
-        CONF_KEY_TOPIC_ROOT: {"default": "{client_id}"},
-        CONF_KEY_TOPIC_LWT: {"default": "lwt"},
-    }
+    CONF_KEY_HOST: {},
+    CONF_KEY_PORT: {"type": int, "default": 1883},
+    CONF_KEY_CLIENTID: {"default": "{hostname}"},
+    CONF_KEY_USERNAME: {"default": ""},
+    CONF_KEY_PASSWORD: {"default": ""},
+    CONF_KEY_QOS: {"type": int, "default": 0},
+    CONF_KEY_RETAIN: {"type": bool, "default": False},
+    CONF_KEY_TOPIC_ROOT: {"default": "{client_id}"},
+    CONF_KEY_TOPIC_LWT: {"default": "lwt"},
 }
 
 MQTT_MAX_RETRIES = 10
@@ -80,18 +78,21 @@ on_connect_callbacks = []
 on_disconnect_callbacks = []
 
 
-def init():
+def init(config_data={}):
     """
     Initializes the module
     """
-    raw_config = load_config(CONF_FILE, CONF_OPTIONS, log)
+    raw_config = parse_config(config_data, CONF_OPTIONS, log)
     if raw_config:
         log.debug("Config loaded")
-        config.update(raw_config["MQTT"])
 
-        config[CONF_KEY_CLIENTID] = config[CONF_KEY_CLIENTID].format(hostname=hostname)
-        config[CONF_KEY_TOPIC_ROOT] = config[CONF_KEY_TOPIC_ROOT].format(
-                hostname=hostname, client_id=config[CONF_KEY_CLIENTID])
+        raw_config[CONF_KEY_CLIENTID] = raw_config[CONF_KEY_CLIENTID].format(
+                hostname=hostname)
+
+        raw_config[CONF_KEY_TOPIC_ROOT] = raw_config[CONF_KEY_TOPIC_ROOT].format(
+                hostname=hostname, client_id=raw_config[CONF_KEY_CLIENTID])
+
+        config.update(raw_config)
 
         return True
     else:
@@ -114,7 +115,7 @@ def loop():
             password=config[CONF_KEY_PASSWORD]
         )
     client.will_set(
-            topic=config[CONF_KEY_TOPIC_LWT],
+            topic=resolve_topic(config[CONF_KEY_TOPIC_LWT]),
             payload="0",
             qos=config[CONF_KEY_QOS],
             retain=config[CONF_KEY_RETAIN]

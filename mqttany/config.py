@@ -25,56 +25,100 @@ Configuration Loader
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import configparser, os
+from ast import literal_eval
+from yaml import safe_load
+try: # libyaml is faster
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
-all = [ "load_config" ]
+import logger
+log = logger.get_logger("config")
+
+all = [ "load_config", "parse_config" ]
 
 
-def load_config(filename, options, log):
+def load_config(conf_file="/etc/mqttany.yml"):
     """
-    Reads config from file
+    Reads configuration file and returns as dict
     """
-    valid = True
-    config = {}
-
     log.debug("Loading config")
-    raw_config = configparser.ConfigParser()
-    raw_config.read([
-        os.path.join("/etc/mqttany", filename),
-        os.path.join(os.path.dirname(__file__), "config", filename)
-    ])
+    with open(conf_file) as fh:
+        config = safe_load(fh)
+    return config
 
-    for section in options:
-        if raw_config.has_section(section):
-            config[section] = {}
-            for key in options[section]:
-                if not isinstance(options[section][key], dict):
-                    continue
-                elif options[section][key].get("type", None) == int:
-                    value = raw_config.getint(section, key, fallback=None)
-                elif options[section][key].get("type", None) == float:
-                    value = raw_config.getfloat(section, key, fallback=None)
-                elif options[section][key].get("type", None) == bool:
-                    value = raw_config.getboolean(section, key, fallback=None)
-                else:
-                    value = raw_config.get(section, key, fallback=None)
 
-                if value is None and "default" not in options[section][key]:
-                    log.error("Missing config option '{option}' in section '{section}'".format(option=key, section=section))
+def parse_config(data, options, log=log):
+    """
+    Parse and validate config and values
+    """
+    def parse_dict(data, options):
+        global valid
+        config = {}
+        for key in options:
+            if not isinstance(options[key], dict):
+                continue # 'required' option, skip
+
+            if key not in data and options[key].get("type", None) == "section":
+                if options[key].get("required", True):
+                    log.error("No section in config named '{section}'".format(section=key))
                     valid = False
-                elif value is None:
-                    value = options[section][key]["default"]
-                    log.debug("Using default value '{value}' for config option '{option}' in section '{section}'".format(
-                            value=value, option=key, section=section))
-                    config[section][key] = value
                 else:
-                    log.debug("Got value '{value}' for config option '{option}' in section '{section}'".format(
-                            value="*"*len(value) if "pass" in key.lower() else value, option=key, section=section))
-                    config[section][key] = value
-        elif options[section].get("required", True):
-            log.error("No section in config named '{section}'".format(section=section))
-            valid = False
-        else:
-            log.debug("No section in config named '{section}'".format(section=section))
+                    log.debug("No section in config named '{section}'".format(section=key))
+
+            elif isinstance(data.get(key, None), dict):
+                config[key] = parse_dict(data[key], options[key])
+            else:
+                value = data.get(key, "**NO DATA**")
+                if value == "**NO DATA**" and "default" not in options[key]:
+                    log.error("Missing config option '{option}'".format(option=key))
+                    valid = False
+                elif value == "**NO DATA**":
+                    value = options[key]["default"]
+                    log.debug("Using default value '{value}' for config option '{option}'".format(
+                            value=value, option=key))
+                    config[key] = value
+                else:
+                    if "type" in options[key] and not isinstance(value, options[key]["type"]):
+                        value = resolve_type(value)
+
+                    if isinstance(value, options[key].get("type", type(value))):
+                        log.debug("Got value '{value}' for config option '{option}'".format(
+                                value="*"*len(value) if "pass" in key.lower() else value, option=key))
+                        config[key] = value
+                    else:
+                        log.error("Value '{value}' for config option '{option}' is not type '{type}'".format(
+                                value=value, option=key, type=options[key]["type"]))
+                        valid = False
+
+        return config
+
+    log.debug("Parsing config")
+
+    valid = True
+    config = parse_dict(data, options)
 
     return config if valid else False
+
+
+def resolve_type(value):
+    """Attempts to resolve the type of ``value``.
+
+    It will return ``value`` as the python type if possible, otherwise will
+    return value as string.
+    """
+    value = str(value).strip()
+    if value.lower() == "true":
+        return True
+    elif value.lower() == "false":
+        return False
+    elif value.lower() == "none":
+        return None
+    else:
+        # attempt to parse
+        try:
+            return literal_eval(value)
+        except ValueError:
+            pass
+        # unparseable, return as str
+        return value
