@@ -50,11 +50,8 @@ CONF_KEY_PAYLOAD_OFF = "payload off"
 CONF_KEY_POLL_INT = "polling interval"
 CONF_KEY_DEBOUNCE = "debounce"
 CONF_KEY_DIRECTION = "direction"
-CONF_MAP_DIRECTION = {"input": GPIO.IN, "in": GPIO.IN, "output": GPIO.OUT, "out": GPIO.OUT}
 CONF_KEY_INTERRUPT = "interrupt"
-CONF_MAP_INTERRUPT = {"rising": GPIO.RISING, "falling": GPIO.FALLING, "both": GPIO.BOTH, "none": None}
 CONF_KEY_RESISTOR = "resistor"
-CONF_MAP_RESISTOR = {"pullup": GPIO.PUD_UP, "up": GPIO.PUD_UP, "pulldown": GPIO.PUD_DOWN, "down": GPIO.PUD_DOWN, "off": GPIO.PUD_OFF, "none": GPIO.PUD_OFF}
 CONF_KEY_INVERT = "invert"
 CONF_OPTIONS = {
     CONF_KEY_TOPIC: {"default": "gpio"},
@@ -70,9 +67,9 @@ CONF_OPTIONS_PIN = {
     "type": "section",
     "required": False,
     CONF_KEY_TOPIC: {"default": "{pin}"},
-    CONF_KEY_DIRECTION: {},
-    CONF_KEY_INTERRUPT: {"default": None},
-    CONF_KEY_RESISTOR: {"default": None},
+    CONF_KEY_DIRECTION: {"selection": {"input": GPIO.IN, "in": GPIO.IN, "output": GPIO.OUT, "out": GPIO.OUT}},
+    CONF_KEY_INTERRUPT: {"default": None, "selection": {"rising": GPIO.RISING, "falling": GPIO.FALLING, "both": GPIO.BOTH, "none": None}},
+    CONF_KEY_RESISTOR: {"default": None, "selection": {"pullup": GPIO.PUD_UP, "up": GPIO.PUD_UP, "pulldown": GPIO.PUD_DOWN, "down": GPIO.PUD_DOWN, "off": GPIO.PUD_OFF, "none": GPIO.PUD_OFF}},
     CONF_KEY_INVERT: {"type": bool, "default": False},
 }
 
@@ -116,19 +113,12 @@ def init(config_data={}):
         log.debug("Config loaded")
 
         for pin in [key for key in raw_config if isinstance(raw_config[key], dict)]:
-            raw_config[pin][CONF_KEY_TOPIC] = resolve_topic(
-                    raw_config[pin][CONF_KEY_TOPIC],
+            pins[pin] = raw_config.pop(pin)
+            pins[pin][CONF_KEY_TOPIC] = resolve_topic(
+                    pins[pin][CONF_KEY_TOPIC],
                     module_topic=raw_config[CONF_KEY_TOPIC],
                     substitutions={"pin": pin}
                 )
-            pins[pin] = {
-                CONF_KEY_DIRECTION: CONF_MAP_DIRECTION[str(raw_config[pin][CONF_KEY_DIRECTION]).lower()],
-                CONF_KEY_TOPIC: raw_config[pin][CONF_KEY_TOPIC],
-                CONF_KEY_INTERRUPT: CONF_MAP_INTERRUPT[str(raw_config[pin][CONF_KEY_INTERRUPT]).lower()],
-                CONF_KEY_RESISTOR: CONF_MAP_RESISTOR[str(raw_config[pin][CONF_KEY_RESISTOR]).lower()],
-                CONF_KEY_INVERT: raw_config[pin][CONF_KEY_INVERT]
-            }
-            raw_config.pop(pin)
 
         config.update(raw_config)
         return True

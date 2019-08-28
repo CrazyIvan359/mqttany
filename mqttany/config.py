@@ -63,8 +63,8 @@ def parse_config(data, options, log=log):
                 if options[key].get("required", True):
                     log.error("No section in config named '{section}'".format(section=key))
                     valid = False
-                else:
-                    log.debug("No section in config named '{section}'".format(section=key))
+                #else:
+                #    log.debug("No section in config named '{section}'".format(section=key))
 
             elif isinstance(data.get(key, None), dict):
                 section_valid, config[key] = parse_dict(data[key], options[key])
@@ -80,21 +80,39 @@ def parse_config(data, options, log=log):
                             value=value, option=key))
                     config[key] = value
                 else:
-                    if "type" in options[key] and not isinstance(value, options[key]["type"]):
-                        value = resolve_type(value)
-                    if "type" in options[key] and not isinstance(value, options[key]["type"]):
-                        try:
-                            value = options[key]["type"](value)
-                        except: pass
+                    if "type" in options[key]:
+                        if not isinstance(value, options[key]["type"]):
+                            value = resolve_type(value)
+                        if not isinstance(value, options[key]["type"]):
+                            try:
+                                value = options[key]["type"](value)
+                            except: pass
 
-                    if isinstance(value, options[key].get("type", type(value))):
+                        if isinstance(value, options[key].get("type", type(value))):
+                            log.debug("Got value '{value}' for config option '{option}'".format(
+                                    value="*"*len(value) if "pass" in key.lower() else value, option=key))
+                            config[key] = value
+                        else:
+                            log.error("Value '{value}' for config option '{option}' is not type '{type}'".format(
+                                    value=value, option=key, type=options[key]["type"]))
+                            valid = False
+
+                    elif "selection" in options[key]:
+                        if str(value).lower() in options[key]["selection"]:
+                            log.debug("Got value '{value}' for config option '{option}'".format(
+                                    value=value, option=key))
+                            if isinstance(options[key]["selection"], dict):
+                                value = options[key]["selection"][str(value).lower()]
+                        else:
+                            log.error("Value '{value}' for config option '{option}' is not one of [{selections}]".format(
+                                    value=value, option=key, selections=[key for key in options[key]["selection"]]))
+                            valid = False
+
+                    else:
                         log.debug("Got value '{value}' for config option '{option}'".format(
                                 value="*"*len(value) if "pass" in key.lower() else value, option=key))
                         config[key] = value
-                    else:
-                        log.error("Value '{value}' for config option '{option}' is not type '{type}'".format(
-                                value=value, option=key, type=options[key]["type"]))
-                        valid = False
+
 
         return valid, config
 
