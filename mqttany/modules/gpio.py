@@ -54,7 +54,7 @@ CONF_KEY_INTERRUPT = "interrupt"
 CONF_KEY_RESISTOR = "resistor"
 CONF_KEY_INVERT = "invert"
 CONF_OPTIONS = {
-    CONF_KEY_TOPIC: {"default": "gpio"},
+    CONF_KEY_TOPIC: {"default": "{module_name}"},
     CONF_KEY_TOPIC_SETTER: {"default": "set"},
     CONF_KEY_TOPIC_GETTER: {"default": "get"},
     CONF_KEY_TOPIC_POLL: {"default": "poll"},
@@ -116,8 +116,12 @@ def init(config_data={}):
             pins[pin] = raw_config.pop(pin)
             pins[pin][CONF_KEY_TOPIC] = resolve_topic(
                     pins[pin][CONF_KEY_TOPIC],
-                    module_topic=raw_config[CONF_KEY_TOPIC],
-                    substitutions={"pin": pin}
+                    subtopics=["{module_topic}"],
+                    substitutions={
+                        "module_topic": raw_config[CONF_KEY_TOPIC],
+                        "module_name": __name__,
+                        "pin": pin
+                    }
                 )
 
         config.update(raw_config)

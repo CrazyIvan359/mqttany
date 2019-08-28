@@ -174,31 +174,32 @@ def loop():
     log.info("Process terminated")
 
 
-def resolve_topic(topic, module_topic="", substitutions={}):
+def resolve_topic(topic, subtopics=[], substitutions={}):
     """
     Resolves an absolute topic (wildcards preserved).
     Absolute topics start with ``/`` (it will be stripped).
-    Relative topics will have ``{root}/{module}/`` prepended if ``module_topic``
-    has a value, otherwise ``{root}/`` will be prepended.
-    Will sub in ``{root}``, ``{hostname}``, ``{client_id}``, and anything in
-    ``substitutions``.
+    Relative topics will have ``{root_topic}/subtopics[0]/subtopics[n]/``prepended.
+    Will sub in ``root_topic``, ``hostname``, ``client_id``, and anything in ``substitutions``.
     """
     if topic[0] != "/": # relative topic
-        if topic.split("/")[0] not in ["{root}", config[CONF_KEY_TOPIC_ROOT]]: # topic already starts with root topic
-            if module_topic:
-                topic = "{module}/" + topic
-            topic = "{root}/" + topic
+        if topic.split("/")[0] not in ["{root_topic}", config[CONF_KEY_TOPIC_ROOT]]: # topic already starts with root topic
+            for i in range(len(subtopics)-1, -1, -1):
+                topic = subtopics[i] + "/" + topic
+            topic = "{root_topic}/" + topic
 
-    topic = topic.format(
-        root=config[CONF_KEY_TOPIC_ROOT],
-        module=module_topic,
-        hostname=hostname,
-        client_id=config[CONF_KEY_CLIENTID],
-        **substitutions
-    ).strip("/") # remove leading or trailing slash
+    for i in range(4):
+        # this is done in case any substitutions contain substitutions
+        topic = topic.format(
+            root_topic=config[CONF_KEY_TOPIC_ROOT],
+            hostname=hostname,
+            client_id=config[CONF_KEY_CLIENTID],
+            **substitutions
+        )
+
+    topic = topic.strip("/") # remove leading or trailing slash
     return topic
 
-def publish(topic, payload, qos=None, retain=None, module_topic="", substitutions={}):
+def publish(topic, payload, qos=None, retain=None, subtopics=[], substitutions={}):
     """
     Publish a message
     """
@@ -208,21 +209,21 @@ def publish(topic, payload, qos=None, retain=None, module_topic="", substitution
             "kwargs": {
                 "qos": qos,
                 "retain": retain,
-                "module_topic": module_topic,
+                "subtopics": subtopics,
                 "substitutions": substitutions
             }
         })
 
-def _publish(topic, payload, qos=None, retain=None, module_topic="", substitutions={}):
+def _publish(topic, payload, qos=None, retain=None, subtopics=[], substitutions={}):
     client.publish(
-            resolve_topic(topic, module_topic=module_topic, substitutions=substitutions),
+            resolve_topic(topic, subtopics=subtopics, substitutions=substitutions),
             payload=payload,
             qos=qos if qos is not None else config[CONF_KEY_QOS],
             retain=retain if retain is not None else config[CONF_KEY_RETAIN]
         )
 
 
-def subscribe(topic, qos=0, callback=None, module_topic="", substitutions={}):
+def subscribe(topic, qos=0, callback=None, subtopics=[], substitutions={}):
     """
     Adds a subscription, can use wildcard topics.
     If ``callback`` is specified a ``message_callback`` will be added.
@@ -233,13 +234,13 @@ def subscribe(topic, qos=0, callback=None, module_topic="", substitutions={}):
             "kwargs": {
                 "qos": qos,
                 "callback": callback,
-                "module_topic": module_topic,
+                "subtopics": subtopics,
                 "substitutions": substitutions
             }
         })
 
-def _subscribe(topic, qos=0, callback=None, module_topic="", substitutions={}):
-    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+def _subscribe(topic, qos=0, callback=None, subtopics=[], substitutions={}):
+    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
     log.debug("Subscribing to topic '{topic}'".format(topic=topic))
     if not [sub for sub in subscriptions if sub["topic"] == topic]:
         subscriptions.append({"topic": topic, "qos": qos})
@@ -247,7 +248,7 @@ def _subscribe(topic, qos=0, callback=None, module_topic="", substitutions={}):
     if callback: _add_message_callback(topic, callback)
 
 
-def unsubscribe(topic, callback=None, module_topic="", substitutions={}):
+def unsubscribe(topic, callback=None, subtopics=[], substitutions={}):
     """
     Removes a subscription.
     If ``callback`` is specified it will also remove the ``message_callback``
@@ -258,13 +259,13 @@ def unsubscribe(topic, callback=None, module_topic="", substitutions={}):
             "args": [topic],
             "kwargs": {
                 "callback": callback,
-                "module_topic": module_topic,
+                "subtopics": subtopics,
                 "substitutions": substitutions
             }
         })
 
-def _unsubscribe(topic, callback=None, module_topic="", substitutions={}):
-    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+def _unsubscribe(topic, callback=None, subtopics=[], substitutions={}):
+    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
     log.debug("Removing subscription to topic '{topic}'".format(topic=topic))
     subs = [sub for sub in subscriptions if sub["topic"] == topic]
     for sub in subs: subscriptions.remove(sub)
@@ -272,7 +273,7 @@ def _unsubscribe(topic, callback=None, module_topic="", substitutions={}):
     if callback: _remove_message_callback(topic)
 
 
-def add_message_callback(topic, callback, module_topic="", substitutions={}):
+def add_message_callback(topic, callback, subtopics=[], substitutions={}):
     """
     Adds a message callback
     """
@@ -280,13 +281,13 @@ def add_message_callback(topic, callback, module_topic="", substitutions={}):
             "func": "_add_message_callback",
             "args": [topic, callback],
             "kwargs": {
-                "module_topic": module_topic,
+                "subtopics": subtopics,
                 "substitutions": substitutions
             }
         })
 
-def _add_message_callback(topic, callback, module_topic="", substitutions={}):
-    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+def _add_message_callback(topic, callback, subtopics=[], substitutions={}):
+    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
     if not [cb for cb in on_message_callbacks if cb["topic"] == topic]:
         log.debug("Adding callback '{callback}' for messages matching topic '{topic}'".format(
                 callback=callback.__name__, topic=topic))
@@ -297,7 +298,7 @@ def _add_message_callback(topic, callback, module_topic="", substitutions={}):
                 callback=callback.__name__, topic=topic))
 
 
-def remove_message_callback(topic, module_topic="", substitutions={}):
+def remove_message_callback(topic, subtopics=[], substitutions={}):
     """
     Removes a message callback
     """
@@ -305,13 +306,13 @@ def remove_message_callback(topic, module_topic="", substitutions={}):
             "func": "_remove_message_callback",
             "args": [topic],
             "kwargs": {
-                "module_topic": module_topic,
+                "subtopics": subtopics,
                 "substitutions": substitutions
             }
         })
 
-def _remove_message_callback(topic, module_topic="", substitutions={}):
-    topic = resolve_topic(topic, module_topic=module_topic, substitutions=substitutions)
+def _remove_message_callback(topic, subtopics=[], substitutions={}):
+    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
     log.debug("Removing callback for messages matching topic '{topic}'".format(topic=topic))
     cbs = [cb for cb in on_message_callbacks if cb["topic"] == topic]
     for cb in cbs: on_message_callbacks.remove(cb)

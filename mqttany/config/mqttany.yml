@@ -2,10 +2,21 @@
 
 # All optional values are commented out and default values are shown
 
-# Notes on Topics:
-# - topics starting with '/' will not have the root topic and module prepended
-# - '{root}', '{hostname}', '{client_id}', and '{module}' will be replaced with
-#   the real values, regardless of leading '/'s
+### Notes on Topics:
+#
+# RELATIVE topics will have the 'root topic' and 'module topic' prepended.
+#
+# ABSOLUTE topics starting with '/' will be treated as absolute and will not
+# have any other topics prepended.
+#
+# The following substitutions will be applied to all topics, modules may add
+# more (see module for details)
+# - {hostname} the computer's hostname
+# - {client_id} the mqtt 'client id'
+# - {root_topic} the 'root topic'
+# - {module_name} the name of the module publishing or subscribing
+# - {module_topic} the main topic of the module pub-ing or sub-ing
+###
 
 ######## MQTT Module ########
 mqtt:
@@ -32,21 +43,21 @@ mqtt:
 #gpio:
 
   ### Module Topic
-  #topic: gpio
+  #topic: '{module_name}'
 
   ### Setter Topic
   # messages sent here will set a pin if it's configured as an output
-  # default resolves to '{root}/{module}/{pin}/set'
+  # default resolves to '{root_topic}/{module_name}/{pin}/set'
   #topic set: 'set'
 
   ### Getter Topic
   # any message here will cause pin state to be published
-  # default resolves to '{root}/{module}/{pin}/set'
+  # default resolves to '{root_topic}/{module_name}/{pin}/set'
   #topic get: 'get'
 
   ### Poll Topic
   # any message here will cause all pin states to be published
-  # default resolves to '{root}/{module}/poll'
+  # default resolves to '{root_topic}/{module_name}/poll'
   #topic poll: 'poll'
 
   ### ON Payload
