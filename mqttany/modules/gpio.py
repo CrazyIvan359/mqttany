@@ -34,7 +34,7 @@ from Adafruit_GPIO import GPIO, Platform
 import logger
 log = logger.get_logger("gpio")
 from config import parse_config
-from common import POISON_PILL, gpio_lock
+from common import POISON_PILL, acquire_gpio_lock, release_gpio_lock
 
 from modules.mqtt import resolve_topic, publish, subscribe, add_message_callback
 
@@ -131,7 +131,6 @@ def init(config_data={}):
             raw_config.pop(pin)
 
         config.update(raw_config)
-
         return True
     else:
         log.error("Error loading config")
@@ -143,12 +142,14 @@ def loop():
     """
     log.debug("Setting up hardware")
     for pin in pins:
-        log.debug("Setting up GPIO{pin} with options [{options}]".format(
-                pin=pin, options=pins[pin]))
+        log.info("Setting up GPIO{pin} as {direction}".format(
+                pin=pin, direction="input" if pins[pin][CONF_KEY_DIRECTION]==GPIO.IN else "output"))
+        log.debug("  with options [{options}]".format(options=pins[pin]))
 
-        if not gpio_lock[pin].acquire(False):
+        if not acquire_gpio_lock(pin, __name__, timeout=2000):
             log.error("Failed to acquire a lock on GPIO{pin}".format(pin=pin))
             pins.pop(pin)
+            continue
 
         gpio.setup(pin, pins[pin][CONF_KEY_DIRECTION], pull_up_down=pins[pin][CONF_KEY_RESISTOR])
 
@@ -250,10 +251,7 @@ def loop():
 
     gpio.cleanup()
     for pin in pins:
-        try:
-            gpio_lock[pin].release()
-        except ThreadError:
-            log.error("Failed to release lock on GPIO{pin}".format(pin=pin))
+        release_gpio_lock(pin, __name__)
 
 
 def interrupt_handler(pin):
