@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.3.1
+
+* __Added__: `selection` type to configuration options. Allows limiting option to a list or mapping of choices.
+* __Changed__: Improvements to `resolve_topic`. Can apply nested subtopics now.
+  More substitutions available `module_topic`, `module_name`.
+* __Changed__: Improvements to GPIO locking. Now registers the module doing the locking and only that module can unlock.
+
 ## 0.3.0
 
 * __BREAKING CHANGE__: Move to single YAML configuration file instead of per module CONF files.

@@ -14,6 +14,12 @@ You must install all requirements first, this can be done with this command:
 pip3 install -r requirements.txt
 ```
 
+Copy the configuration file and edit it:
+```sh
+sudo cp mqttany/config/mqttany.yml /etc/mqttany.yml
+sudo nano /etc/mqttany.yml
+```
+
 Starting MQTTany:
 
 ```sh
