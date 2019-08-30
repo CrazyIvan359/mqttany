@@ -161,21 +161,33 @@ def loop():
             subscribe(
                     pins[pin][CONF_KEY_TOPIC] + "/{setter}",
                     callback=on_message,
-                    module_topic=config[CONF_KEY_TOPIC],
-                    substitutions={"setter":config[CONF_KEY_TOPIC_SETTER]}
+                    subtopics=["{module_topic}"],
+                    substitutions={
+                        "module_topic": config[CONF_KEY_TOPIC],
+                        "module_name": __name__,
+                        "setter":config[CONF_KEY_TOPIC_SETTER]
+                    }
                 )
         subscribe(
                 pins[pin][CONF_KEY_TOPIC] + "/{getter}",
                 callback=on_message,
-                module_topic=config[CONF_KEY_TOPIC],
-                substitutions={"getter":config[CONF_KEY_TOPIC_GETTER]}
+                subtopics=["{module_topic}"],
+                substitutions={
+                    "module_topic": config[CONF_KEY_TOPIC],
+                    "module_name": __name__,
+                    "getter":config[CONF_KEY_TOPIC_GETTER]
+                }
             )
 
     log.debug("Adding MQTT subscription to poll topic")
     subscribe(
             config[CONF_KEY_TOPIC_POLL],
             callback=on_message,
-            module_topic=config[CONF_KEY_TOPIC]
+            subtopics=["{module_topic}"],
+            substitutions={
+                "module_topic": config[CONF_KEY_TOPIC],
+                "module_name": __name__,
+            }
         )
 
     if config[CONF_KEY_POLL_INT] > 0:

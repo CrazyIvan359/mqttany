@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.2
+
+* __Fixed__: GPIO module was not updated when `resolve_topic` was changed in v0.3.1
+
 ## 0.3.1
 
 * __Added__: `selection` type to configuration options. Allows limiting option to a list or mapping of choices.
