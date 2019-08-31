@@ -25,7 +25,7 @@ GPIO Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time, os
+import time, os, sys
 from threading import Timer, ThreadError
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
@@ -77,6 +77,8 @@ CONF_OPTIONS_PIN = {
 
 TEXT_DIRECTION = {GPIO.IN: "input", GPIO.OUT: "output"}
 TEXT_RESISTOR = {GPIO.PUD_UP: "up", GPIO.PUD_DOWN: "down", GPIO.PUD_OFF: "off"}
+TEXT_LOGIC_STATE = ["LOW", "HIGH"]
+
 GPIO_PINS_RPI3 = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
 GPIO_PINS = []
 
@@ -120,15 +122,6 @@ def init(config_data={}):
             pins[pin] = raw_config.pop(pin)
             pins[pin][CONF_KEY_INITIAL] = pins[pin][CONF_KEY_INITIAL].format(
                     payload_on=raw_config[CONF_KEY_PAYLOAD_ON], payload_off=raw_config[CONF_KEY_PAYLOAD_OFF])
-            pins[pin][CONF_KEY_TOPIC] = resolve_topic(
-                    pins[pin][CONF_KEY_TOPIC],
-                    subtopics=["{module_topic}"],
-                    substitutions={
-                        "module_topic": raw_config[CONF_KEY_TOPIC],
-                        "module_name": __name__,
-                        "pin": pin
-                    }
-                )
 
         config.update(raw_config)
         return True
@@ -166,12 +159,13 @@ def loop():
             log.debug("Adding MQTT subscriptions for GPIO{pin}".format(pin=pin))
             subscribe(
                     pins[pin][CONF_KEY_TOPIC] + "/{setter}",
-                    callback=on_message,
+                    callback=message_callback("set_pin", kwargs={"pin": pin}),
                     subtopics=["{module_topic}"],
                     substitutions={
                         "module_topic": config[CONF_KEY_TOPIC],
                         "module_name": __name__,
-                        "setter":config[CONF_KEY_TOPIC_SETTER]
+                        "setter":config[CONF_KEY_TOPIC_SETTER],
+                        "pin": pin
                     }
                 )
             log.debug("Setting GPIO{pin} to initial state '{initial_state}'".format(
@@ -180,7 +174,7 @@ def loop():
 
         subscribe(
                 pins[pin][CONF_KEY_TOPIC] + "/{getter}",
-                callback=on_message,
+                callback=message_callback("get_pin", args=[pin]),
                 subtopics=["{module_topic}"],
                 substitutions={
                     "module_topic": config[CONF_KEY_TOPIC],
@@ -192,7 +186,7 @@ def loop():
     log.debug("Adding MQTT subscription to poll topic")
     subscribe(
             config[CONF_KEY_TOPIC_POLL],
-            callback=on_message,
+            callback=message_callback("poll_all"),
             subtopics=["{module_topic}"],
             substitutions={
                 "module_topic": config[CONF_KEY_TOPIC],
@@ -222,33 +216,11 @@ def loop():
                 log.debug("Received poison pill")
             else:
                 log.debug("Received message [{message}]".format(message=message))
-
-                # check if topic matches any pins
-                match_pins = [pin for pin in pins if pins[pin][CONF_KEY_TOPIC] in message["topic"]]
-                if match_pins:
-                    for pin in match_pins:
-                        if message["topic"].split("/")[-1] == config[CONF_KEY_TOPIC_SETTER]:
-                            if pins[pin][CONF_KEY_DIRECTION] == GPIO.OUT:
-                                set_pin(pin, message["payload"])
-                                publish_states({pin: state})
-                            else:
-                                log.warn("Received SET command for GPIO{pin} but it is configured as an input".format(pin=pin))
-
-                        elif message["topic"].split("/")[-1] == config[CONF_KEY_TOPIC_GETTER]:
-                            log.debug("Polling state of GPIO{pin}".format(pin=pin))
-                            publish_states({pin: read_pin(pin)})
-
-                        else:
-                            log.warn("Received unrecognized message '{payload}' on topic '{topic}'".format(
-                                    payload=message["payload"], topic=message["topic"]))
-
-                elif config[CONF_KEY_TOPIC_POLL] in message["topic"]:
-                    log.debug("Received POLL command")
-                    poll_all()
-
+                func = getattr(sys.modules[__name__], message["func"])
+                if func:
+                    func(*message["args"], **message["kwargs"])
                 else:
-                    log.warn("Received unrecognized message '{payload}' on topic '{topic}'".format(
-                            payload=message["payload"], topic=message["topic"]))
+                    log.warn("Unrecognized function '{func}'".format(func=message["func"]))
 
     if config[CONF_KEY_POLL_INT] > 0:
         log.debug("Stopping polling timer")
@@ -264,47 +236,47 @@ def interrupt_handler(pin):
     Handles GPIO pin interrupt callbacks
     """
     log.debug("Interrupt triggered on GPIO{pin}".format(pin=pin))
-    publish_states({pin:read_pin(pin)})
+    get_pin(pin)
 
 
-def on_message(client, userdata, message):
+def message_callback(func, args=[], kwargs={}):
     """
-    MQTT message handler
+    Returns a callback for MQTT client, will run the passed function withs args
+    Message `topic` and `payload` will be added to `kwargs`
     """
-    #if message.topic.split("/")[0] == root_topic:
-    #    topic = message.topic[len(root_topic)+1:]
-    #else:
-    #    topic = message.topic
-    queue.put_nowait({
-            "topic": message.topic,
-            "payload": message.payload
-        })
+    def _callback(client, userdata, message):
+        kwargs["topic"] = message.topic
+        kwargs["payload"] = message.payload
+        queue.put_nowait({
+                "func": func,
+                "args": args,
+                "kwargs": kwargs
+            })
+    return _callback
 
 
-def publish_states(states):
+def get_pin(pin, **kwargs):
     """
-    Takes a dict of pin:state and publishes mqtt messages for each
-    """
-    for pin in states:
-        publish(
-                pins[pin][CONF_KEY_TOPIC],
-                config[CONF_KEY_PAYLOAD_ON] if states[pin] else config[CONF_KEY_PAYLOAD_OFF]
-            )
-
-
-def read_pin(pin):
-    """
-    Read the state from a pin
+    Read the state from a pin and publish
     """
     state = bool(gpio.input(pin)) ^ pins[pin][CONF_KEY_INVERT] # apply the invert flag
     log.debug("Read state '{state}' from GPIO{pin}".format(
-            state=state, pin=pin))
-    return state
+        state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF], pin=pin))
+    publish(
+            pins[pin][CONF_KEY_TOPIC],
+            payload=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
+            subtopics=["{module_topic}"],
+            substitutions={
+                "module_topic": config[CONF_KEY_TOPIC],
+                "module_name": __name__,
+                "pin": pin
+            }
+        )
 
 
-def set_pin(pin, payload):
+def set_pin(pin, payload, **kwargs):
     """
-    Set the state of a pin
+    Set the state of a pin and publish
     ``payload`` expects ``payload on`` or ``payload off``
     """
     if payload == config[CONF_KEY_PAYLOAD_ON]:
@@ -314,19 +286,19 @@ def set_pin(pin, payload):
     else:
         log.warn("Received unrecognized SET payload '{payload}' for GPIO{pin}".format(
                 payload=payload, pin=pin))
-        return False
+        return
 
     gpio.output(pin, state ^ pins[pin][CONF_KEY_INVERT])
-    log.debug("Set GPIO{pin} to '{payload}' logic {state}".format(pin=pin, state=["LOW", "HIGH"][int(state)]))
-    return True
+    log.debug("Set GPIO{pin} to '{payload}' logic {state}".format(pin=pin, state=TEXT_LOGIC_STATE[int(state)]))
+    get_pin(pin) # publish pin state
 
 
-def poll_all():
+def poll_all(**kwargs):
     """
     Polls all configured pins and publishes states
     """
     log.debug("Polling all pins")
-    publish_states({pin:read_pin(pin) for pin in pins})
+    for pin in pins: get_pin(pin)
 
 
 def poll_interval():
