@@ -171,8 +171,6 @@ def loop():
     log.debug("Stopping MQTT client loop")
     client.loop_stop()
 
-    log.info("Process terminated")
-
 
 def resolve_topic(topic, subtopics=[], substitutions={}):
     """
