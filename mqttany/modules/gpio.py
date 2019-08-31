@@ -53,6 +53,7 @@ CONF_KEY_DIRECTION = "direction"
 CONF_KEY_INTERRUPT = "interrupt"
 CONF_KEY_RESISTOR = "resistor"
 CONF_KEY_INVERT = "invert"
+CONF_KEY_INITIAL = "initial state"
 CONF_OPTIONS = {
     CONF_KEY_TOPIC: {"default": "{module_name}"},
     CONF_KEY_TOPIC_SETTER: {"default": "set"},
@@ -71,6 +72,7 @@ CONF_OPTIONS_PIN = {
     CONF_KEY_INTERRUPT: {"default": None, "selection": {"rising": GPIO.RISING, "falling": GPIO.FALLING, "both": GPIO.BOTH, "none": None}},
     CONF_KEY_RESISTOR: {"default": GPIO.PUD_OFF, "selection": {"pullup": GPIO.PUD_UP, "up": GPIO.PUD_UP, "pulldown": GPIO.PUD_DOWN, "down": GPIO.PUD_DOWN, "off": GPIO.PUD_OFF, "none": GPIO.PUD_OFF}},
     CONF_KEY_INVERT: {"type": bool, "default": False},
+    CONF_KEY_INITIAL: {"default": "{payload_off}"},
 }
 
 TEXT_DIRECTION = {GPIO.IN: "input", GPIO.OUT: "output"}
@@ -116,6 +118,8 @@ def init(config_data={}):
 
         for pin in [key for key in raw_config if isinstance(raw_config[key], dict)]:
             pins[pin] = raw_config.pop(pin)
+            pins[pin][CONF_KEY_INITIAL] = pins[pin][CONF_KEY_INITIAL].format(
+                    payload_on=raw_config[CONF_KEY_PAYLOAD_ON], payload_off=raw_config[CONF_KEY_PAYLOAD_OFF])
             pins[pin][CONF_KEY_TOPIC] = resolve_topic(
                     pins[pin][CONF_KEY_TOPIC],
                     subtopics=["{module_topic}"],
@@ -170,6 +174,10 @@ def loop():
                         "setter":config[CONF_KEY_TOPIC_SETTER]
                     }
                 )
+            log.debug("Setting GPIO{pin} to initial state '{initial_state}'".format(
+                    pin=pin, initial_state=pins[pin][CONF_KEY_INITIAL]))
+            set_pin(pin, pins[pin][CONF_KEY_INITIAL])
+
         subscribe(
                 pins[pin][CONF_KEY_TOPIC] + "/{getter}",
                 callback=on_message,
@@ -221,18 +229,7 @@ def loop():
                     for pin in match_pins:
                         if message["topic"].split("/")[-1] == config[CONF_KEY_TOPIC_SETTER]:
                             if pins[pin][CONF_KEY_DIRECTION] == GPIO.OUT:
-                                if message["payload"] == config[CONF_KEY_PAYLOAD_ON]:
-                                    state = True
-                                elif message["payload"] == config[CONF_KEY_PAYLOAD_OFF]:
-                                    state = False
-                                else:
-                                    log.warn("Received unrecognized SET payload '{payload}' for GPIO{pin}".format(
-                                            payload=message["payload"], pin=pin))
-                                    continue
-
-                                state = state ^ pins[pin][CONF_KEY_INVERT]
-                                gpio.output(pin, state)
-                                log.debug("Set GPIO{pin} to '{state}'".format(pin=pin, state=int(state)))
+                                set_pin(pin, message["payload"])
                                 publish_states({pin: state})
                             else:
                                 log.warn("Received SET command for GPIO{pin} but it is configured as an input".format(pin=pin))
@@ -303,6 +300,25 @@ def read_pin(pin):
     log.debug("Read state '{state}' from GPIO{pin}".format(
             state=state, pin=pin))
     return state
+
+
+def set_pin(pin, payload):
+    """
+    Set the state of a pin
+    ``payload`` expects ``payload on`` or ``payload off``
+    """
+    if payload == config[CONF_KEY_PAYLOAD_ON]:
+        state = True
+    elif payload == config[CONF_KEY_PAYLOAD_OFF]:
+        state = False
+    else:
+        log.warn("Received unrecognized SET payload '{payload}' for GPIO{pin}".format(
+                payload=payload, pin=pin))
+        return False
+
+    gpio.output(pin, state ^ pins[pin][CONF_KEY_INVERT])
+    log.debug("Set GPIO{pin} to '{payload}' logic {state}".format(pin=pin, state=["LOW", "HIGH"][int(state)]))
+    return True
 
 
 def poll_all():
