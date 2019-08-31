@@ -63,18 +63,18 @@ def load():
             log.error("Module '{name}' was not loaded".format(name=module_name))
         else:
             if not _validate_module(module):
-                log.error("Module '{name}' is not valid, skipping".format(name=module.__name__[7:]))
+                log.error("Module '{name}' is not valid, skipping".format(name=module.__name__[8:]))
                 continue
 
             if not _call_func(module, ATTR_INIT, config_data=config[module_name]): # call module init
-                log.warn("Module '{name}' not initialized".format(name=module.__name__[7:]))
+                log.warn("Module '{name}' not initialized".format(name=module.__name__[8:]))
                 continue
 
             if not _start_proc(module): # start subprocess
-                log.error("Failed to start process for module '{name}'".format(name=module.__name__[7:]))
+                log.error("Failed to start process for module '{name}'".format(name=module.__name__[8:]))
                 continue
 
-            log.info("Module '{name}' loaded successfully".format(name=module.__name__[7:]))
+            log.info("Module '{name}' loaded successfully".format(name=module.__name__[8:]))
             modules_loaded.append(module)
 
     return modules_loaded
@@ -87,10 +87,10 @@ def unload():
     for i in range(len(modules_loaded)-1, -1, -1): # reverse order in case of dependecies
         module = modules_loaded[i]
         if module:
-            log.debug("Unloading module '{name}'".format(name=module.__name__[7:]))
+            log.debug("Unloading module '{name}'".format(name=module.__name__[8:]))
             _stop_proc(module)
             _call_func(module, ATTR_UNINIT)
-            log.info("Module '{name}' unloaded".format(name=module.__name__[7:]))
+            log.info("Module '{name}' unloaded".format(name=module.__name__[8:]))
 
 
 def _validate_module(module):
@@ -101,20 +101,20 @@ def _validate_module(module):
 
     init = getattr(module, ATTR_INIT, None)
     if init is None or not callable(init):
-        log.debug("Module '{name}' has no function called 'init'".format(name=module.__name__[7:]))
+        log.debug("Module '{name}' has no function called 'init'".format(name=module.__name__[8:]))
 
     uninit = getattr(module, ATTR_UNINIT, None)
     if uninit is None or not callable(uninit):
-        log.debug("Module '{name}' has no function called 'uninit'".format(name=module.__name__[7:]))
+        log.debug("Module '{name}' has no function called 'uninit'".format(name=module.__name__[8:]))
 
     loop = getattr(module, ATTR_LOOP, None)
     if loop is None or not callable(loop):
-        log.error("Module '{name}' has no function called 'loop'".format(name=module.__name__[7:]))
+        log.error("Module '{name}' has no function called 'loop'".format(name=module.__name__[8:]))
         valid = False
 
     queue = getattr(module, ATTR_QUEUE, None)
     if queue is None or not isinstance(queue, mproc.queues.Queue):
-        log.error("Module '{name}' has no Queue called 'queue'".format(name=module.__name__[7:]))
+        log.error("Module '{name}' has no Queue called 'queue'".format(name=module.__name__[8:]))
         valid = False
 
     return valid
@@ -135,23 +135,23 @@ def _start_proc(module):
     Starts a subprocess for ``module``
     """
     try:
-        log.debug("Creating process for '{name}'".format(name=module.__name__[7:]))
+        log.debug("Creating process for '{name}'".format(name=module.__name__[8:]))
         module.process = mproc.Process(target=getattr(module, ATTR_LOOP), name=module.__name__)
     except Exception as err:
-        log.error("Failed to create process for module '{name}'".format(name=module.__name__[7:]))
+        log.error("Failed to create process for module '{name}'".format(name=module.__name__[8:]))
         log.error("  {}".format(err))
         return False
     else:
-        log.debug("Process created successfully for module '{name}'".format(name=module.__name__[7:]))
+        log.debug("Process created successfully for module '{name}'".format(name=module.__name__[8:]))
         try:
-            log.debug("Starting process for '{name}'".format(name=module.__name__[7:]))
+            log.debug("Starting process for '{name}'".format(name=module.__name__[8:]))
             module.process.start()
         except Exception as err:
-            log.error("Failed to start process for module '{name}'".format(name=module.__name__[7:]))
+            log.error("Failed to start process for module '{name}'".format(name=module.__name__[8:]))
             log.error("  {}".format(err))
             return False
         else:
-            log.debug("Process started successfully for module '{name}'".format(name=module.__name__[7:]))
+            log.debug("Process started successfully for module '{name}'".format(name=module.__name__[8:]))
             return True
 
 
@@ -161,18 +161,18 @@ def _stop_proc(module):
     """
     if hasattr(module, "process"):
         if module.process.is_alive():
-            log.debug("Stopping subprocess for '{name}' with 10s timeout".format(name=module.__name__[7:]))
+            log.debug("Stopping subprocess for '{name}' with 10s timeout".format(name=module.__name__[8:]))
             module.queue.put_nowait(POISON_PILL)
             module.process.join(10)
             if module.process.is_alive():
-                log.warn("Subprocess for module '{name}' did not stop when requested, terminating forcefully".format(name=module.__name__[7:]))
+                log.warn("Subprocess for module '{name}' did not stop when requested, terminating forcefully".format(name=module.__name__[8:]))
                 module.process.terminate()
                 module.process.join(10) # make sure cleanup is done
-                log.debug("Subprocess terminated forcefully for module '{name}'".format(name=module.__name__[7:]))
+                log.debug("Subprocess terminated forcefully for module '{name}'".format(name=module.__name__[8:]))
             else:
-                log.debug("Subproccess for module '{name}' stopped cleanly".format(name=module.__name__[7:]))
+                log.debug("Subproccess for module '{name}' stopped cleanly".format(name=module.__name__[8:]))
         else:
             module.process.join(10)
-            log.warn("Subprocess for module '{name}' was not running".format(name=module.__name__[7:]))
+            log.warn("Subprocess for module '{name}' was not running".format(name=module.__name__[8:]))
     else:
-        log.debug("Module '{name}' does not have a subprocess".format(name=module.__name__[7:]))
+        log.debug("Module '{name}' does not have a subprocess".format(name=module.__name__[8:]))
