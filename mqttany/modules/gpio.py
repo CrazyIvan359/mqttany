@@ -67,12 +67,14 @@ CONF_OPTIONS_PIN = {
     "type": "section",
     "required": False,
     CONF_KEY_TOPIC: {"default": "{pin}"},
-    CONF_KEY_DIRECTION: {"selection": {"input": GPIO.IN, "in": GPIO.IN, "output": GPIO.OUT, "out": GPIO.OUT}},
+    CONF_KEY_DIRECTION: {"default": GPIO.IN, "selection": {"input": GPIO.IN, "in": GPIO.IN, "output": GPIO.OUT, "out": GPIO.OUT}},
     CONF_KEY_INTERRUPT: {"default": None, "selection": {"rising": GPIO.RISING, "falling": GPIO.FALLING, "both": GPIO.BOTH, "none": None}},
-    CONF_KEY_RESISTOR: {"default": None, "selection": {"pullup": GPIO.PUD_UP, "up": GPIO.PUD_UP, "pulldown": GPIO.PUD_DOWN, "down": GPIO.PUD_DOWN, "off": GPIO.PUD_OFF, "none": GPIO.PUD_OFF}},
+    CONF_KEY_RESISTOR: {"default": GPIO.PUD_OFF, "selection": {"pullup": GPIO.PUD_UP, "up": GPIO.PUD_UP, "pulldown": GPIO.PUD_DOWN, "down": GPIO.PUD_DOWN, "off": GPIO.PUD_OFF, "none": GPIO.PUD_OFF}},
     CONF_KEY_INVERT: {"type": bool, "default": False},
 }
 
+TEXT_DIRECTION = {GPIO.IN: "input", GPIO.OUT: "output"}
+TEXT_RESISTOR = {GPIO.PUD_UP: "up", GPIO.PUD_DOWN: "down", GPIO.PUD_OFF: "off"}
 GPIO_PINS_RPI3 = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
 GPIO_PINS = []
 
@@ -137,7 +139,7 @@ def loop():
     log.debug("Setting up hardware")
     for pin in pins:
         log.info("Setting up GPIO{pin} as {direction}".format(
-                pin=pin, direction="input" if pins[pin][CONF_KEY_DIRECTION]==GPIO.IN else "output"))
+                pin=pin, direction=TEXT_DIRECTION[pins[pin][CONF_KEY_DIRECTION]]))
         log.debug("  with options [{options}]".format(options=pins[pin]))
 
         if not acquire_gpio_lock(pin, __name__, timeout=2000):
