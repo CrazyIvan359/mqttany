@@ -1,5 +1,17 @@
 # Change Log
 
+## 0.3.3
+
+* __Fixed__: GPIO lock release causing process crashes
+* __Fixed__: Fixed typo in configuration file `/set` should have been `/get`
+* __Fixed__: Module name now display only the module name instead of `modules.[name]`
+* __Added__: GPIO module `direction` default is now `input`
+* __Fixed__: GPIO module `resistor` default is now `GPIO.PUD_OFF` instead of invalid `None`
+* __Fixed__: Config `selection` type not adding value to config dict.
+* __Fixed__: Modules loading in random order. MQTT module needs to be loaded first.
+  Switched to `yamlloader` to load config sections in file order.
+* __Fixed__: Added missing dependency `RPi.GPIO`
+
 ## 0.3.2
 
 * __Fixed__: GPIO module was not updated when `resolve_topic` was changed in v0.3.1
