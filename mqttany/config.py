@@ -95,10 +95,10 @@ def parse_config(data, options, log=log):
 
                     elif "selection" in options[key]:
                         if str(value).lower() in options[key]["selection"]:
-                            log.debug("Got value '{value}' for config option '{option}'".format(
+                            log.debug("Got selection '{value}' for config option '{option}'".format(
                                     value=value, option=key))
                             if isinstance(options[key]["selection"], dict):
-                                value = options[key]["selection"][str(value).lower()]
+                                config[key] = options[key]["selection"][str(value).lower()]
                         else:
                             log.error("Value '{value}' for config option '{option}' is not one of [{selections}]".format(
                                     value=value, option=key, selections=[key for key in options[key]["selection"]]))
