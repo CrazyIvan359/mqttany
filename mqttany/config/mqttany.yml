@@ -52,7 +52,7 @@ mqtt:
 
   ### Getter Topic
   # any message here will cause pin state to be published
-  # default resolves to '{root_topic}/{module_name}/{pin}/set'
+  # default resolves to '{root_topic}/{module_name}/{pin}/get'
   #topic get: 'get'
 
   ### Poll Topic
