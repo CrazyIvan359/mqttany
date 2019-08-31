@@ -290,7 +290,8 @@ def set_pin(pin, payload, **kwargs):
         return
 
     gpio.output(pin, state ^ pins[pin][CONF_KEY_INVERT])
-    log.debug("Set GPIO{pin} to '{payload}' logic {state}".format(pin=pin, state=TEXT_LOGIC_STATE[int(state)]))
+    log.debug("Set GPIO{pin} to '{payload}' logic {state}".format(
+        pin=pin, payload=payload, state=TEXT_LOGIC_STATE[int(state)]))
     get_pin(pin) # publish pin state
 
 
