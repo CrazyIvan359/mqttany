@@ -26,11 +26,7 @@ Configuration Loader
 # SOFTWARE.
 
 from ast import literal_eval
-from yaml import safe_load
-try: # libyaml is faster
-    from yaml import CLoader as Loader, CDumper as Dumper
-except ImportError:
-    from yaml import Loader, Dumper
+import yaml, yamlloader
 
 import logger
 log = logger.get_logger("config")
@@ -44,7 +40,7 @@ def load_config(conf_file="/etc/mqttany.yml"):
     """
     log.debug("Loading config")
     with open(conf_file) as fh:
-        config = safe_load(fh)
+        config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)
     return config
 
 
