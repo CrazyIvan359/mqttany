@@ -117,7 +117,7 @@ def release_gpio_lock(pin, module):
     """
     Release lock on GPIO pin
     """
-    if _gpio_lock[pin]["lock"].locked:
+    if not _gpio_lock[pin]["lock"].acquire(False):
         # prevent releasing a lock a module doesn't have
         if _gpio_lock[pin]["module"].raw == module:
             _gpio_lock[pin]["lock"].release()
@@ -126,5 +126,7 @@ def release_gpio_lock(pin, module):
             log.warn("Module '{module}' attempted to release a lock on GPIO{pin} but it is locked by '{owner}'".format(
                 module=module, pin=pin, owner=_gpio_lock[pin]["module"].raw))
             return False
+    else:
+        _gpio_lock[pin]["lock"].release()
 
     return True
