@@ -127,7 +127,7 @@ def init(config_data={}):
                     pins[pin][CONF_KEY_TOPIC],
                     subtopics=["{module_topic}"],
                     substitutions={
-                        "module_topic": config[CONF_KEY_TOPIC],
+                        "module_topic": raw_config[CONF_KEY_TOPIC],
                         "module_name": TEXT_NAME,
                         "pin": pin
                     }
