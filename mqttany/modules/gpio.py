@@ -75,6 +75,7 @@ CONF_OPTIONS_PIN = {
     CONF_KEY_INITIAL: {"default": "{payload_off}"},
 }
 
+TEXT_NAME = __name__.split(".")[-1]
 TEXT_DIRECTION = {GPIO.IN: "input", GPIO.OUT: "output"}
 TEXT_RESISTOR = {GPIO.PUD_UP: "up", GPIO.PUD_DOWN: "down", GPIO.PUD_OFF: "off"}
 TEXT_LOGIC_STATE = ["LOW", "HIGH"]
@@ -139,7 +140,7 @@ def loop():
                 pin=pin, direction=TEXT_DIRECTION[pins[pin][CONF_KEY_DIRECTION]]))
         log.debug("  with options [{options}]".format(options=pins[pin]))
 
-        if not acquire_gpio_lock(pin, __name__, timeout=2000):
+        if not acquire_gpio_lock(pin, TEXT_NAME, timeout=2000):
             log.error("Failed to acquire a lock on GPIO{pin}".format(pin=pin))
             pins.pop(pin)
             continue
@@ -163,7 +164,7 @@ def loop():
                     subtopics=["{module_topic}"],
                     substitutions={
                         "module_topic": config[CONF_KEY_TOPIC],
-                        "module_name": __name__,
+                        "module_name": TEXT_NAME,
                         "setter":config[CONF_KEY_TOPIC_SETTER],
                         "pin": pin
                     }
@@ -178,7 +179,7 @@ def loop():
                 subtopics=["{module_topic}"],
                 substitutions={
                     "module_topic": config[CONF_KEY_TOPIC],
-                    "module_name": __name__,
+                    "module_name": TEXT_NAME,
                     "getter":config[CONF_KEY_TOPIC_GETTER]
                 }
             )
@@ -190,7 +191,7 @@ def loop():
             subtopics=["{module_topic}"],
             substitutions={
                 "module_topic": config[CONF_KEY_TOPIC],
-                "module_name": __name__,
+                "module_name": TEXT_NAME,
             }
         )
 
@@ -228,7 +229,7 @@ def loop():
 
     gpio.cleanup()
     for pin in pins:
-        release_gpio_lock(pin, __name__)
+        release_gpio_lock(pin, TEXT_NAME)
 
 
 def interrupt_handler(pin):
@@ -268,7 +269,7 @@ def get_pin(pin, **kwargs):
             subtopics=["{module_topic}"],
             substitutions={
                 "module_topic": config[CONF_KEY_TOPIC],
-                "module_name": __name__,
+                "module_name": TEXT_NAME,
                 "pin": pin
             }
         )
