@@ -123,6 +123,15 @@ def init(config_data={}):
             pins[pin] = raw_config.pop(pin)
             pins[pin][CONF_KEY_INITIAL] = pins[pin][CONF_KEY_INITIAL].format(
                     payload_on=raw_config[CONF_KEY_PAYLOAD_ON], payload_off=raw_config[CONF_KEY_PAYLOAD_OFF])
+            pins[pin][CONF_KEY_TOPIC] = resolve_topic(
+                    pins[pin][CONF_KEY_TOPIC],
+                    subtopics=["{module_topic}"],
+                    substitutions={
+                        "module_topic": config[CONF_KEY_TOPIC],
+                        "module_name": TEXT_NAME,
+                        "pin": pin
+                    }
+                )
 
         config.update(raw_config)
         return True
@@ -160,12 +169,12 @@ def loop():
             log.debug("Adding MQTT subscriptions for GPIO{pin}".format(pin=pin))
             subscribe(
                     pins[pin][CONF_KEY_TOPIC] + "/{setter}",
-                    callback=message_callback("set_pin", kwargs={"pin": pin}),
+                    callback=callback_setter,
                     subtopics=["{module_topic}"],
                     substitutions={
                         "module_topic": config[CONF_KEY_TOPIC],
                         "module_name": TEXT_NAME,
-                        "setter":config[CONF_KEY_TOPIC_SETTER],
+                        "setter": config[CONF_KEY_TOPIC_SETTER],
                         "pin": pin
                     }
                 )
@@ -175,19 +184,19 @@ def loop():
 
         subscribe(
                 pins[pin][CONF_KEY_TOPIC] + "/{getter}",
-                callback=message_callback("get_pin", args=[pin]),
+                callback=callback_getter,
                 subtopics=["{module_topic}"],
                 substitutions={
                     "module_topic": config[CONF_KEY_TOPIC],
                     "module_name": TEXT_NAME,
-                    "getter":config[CONF_KEY_TOPIC_GETTER]
+                    "getter": config[CONF_KEY_TOPIC_GETTER]
                 }
             )
 
     log.debug("Adding MQTT subscription to poll topic")
     subscribe(
             config[CONF_KEY_TOPIC_POLL],
-            callback=message_callback("poll_all"),
+            callback=callback_poll_all,
             subtopics=["{module_topic}"],
             substitutions={
                 "module_topic": config[CONF_KEY_TOPIC],
@@ -219,7 +228,7 @@ def loop():
                 log.debug("Received message [{message}]".format(message=message))
                 func = getattr(sys.modules[__name__], message["func"])
                 if func:
-                    func(*message["args"], **message["kwargs"])
+                    func(*message.get("args", []), **message.get("kwargs", {}))
                 else:
                     log.warn("Unrecognized function '{func}'".format(func=message["func"]))
 
@@ -232,6 +241,49 @@ def loop():
         release_gpio_lock(pin, TEXT_NAME)
 
 
+def callback_setter(client, userdata, message):
+    """
+    Callback for setters
+    """
+    queue.put_nowait({
+        "func": "_callback_setter",
+        "args": [message.topic, message.payload]
+    })
+
+def _callback_setter(topic, payload):
+    if config[CONF_KEY_TOPIC_SETTER]:
+        topic = topic[:-len("/" + config[CONF_KEY_TOPIC_SETTER])]
+    for pin in pins:
+        if topic == pins[pin][CONF_KEY_TOPIC]:
+            set_pin(pin, payload)
+
+
+def callback_getter(client, userdata, message):
+    """
+    Callback for getters
+    """
+    queue.put_nowait({
+        "func": "_callback_getter",
+        "args": [message.topic]
+    })
+
+def _callback_getter(topic):
+    if config[CONF_KEY_TOPIC_GETTER]:
+        topic = topic[:-len("/" + config[CONF_KEY_TOPIC_GETTER])]
+    for pin in pins:
+        if topic == pins[pin][CONF_KEY_TOPIC]:
+            get_pin(pin)
+
+
+def callback_poll_all(client, userdata, message):
+    """
+    Callback for poll all
+    """
+    queue.put_nowait({
+        "func": "poll_all"
+    })
+
+
 def interrupt_handler(pin):
     """
     Handles GPIO pin interrupt callbacks
@@ -240,23 +292,7 @@ def interrupt_handler(pin):
     get_pin(pin)
 
 
-def message_callback(func, args=[], kwargs={}):
-    """
-    Returns a callback for MQTT client, will run the passed function withs args
-    Message `topic` and `payload` will be added to `kwargs`
-    """
-    def _callback(client, userdata, message):
-        kwargs["topic"] = message.topic
-        kwargs["payload"] = message.payload
-        queue.put_nowait({
-                "func": func,
-                "args": args,
-                "kwargs": kwargs
-            })
-    return _callback
-
-
-def get_pin(pin, **kwargs):
+def get_pin(pin):
     """
     Read the state from a pin and publish
     """
@@ -265,17 +301,11 @@ def get_pin(pin, **kwargs):
         state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF], pin=pin))
     publish(
             pins[pin][CONF_KEY_TOPIC],
-            payload=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
-            subtopics=["{module_topic}"],
-            substitutions={
-                "module_topic": config[CONF_KEY_TOPIC],
-                "module_name": TEXT_NAME,
-                "pin": pin
-            }
+            payload=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF]
         )
 
 
-def set_pin(pin, payload, **kwargs):
+def set_pin(pin, payload):
     """
     Set the state of a pin and publish
     ``payload`` expects ``payload on`` or ``payload off``
@@ -295,7 +325,7 @@ def set_pin(pin, payload, **kwargs):
     get_pin(pin) # publish pin state
 
 
-def poll_all(**kwargs):
+def poll_all():
     """
     Polls all configured pins and publishes states
     """
