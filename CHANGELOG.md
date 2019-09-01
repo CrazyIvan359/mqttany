@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.3.4
+
+* __Changed__: GPIO message callbacks rewritten for effeciency gains and simplicity.
+* __Added__: GPIO `initial state` option to specify the state of the pin when the module is loaded. Fixes #5
+* __Fixed__: GPIO `set` payload as `bytes` not matching string `payload on`/`payload off`. Fixes #6
+* __Fixed__: Queues not being accessible to all modules. Fixes #6
+
 ## 0.3.3
 
 * __Fixed__: GPIO lock release causing process crashes
