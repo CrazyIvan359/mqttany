@@ -247,7 +247,7 @@ def callback_setter(client, userdata, message):
     """
     queue.put_nowait({
         "func": "_callback_setter",
-        "args": [message.topic, message.payload]
+        "args": [message.topic, message.payload.decode("utf-8")]
     })
 
 def _callback_setter(topic, payload):
