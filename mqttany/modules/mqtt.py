@@ -69,7 +69,7 @@ MQTT_MAX_RETRIES = 10
 
 config = {}
 hostname = socket.gethostname()
-queue = mproc.Queue()
+queue = None
 client = None
 retries = MQTT_MAX_RETRIES
 subscriptions = []

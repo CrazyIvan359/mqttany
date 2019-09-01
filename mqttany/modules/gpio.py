@@ -80,7 +80,7 @@ GPIO_PINS = []
 
 gpio = None
 config = {}
-queue = mproc.Queue()
+queue = None
 pins = {}
 polling_timer = None
 
