@@ -78,6 +78,7 @@ CONF_OPTIONS_PIN = {
 TEXT_NAME = __name__.split(".")[-1]
 TEXT_DIRECTION = {GPIO.IN: "input", GPIO.OUT: "output"}
 TEXT_RESISTOR = {GPIO.PUD_UP: "up", GPIO.PUD_DOWN: "down", GPIO.PUD_OFF: "off"}
+TEXT_INTERRUPT = {GPIO.RISING: "rising", GPIO.FALLING: "falling", GPIO.BOTH: "both", None: "none"}
 TEXT_LOGIC_STATE = ["LOW", "HIGH"]
 
 GPIO_PINS_RPI3 = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
@@ -158,7 +159,7 @@ def loop():
 
         if pins[pin][CONF_KEY_DIRECTION] == GPIO.IN and pins[pin][CONF_KEY_INTERRUPT] is not None:
             log.debug("Adding interrupt event for GPIO{pin} with edge trigger '{edge}'".format(
-                    pin=pin, edge=pins[pin][CONF_KEY_INTERRUPT]))
+                    pin=pin, edge=TEXT_INTERRUPT[pins[pin][CONF_KEY_INTERRUPT]]))
             gpio.add_event_detect(
                     pin,
                     pins[pin][CONF_KEY_INTERRUPT],
