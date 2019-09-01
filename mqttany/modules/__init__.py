@@ -123,11 +123,6 @@ def _validate_module(module):
         log.error("Module '{name}' has no function called 'loop'".format(name=module_name))
         valid = False
 
-    queue = getattr(module, ATTR_QUEUE, None)
-    if queue is None or not isinstance(queue, mproc.queues.Queue):
-        log.error("Module '{name}' has no Queue called 'queue'".format(name=module_name))
-        valid = False
-
     return valid
 
 
