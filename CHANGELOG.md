@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.3.5
+
+* __Fixed__: Remove module validation check for `queue` that should have been removed.
+* __Fixed__: GPIO interrupt log message print number instead of the word.
+
 ## 0.3.4
 
 * __Changed__: GPIO message callbacks rewritten for effeciency gains and simplicity.
