@@ -82,9 +82,7 @@ def load():
     for i in range(len(modules_loaded)):
         module = modules_loaded[i]
         module_name = module.__name__.split(".")[-1]
-        if _start_proc(module): # start subprocess
-            log.info("Process started for module '{name}'".format(name=module_name))
-        else:
+        if not _start_proc(module): # start subprocess
             log.error("Failed to start process for module '{name}'".format(name=module_name))
             continue
 
@@ -165,7 +163,7 @@ def _start_proc(module):
             log.error("  {}".format(err))
             return False
         else:
-            log.debug("Process started successfully for module '{name}'".format(name=module_name))
+            log.info("Process started successfully for module '{name}'".format(name=module_name))
             return True
 
 
