@@ -52,6 +52,7 @@ CONF_KEY_RETAIN = "retain"
 CONF_KEY_TOPIC_ROOT = "root topic"
 CONF_KEY_TOPIC_STATUS = "status topic"
 CONF_KEY_TOPIC_LWT = "lwt topic"
+
 CONF_OPTIONS = {
     CONF_KEY_HOST: {},
     CONF_KEY_PORT: {"type": int, "default": 1883},

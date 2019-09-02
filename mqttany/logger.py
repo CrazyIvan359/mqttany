@@ -36,6 +36,7 @@ _log_file = os.path.join(os.path.dirname(__file__), "log", "mqttany.log")
 _log_format = "%(asctime)s [%(levelname)-5s] [%(name)-24s] %(message)s"
 _log_format_debug = "%(asctime)s [%(levelname)-5s] [%(processName)-10s] [%(name)-24s] %(message)s"
 
+
 def _init_logger():
     """
     Creates the root logger for MQTTany
@@ -71,6 +72,7 @@ def get_logger(name="mqttany", level=None):
     logger.setLevel(level or logging.getLogger("mqttany").level)
     return logger
 
+
 def get_module_logger(module=None, level=None):
     """
     Returns a logger for a module
@@ -79,6 +81,7 @@ def get_module_logger(module=None, level=None):
         frm = inspect.stack()[1]
         module = inspect.getmodule(frm[0]).__name__.split(".")[-1]
     return get_logger("mqttany.{}".format(module), level)
+
 
 def set_level(level):
     """
@@ -91,6 +94,7 @@ def set_level(level):
     else:
         for handler in _log.handlers:
             handler.setFormatter(logging.Formatter(_log_format))
+
 
 def uninit():
     """

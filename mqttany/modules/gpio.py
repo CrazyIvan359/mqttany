@@ -52,6 +52,7 @@ CONF_KEY_INTERRUPT = "interrupt"
 CONF_KEY_RESISTOR = "resistor"
 CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
+
 CONF_OPTIONS = {
     CONF_KEY_TOPIC: {"default": "{module_name}"},
     CONF_KEY_TOPIC_SETTER: {"default": "set"},
