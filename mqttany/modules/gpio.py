@@ -246,9 +246,13 @@ def callback_setter(client, userdata, message):
 def _callback_setter(topic, payload):
     if config[CONF_KEY_TOPIC_SETTER]:
         topic = topic[:-len("/" + config[CONF_KEY_TOPIC_SETTER])]
-    for pin in pins:
-        if topic == pins[pin][CONF_KEY_TOPIC]:
+    matches = [pin for pin in pins if topic == pins[pin][CONF_KEY_TOPIC]]
+    if matches:
+        for pin in matches:
             set_pin(pin, payload)
+    else:
+        log.debug("Could not find any pin matches for SET on topic '{topic}'".format(
+                topic=topic))
 
 
 def callback_getter(client, userdata, message):
