@@ -27,7 +27,7 @@ MQTTany
 
 __version__ = "0.3.6"
 
-import signal, time, sys
+import signal, time, sys, argparse
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 
@@ -47,20 +47,30 @@ class GracefulKiller:
         self.kill_now = True
 
 
+def get_args():
+    """
+    Get arguments
+    """
+    parser = argparse.ArgumentParser(description="MQTTany allows you to connect things to MQTT")
+    parser.add_argument("-v", "--verbose", action="count", help="turn on debug logging")
+    parser.add_argument("config_file", nargs='?', default="/etc/mqttany.yml", metavar="CONFIG_FILE", help="path to configuration file (default '/etc/mqttany.yml')")
+    parser.add_argument("-V", "--version", action="version", version="MQTTany {}".format(__version__), help="show version and exit")
+    return parser.parse_args()
+
 
 if __name__ == '__main__':
+    args = get_args()
+    if args.verbose > 0:
+        logger.set_level(logger.DEBUG)
+
     mproc.current_process().name = "mqttany"
     killer = GracefulKiller()
     poison_pill = False
 
-    if len(sys.argv)>1 and sys.argv[1] == "-v":
-        logger.set_level(logger.DEBUG)
-
-    log.info("MQTTany starting")
-    log.info("Version: {version}".format(version=__version__))
+    log.info("MQTTany {version} starting".format(version=__version__))
 
     try:
-        if not modules.load(): exit(1)
+        if not modules.load(args.config_file): exit(1)
 
         while not killer.kill_now:
             try: # to get an item from the queue

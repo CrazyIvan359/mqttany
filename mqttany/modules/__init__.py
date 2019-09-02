@@ -47,11 +47,11 @@ modules_loaded = []
 module_queues = {}
 
 
-def load():
+def load(config_file):
     """
     Loads each module in ``modules_list`` and spawns a process for them
     """
-    config = load_config()
+    config = load_config(config_file)
 
     for module_name in [key for key in config if isinstance(config[key], dict)]:
         log.debug("Loading module '{name}'".format(name=module_name))

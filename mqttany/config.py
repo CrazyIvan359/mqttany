@@ -35,30 +35,30 @@ log = logger.get_logger()
 all = [ "load_config", "parse_config" ]
 
 
-def load_config(conf_file="/etc/mqttany.yml"):
+def load_config(config_file):
     """
     Reads configuration file and returns as dict
     """
     config = {}
 
-    # attempt to determine full path if conf_file is only a filename
-    if not os.path.isfile(conf_file):
+    # attempt to determine full path if config_file is only a filename
+    if not os.path.isfile(config_file):
         log.debug("Attempting to resolve config file location")
-        conf_file = os.path.expanduser(conf_file)
-        if os.path.isfile(os.path.abspath(conf_file)):
-            conf_file = os.path.abspath(conf_file)
-        elif os.path.isfile(os.path.join(os.getcwd(), conf_file)):
-            conf_file = os.path.join(os.getcwd(), conf_file)
+        config_file = os.path.expanduser(config_file)
+        if os.path.isfile(os.path.abspath(config_file)):
+            config_file = os.path.abspath(config_file)
+        elif os.path.isfile(os.path.join(os.getcwd(), config_file)):
+            config_file = os.path.join(os.getcwd(), config_file)
         else:
             log.debug("Unable to resolve config file location")
-            conf_file = None
+            config_file = None
 
-    if conf_file:
+    if config_file:
         log.debug("Loading config")
-        with open(conf_file) as fh:
+        with open(config_file) as fh:
             config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)
     else:
-        log.error("Config file does not exist: {path}".format(conf_file))
+        log.error("Config file does not exist: {path}".format(config_file))
 
     return config
 
