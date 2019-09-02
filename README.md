@@ -6,6 +6,21 @@ See the list of modules below, and their configuration files for details.
 
 <br>
 
+**Note**
+
+If you are using Python version older than `2.7.14` or `3.5.4` you may see
+errors like the one shown below. This is a Python bug that can be fixed by
+upgrading to Python `2.7.14` or higher, or Python `3.5.4` or higher.
+
+```none
+Exception ignored in: <function WeakValueDictionary.__init__.<locals>.remove at 0x7fc874a876a8>
+Traceback (most recent call last):
+File "/usr/lib/python3.5/weakref.py", line 117, in remove
+TypeError: 'NoneType' object is not callable
+```
+
+<br>
+
 ## Launching
 
 You must install all requirements first, this can be done with this command:
@@ -25,8 +40,6 @@ Starting MQTTany:
 ```sh
 python3 mqttany.py
 ```
-
-You can add `-v` option to enable debug logging
 
 <br>
 
