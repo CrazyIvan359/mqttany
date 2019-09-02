@@ -178,9 +178,14 @@ def pre_loop():
                         "pin": pin
                     }
                 )
-            log.debug("Setting GPIO{pin} to initial state '{initial_state}'".format(
-                    pin=pin, initial_state=pins[pin][CONF_KEY_INITIAL]))
-            set_pin(pin, pins[pin][CONF_KEY_INITIAL])
+            if pins[pin][CONF_KEY_INITIAL] in [config[CONF_KEY_PAYLOAD_ON], config[CONF_KEY_PAYLOAD_OFF]]:
+                log.debug("Setting GPIO{pin} to initial state '{state}'".format(
+                        pin=pin, state=pins[pin][CONF_KEY_INITIAL]))
+                set_pin(pin, pins[pin][CONF_KEY_INITIAL])
+            else:
+                log.warn("Invalid initial state '{initial_state}' for GPIO{pin}, setting pin to {state}".format(
+                        initial_state=pins[pin][CONF_KEY_INITIAL], pin=pin, state=config[CONF_KEY_PAYLOAD_OFF]))
+                set_pin(pin, config[CONF_KEY_PAYLOAD_OFF])
 
         subscribe(
                 pins[pin][CONF_KEY_TOPIC] + "/{getter}",
