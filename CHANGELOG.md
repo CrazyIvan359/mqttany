@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.3.7
+
+* __Added__: Command line argument parsing.
+* __Added__: Configuration file can now be specified as a command line argument.
+
 ## 0.3.6
 
 * __Added__: GPIO log entry if no pins match topic for SET.
