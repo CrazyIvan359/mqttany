@@ -39,7 +39,6 @@ from modules.mqtt import resolve_topic, publish, subscribe, add_message_callback
 
 all = [  ]
 
-CONF_FILE = "gpio.conf"
 CONF_KEY_TOPIC = "topic"
 CONF_KEY_TOPIC_SETTER = "topic set"
 CONF_KEY_TOPIC_GETTER = "topic get"

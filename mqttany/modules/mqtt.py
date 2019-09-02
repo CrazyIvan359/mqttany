@@ -42,7 +42,6 @@ all = [
     "register_on_connect_callback", "register_on_disconnect_callback"
 ]
 
-CONF_FILE = "mqtt.conf"
 CONF_KEY_HOST = "host"
 CONF_KEY_PORT = "port"
 CONF_KEY_CLIENTID = "client id"
