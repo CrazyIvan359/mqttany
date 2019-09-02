@@ -25,6 +25,7 @@ Configuration Loader
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
 from ast import literal_eval
 import yaml, yamlloader
 
@@ -38,9 +39,25 @@ def load_config(conf_file="/etc/mqttany.yml"):
     """
     Reads configuration file and returns as dict
     """
-    log.debug("Loading config")
-    with open(conf_file) as fh:
-        config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)
+    config = {}
+
+    # attempt to determine full path if conf_file is only a filename
+    if not os.path.isfile(conf_file):
+        conf_file = os.path.expanduser(conf_file)
+        if os.path.isfile(os.path.abspath(conf_file)):
+            conf_file = os.path.abspath(conf_file)
+        elif os.path.isfile(os.path.join(os.getcwd(), conf_file)):
+            conf_file = os.path.join(os.getcwd(), conf_file)
+        else:
+            conf_file = None
+
+    if conf_file:
+        log.debug("Loading config")
+        with open(conf_file) as fh:
+            config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)
+    else:
+        log.error("Config file does not exist: {path}".format(conf_file))
+
     return config
 
 
