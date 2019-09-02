@@ -25,9 +25,10 @@ Module Loader
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import sys
+import time, sys
 from importlib import import_module
 import multiprocessing as mproc
+from queue import Empty as QueueEmptyError
 
 import logger
 log = logger.get_logger()
@@ -38,8 +39,8 @@ all = [ "load", "unload" ]
 
 ATTR_INIT = "init"
 ATTR_UNINIT = "uninit"
-ATTR_LOOP = "loop"
-ATTR_STOP = "stop"
+ATTR_PRE_LOOP = "pre_loop"
+ATTR_POST_LOOP = "post_loop"
 ATTR_QUEUE = "queue"
 
 modules_loaded = []
@@ -56,19 +57,18 @@ def load():
         log.debug("Loading module '{name}'".format(name=module_name))
         try:
             module = import_module("modules.{}".format(module_name))
+
         except ImportError as err:
             log.error("Failed to import module '{name}'".format(name=module_name))
             log.error("  {error}".format(error=err))
             log.error("Module '{name}' was not loaded".format(name=module_name))
+
         except ImportWarning as err:
             log.warn("Warnings occured when importing module '{name}'".format(name=module_name))
             log.warn("  {error}".format(error=err))
             log.error("Module '{name}' was not loaded".format(name=module_name))
-        else:
-            if not _validate_module(module):
-                log.error("Module '{name}' is not valid, skipping".format(name=module_name))
-                continue
 
+        else:
             module_queues[module_name] = mproc.Queue()
             sys.modules[module.__name__].queue = module_queues[module_name]
 
@@ -103,29 +103,6 @@ def unload():
             log.info("Module '{name}' unloaded".format(name=module_name))
 
 
-def _validate_module(module):
-    """
-    Confirms that a module has all required functions
-    """
-    module_name = module.__name__.split(".")[-1]
-    valid = True
-
-    init = getattr(module, ATTR_INIT, None)
-    if init is None or not callable(init):
-        log.debug("Module '{name}' has no function called 'init'".format(name=module_name))
-
-    uninit = getattr(module, ATTR_UNINIT, None)
-    if uninit is None or not callable(uninit):
-        log.debug("Module '{name}' has no function called 'uninit'".format(name=module_name))
-
-    loop = getattr(module, ATTR_LOOP, None)
-    if loop is None or not callable(loop):
-        log.error("Module '{name}' has no function called 'loop'".format(name=module_name))
-        valid = False
-
-    return valid
-
-
 def _call_func(module, name, **kwargs):
     """
     Calls ``name`` if define in ``module``
@@ -143,7 +120,7 @@ def _start_proc(module):
     module_name = module.__name__.split(".")[-1]
     try:
         log.debug("Creating process for '{name}'".format(name=module_name))
-        module.process = mproc.Process(target=getattr(module, ATTR_LOOP), name=module.__name__)
+        module.process = mproc.Process(name=module_name, target=_proc_loop, args=(module,), daemon=False)
     except Exception as err:
         log.error("Failed to create process for module '{name}'".format(name=module_name))
         log.error("  {}".format(err))
@@ -160,6 +137,31 @@ def _start_proc(module):
         else:
             log.info("Process started successfully for module '{name}'".format(name=module_name))
             return True
+
+
+def _proc_loop(module):
+
+    _call_func(module, ATTR_PRE_LOOP)
+
+    poison_pill = False
+    while not poison_pill:
+        try:
+            message = module.queue.get_nowait()
+        except QueueEmptyError:
+            time.sleep(0.025) # 25ms
+        else:
+            if message == POISON_PILL:
+                poison_pill = True # terminate signal
+                module.log.debug("Received poison pill")
+            else:
+                module.log.debug("Received message [{message}]".format(message=message))
+                func = getattr(module, message["func"])
+                if func:
+                    func(*message.get("args", []), **message.get("kwargs", {}))
+                else:
+                    module.log.warn("Unrecognized function '{func}'".format(func=message["func"]))
+
+    _call_func(module, ATTR_POST_LOOP)
 
 
 def _stop_proc(module):

@@ -26,9 +26,8 @@ GPIO Module
 # SOFTWARE.
 
 import time, os, sys
-from threading import Timer, ThreadError
+from threading import Timer
 import multiprocessing as mproc
-from queue import Empty as QueueEmptyError
 from Adafruit_GPIO import GPIO, Platform
 
 import logger
@@ -140,9 +139,9 @@ def init(config_data={}):
         log.error("Error loading config")
         return False
 
-def loop():
+def pre_loop():
     """
-    Main function loops until it gets 'poison pill'
+    Actions to be done in the subprocess before the loop starts
     """
     log.debug("Setting up hardware")
     for pin in pins:
@@ -215,31 +214,19 @@ def loop():
     log.debug("Publishing initial pin states")
     poll_all()
 
-    poison_pill = False
-    while not poison_pill:
-        try:
-            message = queue.get_nowait()
-        except QueueEmptyError:
-            time.sleep(0.025) # 25ms
-        else:
-            if message == POISON_PILL:
-                poison_pill = True # terminate signal
-                log.debug("Received poison pill")
-            else:
-                log.debug("Received message [{message}]".format(message=message))
-                func = getattr(sys.modules[__name__], message["func"])
-                if func:
-                    func(*message.get("args", []), **message.get("kwargs", {}))
-                else:
-                    log.warn("Unrecognized function '{func}'".format(func=message["func"]))
 
+def post_loop():
+    """
+    Actions to be done in the subprocess after the loop is exited
+    """
     if config[CONF_KEY_POLL_INT] > 0:
         log.debug("Stopping polling timer")
         polling_timer.cancel()
 
-    gpio.cleanup()
     for pin in pins:
         release_gpio_lock(pin, TEXT_NAME)
+
+    gpio.cleanup()
 
 
 def callback_setter(client, userdata, message):

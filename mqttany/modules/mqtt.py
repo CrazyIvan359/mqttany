@@ -100,9 +100,9 @@ def init(config_data={}):
         return False
 
 
-def loop():
+def pre_loop():
     """
-    Main function loops until it gets 'poison pill'
+    Actions to be done in the subprocess before the loop starts
     """
     global client
     log.debug("Creating MQTT client")
@@ -138,27 +138,14 @@ def loop():
             keepalive=15
         )
 
-    log.debug("Starting MQTT client loop")
+    log.debug("Starting MQTT client thread")
     client.loop_start()
 
-    poison_pill = False
-    while not poison_pill:
-        try:
-            message = queue.get_nowait()
-        except QueueEmptyError:
-            time.sleep(0.025) # 25ms
-        else:
-            if message == POISON_PILL:
-                poison_pill = True # terminate signal
-                log.debug("Received poison pill")
-            else:
-                log.debug("Received message [{message}]".format(message=message))
-                func = getattr(sys.modules[__name__], message["func"])
-                if func:
-                    func(*message["args"], **message["kwargs"])
-                else:
-                    log.warn("Unrecognized function '{func}'".format(func=message["func"]))
 
+def post_loop():
+    """
+    Actions to be done in the subprocess after the loop is exited
+    """
     log.debug("Disconnecting")
     discon_msg = client.publish(
             topic=resolve_topic(config[CONF_KEY_TOPIC_LWT]),
