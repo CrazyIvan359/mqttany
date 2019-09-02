@@ -298,8 +298,9 @@ def get_pin(pin):
     Read the state from a pin and publish
     """
     state = bool(gpio.input(pin)) ^ pins[pin][CONF_KEY_INVERT] # apply the invert flag
-    log.debug("Read state '{state}' from GPIO{pin}".format(
-        state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF], pin=pin))
+    log.debug("Read state '{state}' logic {logic} from GPIO{pin}".format(
+        state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
+        logic=TEXT_LOGIC_STATE[int(state)], pin=pin))
     publish(
             pins[pin][CONF_KEY_TOPIC],
             payload=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF]
@@ -321,8 +322,8 @@ def set_pin(pin, payload):
         return
 
     gpio.output(pin, state ^ pins[pin][CONF_KEY_INVERT])
-    log.debug("Set GPIO{pin} to '{payload}' logic {state}".format(
-        pin=pin, payload=payload, state=TEXT_LOGIC_STATE[int(state)]))
+    log.debug("Set GPIO{pin} to '{state}' logic {logic}".format(
+        pin=pin, state=payload, logic=TEXT_LOGIC_STATE[int(state)]))
     get_pin(pin) # publish pin state
 
 
