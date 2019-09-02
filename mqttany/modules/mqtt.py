@@ -31,7 +31,7 @@ from queue import Empty as QueueEmptyError
 import paho.mqtt.client as mqtt
 
 from mqttany import logger
-log = logger.get_logger("mqtt")
+log = logger.get_module_logger()
 from mqttany import queue as main_queue
 from config import parse_config
 from common import POISON_PILL
@@ -128,7 +128,7 @@ def pre_loop():
     client._on_connect = _on_connect
     client.on_disconnect = on_disconnect
     client.on_message = on_message # called for messages without a specfic subscriber
-    client.enable_logger(logger=logger.get_logger("mqtt.client"))
+    client.enable_logger(logger=logger.get_logger("{}.client".format(log.name)))
 
     log.debug("Queuing connect event")
     client.connect_async(

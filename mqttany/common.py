@@ -29,7 +29,7 @@ import time, ctypes
 import multiprocessing as mproc
 
 from mqttany import logger
-log = logger.get_logger("mqttany")
+log = logger.get_logger()
 
 all = [
     "POISON_PILL",

@@ -31,7 +31,7 @@ import multiprocessing as mproc
 from Adafruit_GPIO import GPIO, Platform
 
 import logger
-log = logger.get_logger("gpio")
+log = logger.get_module_logger()
 from config import parse_config
 from common import POISON_PILL, acquire_gpio_lock, release_gpio_lock
 

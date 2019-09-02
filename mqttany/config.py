@@ -30,7 +30,7 @@ from ast import literal_eval
 import yaml, yamlloader
 
 import logger
-log = logger.get_logger("config")
+log = logger.get_logger()
 
 all = [ "load_config", "parse_config" ]
 
@@ -43,12 +43,14 @@ def load_config(conf_file="/etc/mqttany.yml"):
 
     # attempt to determine full path if conf_file is only a filename
     if not os.path.isfile(conf_file):
+        log.debug("Attempting to resolve config file location")
         conf_file = os.path.expanduser(conf_file)
         if os.path.isfile(os.path.abspath(conf_file)):
             conf_file = os.path.abspath(conf_file)
         elif os.path.isfile(os.path.join(os.getcwd(), conf_file)):
             conf_file = os.path.join(os.getcwd(), conf_file)
         else:
+            log.debug("Unable to resolve config file location")
             conf_file = None
 
     if conf_file:

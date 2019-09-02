@@ -25,7 +25,7 @@ Logger
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os, errno
+import os, errno, inspect
 import logging
 from logging import handlers
 from logging import DEBUG, INFO, WARN, ERROR
@@ -63,13 +63,22 @@ def _init_logger():
 _log = _init_logger()
 
 
-def get_logger(name=None, level=None):
+def get_logger(name="mqttany", level=None):
     """
     Returns a logger
     """
-    logger = logging.getLogger("mqttany{}".format(".{}".format(name) if name else ""))
+    logger = logging.getLogger(name)
     logger.setLevel(level or logging.getLogger("mqttany").level)
     return logger
+
+def get_module_logger(module=None, level=None):
+    """
+    Returns a logger for a module
+    """
+    if module is None:
+        frm = inspect.stack()[1]
+        module = inspect.getmodule(frm[0]).__name__.split(".")[-1]
+    return get_logger("mqttany.{}".format(module), level)
 
 def set_level(level):
     """
