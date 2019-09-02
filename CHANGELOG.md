@@ -1,5 +1,16 @@
 # Change Log
 
+## 0.3.6
+
+* __Added__: GPIO log entry if no pins match topic for SET.
+* __Added__: Example module.
+* __Added__: Logging automatically gets module name, call `logger.get_module_logger` with no args.
+* __Fixed__: GPIO if `initial state` is not `payload on` or `payload off`, pin will be set to `payload off` and a warning displayed.
+* __Added__: Config file verfication and path expansion.
+* __Added__: Debug logging now shows process name.
+* __Changed__: Subprocess loop moved to `modules.__init__.py`.
+* __Fixed__: 2 things in GPIO??
+
 ## 0.3.5
 
 * __Fixed__: Remove module validation check for `queue` that should have been removed.
