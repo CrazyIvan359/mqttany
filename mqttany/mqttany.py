@@ -53,7 +53,7 @@ def get_args():
     """
     parser = argparse.ArgumentParser(description="MQTTany allows you to connect things to MQTT")
     parser.add_argument("-v", "--verbose", action="count", help="turn on debug logging")
-    parser.add_argument("config_file", nargs='?', default="/etc/mqttany.yml", metavar="CONFIG_FILE", help="path to configuration file (default '/etc/mqttany.yml')")
+    parser.add_argument("config_file", nargs='?', default="/etc/mqttany/mqttany.yml", metavar="CONFIG_FILE", help="path to configuration file (default '/etc/mqttany/mqttany.yml')")
     parser.add_argument("-V", "--version", action="version", version="MQTTany {}".format(__version__), help="show version and exit")
     return parser.parse_args()
 
