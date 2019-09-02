@@ -49,7 +49,7 @@ def _init_logger():
             os.makedirs(os.path.dirname(_log_file))
         except OSError as err:
             if err.errno != errno.EEXIST: raise
-    handler_file = handlers.RotatingFileHandler(_log_file, maxBytes=5368709120, backupCount=5)
+    handler_file = handlers.RotatingFileHandler(_log_file, maxBytes=5242880, backupCount=5)
     handler_file.setFormatter(logging.Formatter(_log_format))
     log.addHandler(handler_file)
 
