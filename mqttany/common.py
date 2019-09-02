@@ -25,7 +25,8 @@ Common
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time, ctypes
+import time
+from ctypes import c_char_p
 import multiprocessing as mproc
 
 from mqttany import logger
@@ -39,54 +40,54 @@ all = [
 POISON_PILL = {"stop": True}
 
 _gpio_lock = [ # GPIO pin locks
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 0
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 1
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 2
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 3
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 4
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 5
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 6
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 7
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 8
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 9
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 10
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 11
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 12
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 13
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 14
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 15
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 16
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 17
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 18
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 19
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 20
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 21
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 22
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 23
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 24
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 25
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 26
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 27
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 28
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 29
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 30
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 31
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 32
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 33
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 34
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 35
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 36
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 37
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 38
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 39
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 40
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 41
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 42
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 43
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 44
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 45
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 46
-    {"lock": mproc.Lock(), "module": mproc.Array(ctypes.c_char_p, 16)}, # Pin 47
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 0
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 1
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 2
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 3
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 4
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 5
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 6
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 7
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 8
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 9
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 10
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 11
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 12
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 13
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 14
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 15
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 16
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 17
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 18
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 19
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 20
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 21
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 22
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 23
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 24
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 25
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 26
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 27
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 28
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 29
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 30
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 31
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 32
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 33
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 34
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 35
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 36
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 37
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 38
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 39
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 40
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 41
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 42
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 43
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 44
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 45
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 46
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 47
 ]
 
 
@@ -108,7 +109,7 @@ def acquire_gpio_lock(pin, module, timeout=0):
         _gpio_lock[pin]["module"].raw = module
         return True
 
-    log.warn("Module '{module}' attempted to acquire a lock on GPIO{pin} but '{owner}' already has a lock on it".format(
+    log.warn("Module '{module}' failed to acquire a lock on GPIO{pin} because '{owner}' already has a lock on it".format(
             module=module, pin=pin, owner=_gpio_lock[pin]["module"].raw))
     return False
 
@@ -121,7 +122,6 @@ def release_gpio_lock(pin, module):
         # prevent releasing a lock a module doesn't have
         if _gpio_lock[pin]["module"].raw == module:
             _gpio_lock[pin]["lock"].release()
-            _gpio_lock[pin]["module"].raw = ""
         else:
             log.warn("Module '{module}' attempted to release a lock on GPIO{pin} but it is locked by '{owner}'".format(
                 module=module, pin=pin, owner=_gpio_lock[pin]["module"].raw))
