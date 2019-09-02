@@ -49,6 +49,7 @@ class GracefulKiller:
 
 
 if __name__ == '__main__':
+    mproc.current_process().name = "mqttany"
     killer = GracefulKiller()
     poison_pill = False
 

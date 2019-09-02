@@ -34,6 +34,7 @@ all = [ "get_logger", "set_level", "uninit" ]
 
 _log_file = os.path.join(os.path.dirname(__file__), "log", "mqttany.log")
 _log_format = "%(asctime)s [%(levelname)-5s] [%(name)-24s] %(message)s"
+_log_format_debug = "%(asctime)s [%(levelname)-5s] [%(processName)-10s] [%(name)-24s] %(message)s"
 
 def _init_logger():
     """
@@ -75,6 +76,12 @@ def set_level(level):
     Sets logging level to level
     """
     _log.setLevel(level)
+    if level == DEBUG:
+        for handler in _log.handlers:
+            handler.setFormatter(logging.Formatter(_log_format_debug))
+    else:
+        for handler in _log.handlers:
+            handler.setFormatter(logging.Formatter(_log_format))
 
 def uninit():
     """
