@@ -34,7 +34,7 @@ all = [ "get_logger", "set_level", "log_traceback", "uninit" ]
 
 _log_file = os.path.join(os.path.dirname(__file__), "log", "mqttany.log")
 _log_format = "%(asctime)s [%(levelname)-5s] [%(name)-24s] %(message)s"
-_log_format_debug = "%(asctime)s [%(levelname)-5s] [%(processName)-10s] [%(name)-24s] %(message)s"
+_log_format_debug = "%(asctime)s [%(levelname)-5s] [%(processName)-8s] [%(name)-24s] %(message)s"
 
 
 def _init_logger():
@@ -108,7 +108,6 @@ def uninit():
     """
     Flushes and closes all log handlers
     """
-    _log.handler_file.flush()
-    _log.handler_file.close()
-    _log.handler_stdout.flush()
-    _log.handler_stdout.close()
+    for handler in _log.handlers:
+        handler.flush()
+        handler.close()
