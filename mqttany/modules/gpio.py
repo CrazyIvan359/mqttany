@@ -32,6 +32,7 @@ from Adafruit_GPIO import GPIO, Platform
 
 import logger
 log = logger.get_module_logger()
+from logger import log_traceback
 from config import parse_config
 from common import POISON_PILL, acquire_gpio_lock, release_gpio_lock
 
@@ -154,7 +155,14 @@ def pre_loop():
             pins.pop(pin)
             continue
 
-        gpio.setup(pin, pins[pin][CONF_KEY_DIRECTION], pull_up_down=pins[pin][CONF_KEY_RESISTOR])
+        try:
+            gpio.setup(pin, pins[pin][CONF_KEY_DIRECTION], pull_up_down=pins[pin][CONF_KEY_RESISTOR])
+        except:
+            log.error("An exception occurred while setting up GPIO{pin}".format(pin=pin))
+            log_traceback(log)
+            release_gpio_lock(pin, TEXT_NAME)
+            pins.pop(pin)
+            continue
 
         if pins[pin][CONF_KEY_DIRECTION] == GPIO.IN and pins[pin][CONF_KEY_INTERRUPT] is not None:
             log.debug("Adding interrupt event for GPIO{pin} with edge trigger '{edge}'".format(
@@ -293,14 +301,19 @@ def get_pin(pin):
     """
     Read the state from a pin and publish
     """
-    state = bool(gpio.input(pin)) ^ pins[pin][CONF_KEY_INVERT] # apply the invert flag
-    log.debug("Read state '{state}' logic {logic} from GPIO{pin}".format(
-        state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
-        logic=TEXT_LOGIC_STATE[int(state)], pin=pin))
-    publish(
-            pins[pin][CONF_KEY_TOPIC],
-            payload=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF]
-        )
+    try:
+        state = bool(gpio.input(pin)) ^ pins[pin][CONF_KEY_INVERT] # apply the invert flag
+    except:
+        log.error("An exception occurred while reading GPIO{pin}".format(pin=pin))
+        log_traceback(log)
+    else:
+        log.debug("Read state '{state}' logic {logic} from GPIO{pin}".format(
+            state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
+            logic=TEXT_LOGIC_STATE[int(state)], pin=pin))
+        publish(
+                pins[pin][CONF_KEY_TOPIC],
+                payload=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF]
+            )
 
 
 def set_pin(pin, payload):
@@ -317,10 +330,15 @@ def set_pin(pin, payload):
                 payload=payload, pin=pin))
         return
 
-    gpio.output(pin, state ^ pins[pin][CONF_KEY_INVERT])
-    log.debug("Set GPIO{pin} to '{state}' logic {logic}".format(
-        pin=pin, state=payload, logic=TEXT_LOGIC_STATE[int(state)]))
-    get_pin(pin) # publish pin state
+    try:
+        gpio.output(pin, state ^ pins[pin][CONF_KEY_INVERT])
+    except:
+        log.error("An exception occurred while setting GPIO{pin}".format(pin=pin))
+        log_traceback(log)
+    else:
+        log.debug("Set GPIO{pin} to '{state}' logic {logic}".format(
+            pin=pin, state=payload, logic=TEXT_LOGIC_STATE[int(state)]))
+        get_pin(pin) # publish pin state
 
 
 def poll_all():

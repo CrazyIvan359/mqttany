@@ -30,8 +30,9 @@ import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 import paho.mqtt.client as mqtt
 
-from mqttany import logger
+import logger
 log = logger.get_module_logger()
+from logger import log_traceback
 from mqttany import queue as main_queue
 from config import parse_config
 from common import POISON_PILL
@@ -376,7 +377,12 @@ def _on_connect(client, userdata, flags, rc):
         for sub in subscriptions:
             subscribe(**sub)
         for callback in on_connect_callbacks:
-            callback["func"](*callback.get("args", []), **callback.get("kwargs", {}))
+            try:
+                callback["func"](*callback.get("args", []), **callback.get("kwargs", {}))
+            except:
+                log.error("An exception occurred while running on-connect callback '{func}'".format(
+                        func=getattr(callback["func"], "__name__", default=callback["func"])))
+                log_traceback(log)
 
     elif rc == 1: # refused: incorrect mqtt protocol version
         log.error("Connection refused: broker uses a different MQTT protocol version")
@@ -417,7 +423,12 @@ def on_disconnect(client, userdata, rc):
     Gets called when the client disconnects from the broker
     """
     for callback in on_disconnect_callbacks:
-        callback["func"](*callback.get("args", []), **callback.get("kwargs", {}))
+        try:
+            callback["func"](*callback.get("args", []), **callback.get("kwargs", {}))
+        except:
+            log.error("An exception occurred while running on-disconnect callback '{func}'".format(
+                    func=getattr(callback["func"], "__name__", default=callback["func"])))
+            log_traceback(log)
 
 def on_message(client, userdata, message):
     """

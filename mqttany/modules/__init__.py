@@ -32,6 +32,7 @@ from queue import Empty as QueueEmptyError
 
 import logger
 log = logger.get_logger()
+from logger import log_traceback
 from config import load_config
 from common import POISON_PILL
 
@@ -110,7 +111,14 @@ def _call_func(module, name, **kwargs):
     func = getattr(module, name, None)
     if func is not None:
         if callable(func):
-            return func(**kwargs)
+            try:
+                retval = func(**kwargs)
+            except:
+                log.error("An exception occurred while running function '{func}'".format(func=getattr(func, "__name__", default=func)))
+                log_traceback(log)
+                retval = False
+            finally:
+                return retval
 
 
 def _start_proc(module):
@@ -157,7 +165,12 @@ def _proc_loop(module):
                 module.log.debug("Received message [{message}]".format(message=message))
                 func = getattr(module, message["func"])
                 if callable(func):
-                    func(*message.get("args", []), **message.get("kwargs", {}))
+                    try:
+                        func(*message.get("args", []), **message.get("kwargs", {}))
+                    except:
+                        log.error("An exception occurred while running function '{func}'".format(func=message.get("func", None)))
+                        log_traceback(module.log)
+
                 else:
                     module.log.warn("Unrecognized function '{func}'".format(func=message["func"]))
 

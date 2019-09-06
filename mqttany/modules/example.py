@@ -27,6 +27,7 @@ Example Module
 
 import logger
 log = logger.get_module_logger()
+from logger import log_traceback
 from config import parse_config
 
 from modules.mqtt import resolve_topic, publish, subscribe, add_message_callback
@@ -151,3 +152,18 @@ def message_callback(client, userdata, message):
             "payload": message.payload.decode("utf-8")
         }
     })
+
+
+def dangerous_method():
+    """
+    When doing things that might cause a crash you can wrap them in a
+    try/except and use ``log_traceback`` if something goes wrong. Each modules'
+    subprocess will call the functions in the queue like this, but if you
+    catch in the module you can potentially provide clearer logs about what
+    went wrong.
+    """
+    try:
+        assert False
+    except:
+        log.error("Something went terribly wrong!")
+        log_traceback(log)

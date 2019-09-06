@@ -25,12 +25,12 @@ Logger
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os, errno, inspect
+import os, sys, errno, inspect, traceback
 import logging
 from logging import handlers
 from logging import DEBUG, INFO, WARN, ERROR
 
-all = [ "get_logger", "set_level", "uninit" ]
+all = [ "get_logger", "set_level", "log_traceback", "uninit" ]
 
 _log_file = os.path.join(os.path.dirname(__file__), "log", "mqttany.log")
 _log_format = "%(asctime)s [%(levelname)-5s] [%(name)-24s] %(message)s"
@@ -94,6 +94,14 @@ def set_level(level):
     else:
         for handler in _log.handlers:
             handler.setFormatter(logging.Formatter(_log_format))
+
+
+def log_traceback(log, limit=None):
+    """
+    Print a traceback to the log
+    """
+    for line in traceback.format_exception(*sys.exc_info(), limit=limit):
+        log.error(line)
 
 
 def uninit():
