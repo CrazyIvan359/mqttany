@@ -110,13 +110,13 @@ def _call_func(module, name, **kwargs):
     """
     func = getattr(module, name, None)
     if func is not None:
+        retval = False
         if callable(func):
             try:
                 retval = func(**kwargs)
             except:
-                log.error("An exception occurred while running function '{func}'".format(func=getattr(func, "__name__", default=func)))
+                log.error("An exception occurred while running function '{func}'".format(func=getattr(func, "__name__", func)))
                 log_traceback(log)
-                retval = False
             finally:
                 return retval
 
@@ -170,7 +170,6 @@ def _proc_loop(module):
                     except:
                         log.error("An exception occurred while running function '{func}'".format(func=message.get("func", None)))
                         log_traceback(module.log)
-
                 else:
                     module.log.warn("Unrecognized function '{func}'".format(func=message["func"]))
 
