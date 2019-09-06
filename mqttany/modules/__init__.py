@@ -156,7 +156,7 @@ def _proc_loop(module):
             else:
                 module.log.debug("Received message [{message}]".format(message=message))
                 func = getattr(module, message["func"])
-                if func:
+                if callable(func):
                     func(*message.get("args", []), **message.get("kwargs", {}))
                 else:
                     module.log.warn("Unrecognized function '{func}'".format(func=message["func"]))
