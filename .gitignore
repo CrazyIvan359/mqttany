@@ -1,6 +1,8 @@
 # MQTTany instance files
 mqttany/log
 
+# VSCode settings
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
