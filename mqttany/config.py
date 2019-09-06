@@ -25,7 +25,7 @@ Configuration Loader
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
+import os, re
 from ast import literal_eval
 import yaml, yamlloader
 
@@ -68,66 +68,81 @@ def parse_config(data, options, log=log):
     Parse and validate config and values
     """
     def parse_dict(data, options):
+        def process_option(name, value, option):
+            if name not in data and option.get("type", None) == "section":
+                if option.get("required", True):
+                    log.error("No section in config named '{section}'".format(section=name))
+                    return False
+                #else:
+                #    log.debug("No section in config named '{section}'".format(section=name))
+
+            elif isinstance(data.get(name, None), dict):
+                section_valid, section_config = parse_dict(data[name], option)
+                if not section_valid and option.get("required", True):
+                    log.error("Required section '{section}' is not valid".format(section=name))
+                    return False
+                elif not section_valid:
+                    log.warn("Optional section '{section}' is not valid, it will be ignored".format(section=name))
+                else:
+                    config[name] = section_config
+
+            else:
+                if value == "**NO DATA**" and "default" not in option:
+                    log.error("Missing config option '{option}'".format(option=name))
+                    return False
+                elif value == "**NO DATA**":
+                    value = option["default"]
+                    log.debug("Using default value '{value}' for config option '{option}'".format(
+                            value=value, option=name))
+                    config[name] = value
+                else:
+                    if "type" in option:
+                        if not isinstance(value, option["type"]):
+                            value = resolve_type(value)
+                        if not isinstance(value, option["type"]):
+                            try:
+                                value = option["type"](value)
+                            except: pass
+
+                        if isinstance(value, option.get("type", type(value))):
+                            log.debug("Got value '{value}' for config option '{option}'".format(
+                                    value="*"*len(value) if "pass" in name.lower() else value, option=name))
+                            config[name] = value
+                        else:
+                            log.error("Value '{value}' for config option '{option}' is not type '{type}'".format(
+                                    value=value, option=name, type=option["type"]))
+                            return False
+
+                    elif "selection" in option:
+                        if str(value).lower() in option["selection"]:
+                            log.debug("Got selection '{value}' for config option '{option}'".format(
+                                    value=value, option=name))
+                            if isinstance(option["selection"], dict):
+                                config[name] = option["selection"][str(value).lower()]
+                        else:
+                            log.error("Value '{value}' for config option '{option}' is not one of [{selections}]".format(
+                                    value=value, option=name, selections=[key for key in option["selection"]]))
+                            return False
+
+                    else:
+                        log.debug("Got value '{value}' for config option '{option}'".format(
+                                value="*"*len(value) if "pass" in name.lower() else value, option=name))
+                        config[name] = value
+            return True
+
         valid = True
         config = {}
         for key in options:
             if not isinstance(options[key], dict):
                 continue # 'required' option, skip
 
-            if key not in data and options[key].get("type", None) == "section":
-                if options[key].get("required", True):
-                    log.error("No section in config named '{section}'".format(section=key))
-                    valid = False
-                #else:
-                #    log.debug("No section in config named '{section}'".format(section=key))
-
-            elif isinstance(data.get(key, None), dict):
-                section_valid, config[key] = parse_dict(data[key], options[key])
-                valid = valid and section_valid
+            if str(key).split(":", 1)[0] == "regex":
+                for data_key in data:
+                    match = re.match(str(key).split(":", 1)[-1], data_key)
+                    if match.match == data_key:
+                        valid = valid and process_option(data_key, data.pop(data_key, "**NO DATA**"), options[key])
             else:
-                value = data.get(key, "**NO DATA**")
-                if value == "**NO DATA**" and "default" not in options[key]:
-                    log.error("Missing config option '{option}'".format(option=key))
-                    valid = False
-                elif value == "**NO DATA**":
-                    value = options[key]["default"]
-                    log.debug("Using default value '{value}' for config option '{option}'".format(
-                            value=value, option=key))
-                    config[key] = value
-                else:
-                    if "type" in options[key]:
-                        if not isinstance(value, options[key]["type"]):
-                            value = resolve_type(value)
-                        if not isinstance(value, options[key]["type"]):
-                            try:
-                                value = options[key]["type"](value)
-                            except: pass
-
-                        if isinstance(value, options[key].get("type", type(value))):
-                            log.debug("Got value '{value}' for config option '{option}'".format(
-                                    value="*"*len(value) if "pass" in key.lower() else value, option=key))
-                            config[key] = value
-                        else:
-                            log.error("Value '{value}' for config option '{option}' is not type '{type}'".format(
-                                    value=value, option=key, type=options[key]["type"]))
-                            valid = False
-
-                    elif "selection" in options[key]:
-                        if str(value).lower() in options[key]["selection"]:
-                            log.debug("Got selection '{value}' for config option '{option}'".format(
-                                    value=value, option=key))
-                            if isinstance(options[key]["selection"], dict):
-                                config[key] = options[key]["selection"][str(value).lower()]
-                        else:
-                            log.error("Value '{value}' for config option '{option}' is not one of [{selections}]".format(
-                                    value=value, option=key, selections=[key for key in options[key]["selection"]]))
-                            valid = False
-
-                    else:
-                        log.debug("Got value '{value}' for config option '{option}'".format(
-                                value="*"*len(value) if "pass" in key.lower() else value, option=key))
-                        config[key] = value
-
+                valid = valid and process_option(key, data.pop(key, "**NO DATA**"), options[key])
 
         return valid, config
 
