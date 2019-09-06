@@ -100,8 +100,9 @@ def log_traceback(log, limit=None):
     """
     Print a traceback to the log
     """
-    for line in traceback.format_exception(*sys.exc_info(), limit=limit):
-        log.error(line)
+    for layer in traceback.format_exception(*sys.exc_info(), limit=limit):
+        for line in layer.split("\n"):
+            log.error(line)
 
 
 def uninit():
