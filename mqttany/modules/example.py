@@ -30,7 +30,7 @@ log = logger.get_module_logger()
 from logger import log_traceback
 from config import parse_config
 
-from modules.mqtt import resolve_topic, publish, subscribe, add_message_callback
+from modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe, add_message_callback
 
 all = [  ]
 

@@ -29,6 +29,7 @@ import socket, time, sys
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 import paho.mqtt.client as mqtt
+from paho.mqtt.client import topic_matches_sub
 
 import logger
 log = logger.get_module_logger()
@@ -38,7 +39,8 @@ from config import parse_config
 from common import POISON_PILL
 
 all = [
-    "resolve_topic", "publish", "subscribe", "unsubscribe",
+    "resolve_topic", "topic_matches_sub",
+    "publish", "subscribe", "unsubscribe",
     "add_message_callback", "remove_message_callback"
     "register_on_connect_callback", "register_on_disconnect_callback"
 ]
