@@ -83,6 +83,7 @@ if __name__ == '__main__':
 
     except:
         modules.unload()
+        logger.uninit()
         raise
 
     else:
@@ -91,7 +92,9 @@ if __name__ == '__main__':
 
         if poison_pill:
             log.info("MQTTany exiting with errors")
+            logger.uninit()
             exit(1)
         else:
             log.info("MQTTany stopped")
+            logger.uninit()
             exit(0)
