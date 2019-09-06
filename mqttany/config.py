@@ -68,16 +68,16 @@ def parse_config(data, options, log=log):
     Parse and validate config and values
     """
     def parse_dict(data, options):
-        def process_option(name, value, option):
-            if name not in data and option.get("type", None) == "section":
+        def process_option(name, value, option, config):
+            if value == "**NO DATA**" and option.get("type", None) == "section":
                 if option.get("required", True):
                     log.error("No section in config named '{section}'".format(section=name))
                     return False
                 #else:
                 #    log.debug("No section in config named '{section}'".format(section=name))
 
-            elif isinstance(data.get(name, None), dict):
-                section_valid, section_config = parse_dict(data[name], option)
+            elif isinstance(value, dict):
+                section_valid, section_config = parse_dict(value, option)
                 if not section_valid and option.get("required", True):
                     log.error("Required section '{section}' is not valid".format(section=name))
                     return False
@@ -137,12 +137,13 @@ def parse_config(data, options, log=log):
                 continue # 'required' option, skip
 
             if str(key).split(":", 1)[0] == "regex":
-                for data_key in data:
-                    match = re.match(str(key).split(":", 1)[-1], data_key)
-                    if match.match == data_key:
-                        valid = valid and process_option(data_key, data.pop(data_key, "**NO DATA**"), options[key])
+                log.debug("Found regex '{key}' in options".format(key=str(key).split(":", 1)[-1]))
+                for data_key in [data_key for data_key in data]:
+                    if re.fullmatch(str(key).split(":", 1)[-1], str(data_key)):
+                        log.debug("Config key '{data_key}' matched to options regex '{key}'".format(data_key=data_key, key=str(key).split(":", 1)[-1]))
+                        valid = valid and process_option(data_key, data.pop(data_key, "**NO DATA**"), options[key], config)
             else:
-                valid = valid and process_option(key, data.pop(key, "**NO DATA**"), options[key])
+                valid = valid and process_option(key, data.pop(key, "**NO DATA**"), options[key], config)
 
         return valid, config
 

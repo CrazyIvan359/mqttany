@@ -66,7 +66,7 @@ CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTH
     (CONF_KEY_PAYLOAD_OFF, {"default": "OFF"}),
     (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
     (CONF_KEY_DEBOUNCE, {"type": int, "default": 200}),
-    ("regex:.*", {
+    ("regex:.+", {
         "type": "section",
         "required": False,
         CONF_KEY_PIN: {"type": (int, list)},
@@ -104,7 +104,6 @@ def init(config_data={}):
         if pin is None:
             if isinstance(pin_config[CONF_KEY_PIN], list):
                 pin = pin_config[CONF_KEY_PIN][index]
-                name = "{}-{}".format(name, index + pin_config[CONF_KEY_FIRST_INDEX])
             else:
                 pin = pin_config[CONF_KEY_PIN]
         if isinstance(pin_config[CONF_KEY_TOPIC], list):
@@ -112,8 +111,7 @@ def init(config_data={}):
         else:
             topic = pin_config[CONF_KEY_TOPIC]
         return {
-            pin: {
-                "name": name,
+                "name": name.format(index=index + pin_config[CONF_KEY_FIRST_INDEX]),
                 CONF_KEY_TOPIC: resolve_topic(
                         topic,
                         subtopics=["{module_topic}"],
@@ -131,7 +129,6 @@ def init(config_data={}):
                 CONF_KEY_INITIAL: pin_config[CONF_KEY_INITIAL].format(
                         payload_on=raw_config[CONF_KEY_PAYLOAD_ON], payload_off=raw_config[CONF_KEY_PAYLOAD_OFF])
             }
-        }
 
     global gpio, GPIO_PINS
 
@@ -278,7 +275,7 @@ def post_loop():
     """
     Actions to be done in the subprocess after the loop is exited
     """
-    if config[CONF_KEY_POLL_INT] > 0:
+    if config[CONF_KEY_POLL_INT] > 0 and polling_timer is not None:
         log.debug("Stopping polling timer")
         polling_timer.cancel()
 
