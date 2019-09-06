@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.3.8
+
+* __Added__: Provide MQTT client function `topic_matches_sub` directly from MQTT module.
+* __Added__: `log_traceback` function to support printing stack traces when errors occur without processes crashing.
+* __Changed__: Verify subprocess queue message `func` is callable before attempting to do so.
+
 ## 0.3.7
 
 * __Added__: Command line argument parsing.
