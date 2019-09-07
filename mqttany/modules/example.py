@@ -56,6 +56,9 @@ CONF_OPTIONS = {
             # if "selection" is a dict then the key's value will be returned, not the key.
         CONF_KEY_SELECTION: {"default": None, "selection": {"option 1": 1, "option 2": 2}}
     }
+    "regex:pattern": { # regex pattern sections can also be used, their key must be "regex:{pattern}"
+        "type": "section" # when using regex sections that may match other keys they should be last
+    }                     # and CONF_OPTIONS should be an OrderedDict
 }
 
 # Module name, this should be included in all modules and used when the module name is needed
