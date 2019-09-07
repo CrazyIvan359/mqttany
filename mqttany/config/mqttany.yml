@@ -72,9 +72,11 @@ mqtt:
   ### Interrupt Debounce
   #debounce: 200 # in milliseconds
 
-  ### Pin Configurations
-  # Pin number is section key
-  #13:
+  ### Single Pin Configuration
+  #Single:
+
+    ### Pin Number
+    #pin: 1
 
     ### Pin Topic
     # '{pin}' will be replaced with pin number
@@ -92,3 +94,22 @@ mqtt:
     ### Pin Invert
     # true means pin states ON=LOW, OFF=HIGH
     #invert: false # can be true or false
+
+  ### Multiple Pin Configuration
+  # alternatively a list of pins can be given
+  # all options from a single pin configuration apply, except those shown below
+  #Batch:
+
+    ### Pin Numbers
+    #pin: [1, 2, 3]
+
+    ### Pin Topic
+    # '{pin}' will be replaced with pin number
+    # '{index}' will be replaced by the pin's index in the list of pins plus 'first index'
+    #topic: 'batch-{index}'
+    # or a list of topics the same length as the list of pins can be provided
+    #topic: ['one', 'two', 'three']
+
+    ### First Index
+    # this number will be added to 'index' when substituting '{index}' in topics
+    #first index: 1
