@@ -58,7 +58,7 @@ def load_config(config_file):
         with open(config_file) as fh:
             config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)
     else:
-        log.error("Config file does not exist: {path}".format(config_file))
+        log.error("Config file does not exist: {path}".format(path=config_file))
 
     return config
 
