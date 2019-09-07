@@ -144,7 +144,7 @@ def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
     Acquire lock on I2C bus
     Timeout is ms
     """
-    def lock_bus():
+    def lock_bus(bus_lock):
         if not _i2c_lock[bus]["lock"].acquire(False):
             if _i2c_lock[bus]["module"].raw != module:
                 return False
@@ -171,11 +171,11 @@ def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
     if timeout:
         then = time.time() + ( timeout / 1000 )
         while time.time() < then:
-            if lock_bus():
+            if lock_bus(bus_lock):
                 return True
             else:
                 time.sleep(0.01)
-    elif lock_bus():
+    elif lock_bus(bus_lock):
         return True
 
     if scl_lock and bus_lock:
