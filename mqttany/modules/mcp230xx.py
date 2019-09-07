@@ -172,36 +172,36 @@ def init(config_data={}):
                 else:
                     buses[device_config[CONF_KEY_BUS_ID]]["used"] = True
                     buses[device_config[CONF_KEY_BUS_ID]]["devices"].append(device_config[CONF_KEY_ADDRESS])
-                    pins = {}
+                    device_pins = {}
                     for pin_name in [key for key in device_config if isinstance(device_config[key], dict)]:
                         pin_config = device_config.pop(pin_name)
                         if isinstance(pin_config[CONF_KEY_PIN], int):
                             pin = pin_config[CONF_KEY_PIN]
-                            if pin in device_config["pins"]:
+                            if pin in device_pins:
                                 log.warn("Duplicate configuration for GP{pin} found in {pin_name} for {device_name} will be ignored, pin already configured under '{original}'".format(
-                                        pin=pin, pin_name=pin_name, device_name=device_name, original=device_config["pins"][pin]["name"]))
+                                        pin=pin, pin_name=pin_name, device_name=device_name, original=device_pins[pin]["name"]))
                             elif pin > DEVICE_PIN_MAX[device_config[CONF_KEY_DEVICE_TYPE]]:
                                 log.warn("Found pin GP{pin} in {pin_name} for {device_name} but highest pin for {device} is GP{max}".format(
                                         pin=pin, pin_name=pin_name, device_name=device_name, device=device_config[CONF_KEY_DEVICE_TYPE], max=DEVICE_PIN_MAX[device_config[CONF_KEY_DEVICE_TYPE]]))
                             else:
-                                device_config["pins"][pin] = build_pin(pin_name, pin_config)
+                                device_pins[pin] = build_pin(pin_name, pin_config)
                                 log.debug("Configured GP{pin} on {device} at address 0x{address:02x} with options: {options}".format(
-                                        pin=pin, device=device_config[CONF_KEY_DEVICE_TYPE], address=device_config[CONF_KEY_ADDRESS], options=device_config["pins"][pin]))
+                                        pin=pin, device=device_config[CONF_KEY_DEVICE_TYPE], address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
                         elif isinstance(pin_config[CONF_KEY_PIN], list):
                             for index in range(len(pin_config[CONF_KEY_PIN])):
                                 pin = pin_config[CONF_KEY_PIN][index]
-                                if pin in device_config["pins"]:
+                                if pin in device_pins:
                                     log.warn("Duplicate configuration for GP{pin} found in {pin_name} for {device_name} will be ignored, pin already configured under '{original}'".format(
-                                            pin=pin, pin_name=pin_name, device_name=device_name, original=device_config["pins"][pin]["name"]))
+                                            pin=pin, pin_name=pin_name, device_name=device_name, original=device_pins[pin]["name"]))
                                 elif pin > DEVICE_PIN_MAX[device_config[CONF_KEY_DEVICE_TYPE]]:
                                     log.warn("Found pin GP{pin} in {pin_name} for {device_name} but highest pin for {device} is GP{max}".format(
                                             pin=pin, pin_name=pin_name, device_name=device_name, device=device_config[CONF_KEY_DEVICE_TYPE], max=DEVICE_PIN_MAX[device_config[CONF_KEY_DEVICE_TYPE]]))
                                 else:
-                                    device_config["pins"][pin] = build_pin(pin_name, pin_config, index=index)
+                                    device_pins[pin] = build_pin(pin_name, pin_config, index=index)
                                     log.debug("Configured GP{pin} on {device} at address 0x{address:02x} with options: {options}".format(
-                                            pin=pin, device=device_config[CONF_KEY_DEVICE_TYPE], address=device_config[CONF_KEY_ADDRESS], options=device_config["pins"][pin]))
+                                            pin=pin, device=device_config[CONF_KEY_DEVICE_TYPE], address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
                     device_config["bus"] = buses[device_config[CONF_KEY_BUS_ID]]
-                    device_config["pins"] = pins
+                    device_config["pins"] = device_pins
                     devices.append(device_config)
             else:
                 log.error("Invalid bus id '{bus_id}' for device {name}".format(
