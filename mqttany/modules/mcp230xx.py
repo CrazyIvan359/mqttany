@@ -381,7 +381,7 @@ def init_device(device):
         log.info("Initializing {device_name}".format(device_name=device["name"]))
         log.info("Initializing {device} at address {address:02x} on I2C bus '{bus_id}'".format(
                 device=device[CONF_KEY_CHIP], address=device["address"], bus_id=bus["id"]))
-        if acquire_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME, timeout=5000):
+        if acquire_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME, timeout=5000):
             try:
                 clazz = getattr(sys.modules[__name__], device[CONF_KEY_CHIP])
                 device["device"] = clazz(bus["busio"], device["address"])
@@ -465,7 +465,7 @@ def init_device(device):
                         device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
 
             finally:
-                release_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME)
+                release_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME)
         else:
             log.error("Failed to initialize {device} {device_name} at address {address:02x} was not able to lock I2C bus '{bus_id}'".format(
                     device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
@@ -493,10 +493,10 @@ def set_pin(device, pin, payload):
                 device=device["name"], address=device["address"], bus_id=bus["id"]))
         return
 
-    if acquire_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME, timeout=5000):
+    if acquire_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME, timeout=5000):
         state = state ^ device["pins"][pin][CONF_KEY_INVERT]
         device["device"].gpio = _set_bit(device["device"].gpio, pin, state)
-        release_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME)
+        release_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME)
         log.debug("Set state '{state}' logic {logic} from GP{pin} on {device} {device_name} at address {address:02x} on I2C bus '{bus_id}'".format(
                 state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
                 logic=TEXT_LOGIC_STATE[state], device=device[CONF_KEY_CHIP], device_name=device["name"],
@@ -515,9 +515,9 @@ def get_pin(device, pin, gpio=None):
     """
     bus = device["bus"]
     if gpio is None:
-        if acquire_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME, timeout=5000):
+        if acquire_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME, timeout=5000):
             gpio = device["device"].gpio
-            release_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME)
+            release_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME)
         else:
             log.warn("Failed to read {pin_name} GP{pin} on {device} {device_name} was not able to lock I2C bus '{bus_id}'".format(
                     pin_name=device["pins"][pin]["name"], pin=pin, device=device[CONF_KEY_CHIP],
@@ -547,9 +547,9 @@ def poll_device(device):
         log.debug("Polling all pins of {device} {device_name} at address {address:02x} on I2C bus '{bus_id}'".format(
                 device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
 
-        if acquire_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME, timeout=5000):
+        if acquire_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME, timeout=5000):
             gpio = device["device"].gpio
-            release_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME)
+            release_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME)
             for pin in pins:
                 get_pin(device, pin, gpio=gpio)
         else:
