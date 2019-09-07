@@ -118,7 +118,7 @@ mqtt:
 
     ### First Index
     # this number will be added to 'index' when substituting '{index}' in topics
-    #first index: 1
+    #first index: 0
 
 
 
@@ -134,7 +134,7 @@ mqtt:
   #topic set: 'set'
 
   ### Getter Topic
-  # any message here will cause pin state to be read published
+  # any message here will cause pin state to be published
   # default resolves to '{root_topic}/{module_name}/{device_name}/{pin}/get'
   #topic get: 'get'
 
