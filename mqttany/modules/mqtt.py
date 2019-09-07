@@ -436,4 +436,5 @@ def on_message(client, userdata, message):
     """
     Gets called when a message is received on a topic without a specific listener
     """
-    log.debug("Received message without specific listener: [{message}]".format(message=message))
+    log.debug("Received message without specific listener: [topic: '{topic}', message: '{message}']".format(
+            topic=message.topic, message=message.message))
