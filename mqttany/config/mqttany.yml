@@ -11,11 +11,11 @@
 #
 # The following substitutions will be applied to all topics, modules may add
 # more (see module for details)
-# - {hostname} the computer's hostname
-# - {client_id} the mqtt 'client id'
-# - {root_topic} the 'root topic'
-# - {module_name} the name of the module publishing or subscribing
-# - {module_topic} the main topic of the module pub-ing or sub-ing
+# - {hostname} = the computer's hostname
+# - {client_id} = the mqtt 'client id'
+# - {root_topic} = the 'root topic'
+# - {module_name} = the name of the module publishing or subscribing
+# - {module_topic} = the main topic of the module pub-ing or sub-ing
 ###
 
 ######## MQTT Module ########
@@ -76,10 +76,13 @@ mqtt:
   #Single:
 
     ### Pin Number
-    #pin: 1
+    #pin:
 
     ### Pin Topic
-    # '{pin}' will be replaced with pin number
+    # Additional Subsitutions:
+    # - {pin} = pin number
+    # - {pin:02d} = pin number padded with 0's to always be 2 numbers
+    # - {pin_name} = name of this section
     #topic: '{pin}'
 
     ### Pin Direction
@@ -101,15 +104,18 @@ mqtt:
   #Batch:
 
     ### Pin Numbers
-    #pin: [1, 2, 3]
+    #pin: []
 
     ### Pin Topic
-    # '{pin}' will be replaced with pin number
-    # '{index}' will be replaced by the pin's index in the list of pins plus 'first index'
-    #topic: 'batch-{index}'
-    # or a list of topics the same length as the list of pins can be provided
-    #topic: ['one', 'two', 'three']
+    # a single topic may be given, or a list of topics the same length as the
+    # list of pins can be provided
+    # Additional Subsitutions:
+    # - {pin} = pin number
+    # - {pin:02d} = pin number padded with 0's to always be 2 numbers
+    # - {pin_name} = name of this section
+    # - {index} = the pin's index in the list of pins plus 'first index'
+    #topic: '{pin}'
 
     ### First Index
     # this number will be added to 'index' when substituting '{index}' in topics
-    #first index: 1
+    #first index: 0
