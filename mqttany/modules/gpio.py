@@ -28,6 +28,7 @@ GPIO Module
 import time, os, sys
 from threading import Timer
 import multiprocessing as mproc
+from collections import OrderedDict
 from Adafruit_GPIO import GPIO, Platform
 
 import logger
@@ -48,32 +49,36 @@ CONF_KEY_PAYLOAD_ON = "payload on"
 CONF_KEY_PAYLOAD_OFF = "payload off"
 CONF_KEY_POLL_INT = "polling interval"
 CONF_KEY_DEBOUNCE = "debounce"
+CONF_KEY_PIN = "pin"
+CONF_KEY_FIRST_INDEX = "first index"
 CONF_KEY_DIRECTION = "direction"
 CONF_KEY_INTERRUPT = "interrupt"
 CONF_KEY_RESISTOR = "resistor"
 CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
 
-CONF_OPTIONS = {
-    CONF_KEY_TOPIC: {"default": "{module_name}"},
-    CONF_KEY_TOPIC_SETTER: {"default": "set"},
-    CONF_KEY_TOPIC_GETTER: {"default": "get"},
-    CONF_KEY_TOPIC_POLL: {"default": "poll"},
-    CONF_KEY_PAYLOAD_ON: {"default": "ON"},
-    CONF_KEY_PAYLOAD_OFF: {"default": "OFF"},
-    CONF_KEY_POLL_INT: {"type": float, "default": 0.0},
-    CONF_KEY_DEBOUNCE: {"type": int, "default": 200},
-}
-CONF_OPTIONS_PIN = {
-    "type": "section",
-    "required": False,
-    CONF_KEY_TOPIC: {"default": "{pin}"},
-    CONF_KEY_DIRECTION: {"default": GPIO.IN, "selection": {"input": GPIO.IN, "in": GPIO.IN, "output": GPIO.OUT, "out": GPIO.OUT}},
-    CONF_KEY_INTERRUPT: {"default": None, "selection": {"rising": GPIO.RISING, "falling": GPIO.FALLING, "both": GPIO.BOTH, "none": None}},
-    CONF_KEY_RESISTOR: {"default": GPIO.PUD_OFF, "selection": {"pullup": GPIO.PUD_UP, "up": GPIO.PUD_UP, "pulldown": GPIO.PUD_DOWN, "down": GPIO.PUD_DOWN, "off": GPIO.PUD_OFF, "none": GPIO.PUD_OFF}},
-    CONF_KEY_INVERT: {"type": bool, "default": False},
-    CONF_KEY_INITIAL: {"default": "{payload_off}"},
-}
+CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
+    (CONF_KEY_TOPIC, {"default": "{module_name}"}),
+    (CONF_KEY_TOPIC_SETTER, {"default": "set"}),
+    (CONF_KEY_TOPIC_GETTER, {"default": "get"}),
+    (CONF_KEY_TOPIC_POLL, {"default": "poll"}),
+    (CONF_KEY_PAYLOAD_ON, {"default": "ON"}),
+    (CONF_KEY_PAYLOAD_OFF, {"default": "OFF"}),
+    (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
+    (CONF_KEY_DEBOUNCE, {"type": int, "default": 200}),
+    ("regex:.+", {
+        "type": "section",
+        "required": False,
+        CONF_KEY_PIN: {"type": (int, list)},
+        CONF_KEY_TOPIC: {"type": (str, list), "default": "{pin}"},
+        CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
+        CONF_KEY_DIRECTION: {"default": GPIO.IN, "selection": {"input": GPIO.IN, "in": GPIO.IN, "output": GPIO.OUT, "out": GPIO.OUT}},
+        CONF_KEY_INTERRUPT: {"default": None, "selection": {"rising": GPIO.RISING, "falling": GPIO.FALLING, "both": GPIO.BOTH, "none": None}},
+        CONF_KEY_RESISTOR: {"default": GPIO.PUD_OFF, "selection": {"pullup": GPIO.PUD_UP, "up": GPIO.PUD_UP, "pulldown": GPIO.PUD_DOWN, "down": GPIO.PUD_DOWN, "off": GPIO.PUD_OFF, "none": GPIO.PUD_OFF}},
+        CONF_KEY_INVERT: {"type": bool, "default": False},
+        CONF_KEY_INITIAL: {"default": "{payload_off}"},
+    })
+])
 
 TEXT_NAME = __name__.split(".")[-1]
 TEXT_DIRECTION = {GPIO.IN: "input", GPIO.OUT: "output"}
@@ -95,6 +100,36 @@ def init(config_data={}):
     """
     Initializes the module
     """
+    def build_pin(name, pin_config, pin=None, index=0):
+        if pin is None:
+            if isinstance(pin_config[CONF_KEY_PIN], list):
+                pin = pin_config[CONF_KEY_PIN][index]
+            else:
+                pin = pin_config[CONF_KEY_PIN]
+        if isinstance(pin_config[CONF_KEY_TOPIC], list):
+            topic = pin_config[CONF_KEY_TOPIC][index]
+        else:
+            topic = pin_config[CONF_KEY_TOPIC]
+        return {
+                "name": name.format(index=index + pin_config[CONF_KEY_FIRST_INDEX]),
+                CONF_KEY_TOPIC: resolve_topic(
+                        topic,
+                        subtopics=["{module_topic}"],
+                        substitutions={
+                            "module_topic": raw_config[CONF_KEY_TOPIC],
+                            "module_name": TEXT_NAME,
+                            "pin": pin,
+                            "index": index + pin_config[CONF_KEY_FIRST_INDEX]
+                        }
+                    ),
+                CONF_KEY_DIRECTION: pin_config[CONF_KEY_DIRECTION],
+                CONF_KEY_INTERRUPT: pin_config[CONF_KEY_INTERRUPT],
+                CONF_KEY_RESISTOR: pin_config[CONF_KEY_RESISTOR],
+                CONF_KEY_INVERT: pin_config[CONF_KEY_INVERT],
+                CONF_KEY_INITIAL: pin_config[CONF_KEY_INITIAL].format(
+                        payload_on=raw_config[CONF_KEY_PAYLOAD_ON], payload_off=raw_config[CONF_KEY_PAYLOAD_OFF])
+            }
+
     global gpio, GPIO_PINS
 
     pi_version = Platform.pi_version()
@@ -114,25 +149,31 @@ def init(config_data={}):
         log.error("Unknown platform")
         return False
 
-    for pin in GPIO_PINS:
-        CONF_OPTIONS[pin] = CONF_OPTIONS_PIN
     raw_config = parse_config(config_data, CONF_OPTIONS, log)
     if raw_config:
         log.debug("Config loaded")
 
-        for pin in [key for key in raw_config if isinstance(raw_config[key], dict)]:
-            pins[pin] = raw_config.pop(pin)
-            pins[pin][CONF_KEY_INITIAL] = pins[pin][CONF_KEY_INITIAL].format(
-                    payload_on=raw_config[CONF_KEY_PAYLOAD_ON], payload_off=raw_config[CONF_KEY_PAYLOAD_OFF])
-            pins[pin][CONF_KEY_TOPIC] = resolve_topic(
-                    pins[pin][CONF_KEY_TOPIC],
-                    subtopics=["{module_topic}"],
-                    substitutions={
-                        "module_topic": raw_config[CONF_KEY_TOPIC],
-                        "module_name": TEXT_NAME,
-                        "pin": pin
-                    }
-                )
+        for name in [key for key in raw_config if isinstance(raw_config[key], dict)]:
+            named_config = raw_config.pop(name)
+            if isinstance(named_config[CONF_KEY_PIN], int):
+                pin = named_config[CONF_KEY_PIN]
+                if pin not in pins:
+                    pins[pin] = build_pin(name, named_config)
+                    log.debug("Configured GPIO{pin} with options: {options}".format(
+                            pin=pin, options=pins[pin]))
+                else:
+                    log.warn("Duplicate configuration for GPIO{pin} found in '{name}' will be ignored, pin already configured under '{original}'".format(
+                            pin=pin, name=name, original=pins[pin]["name"]))
+            elif isinstance(named_config[CONF_KEY_PIN], list):
+                for index in range(len(named_config[CONF_KEY_PIN])):
+                    pin = named_config[CONF_KEY_PIN][index]
+                    if pin not in pins:
+                        pins[pin] = build_pin(name, named_config, index=index)
+                        log.debug("Configured GPIO{pin} with options: {options}".format(
+                                pin=pin, options=pins[pin]))
+                    else:
+                        log.warn("Duplicate configuration for GPIO{pin} found in '{name}' will be ignored, pin already configured under '{original}'".format(
+                                pin=pin, name=name, original=pins[pin]["name"]))
 
         config.update(raw_config)
         return True
@@ -146,8 +187,8 @@ def pre_loop():
     """
     log.debug("Setting up hardware")
     for pin in pins:
-        log.info("Setting up GPIO{pin} as {direction}".format(
-                pin=pin, direction=TEXT_DIRECTION[pins[pin][CONF_KEY_DIRECTION]]))
+        log.info("Setting up {name} on GPIO{pin} as {direction}".format(
+                name=pins[pin]["name"], pin=pin, direction=TEXT_DIRECTION[pins[pin][CONF_KEY_DIRECTION]]))
         log.debug("  with options [{options}]".format(options=pins[pin]))
 
         if not acquire_gpio_lock(pin, TEXT_NAME, timeout=2000):
@@ -158,15 +199,16 @@ def pre_loop():
         try:
             gpio.setup(pin, pins[pin][CONF_KEY_DIRECTION], pull_up_down=pins[pin][CONF_KEY_RESISTOR])
         except:
-            log.error("An exception occurred while setting up GPIO{pin}".format(pin=pin))
+            log.error("An exception occurred while setting up {name} on GPIO{pin}".format(
+                    name=pins[pin]["name"], pin=pin))
             log_traceback(log)
             release_gpio_lock(pin, TEXT_NAME)
             pins.pop(pin)
             continue
 
         if pins[pin][CONF_KEY_DIRECTION] == GPIO.IN and pins[pin][CONF_KEY_INTERRUPT] is not None:
-            log.debug("Adding interrupt event for GPIO{pin} with edge trigger '{edge}'".format(
-                    pin=pin, edge=TEXT_INTERRUPT[pins[pin][CONF_KEY_INTERRUPT]]))
+            log.debug("Adding interrupt event for {name} on GPIO{pin} with edge trigger '{edge}'".format(
+                    name=pins[pin]["name"], pin=pin, edge=TEXT_INTERRUPT[pins[pin][CONF_KEY_INTERRUPT]]))
             gpio.add_event_detect(
                     pin,
                     pins[pin][CONF_KEY_INTERRUPT],
@@ -174,7 +216,8 @@ def pre_loop():
                     bouncetime=config[CONF_KEY_DEBOUNCE]
                 )
         elif pins[pin][CONF_KEY_DIRECTION] == GPIO.OUT:
-            log.debug("Adding MQTT subscriptions for GPIO{pin}".format(pin=pin))
+            log.debug("Adding MQTT subscriptions for {name} on GPIO{pin}".format(
+                    name=pins[pin]["name"], pin=pin))
             subscribe(
                     pins[pin][CONF_KEY_TOPIC] + "/{setter}",
                     callback=callback_setter,
@@ -187,12 +230,12 @@ def pre_loop():
                     }
                 )
             if pins[pin][CONF_KEY_INITIAL] in [config[CONF_KEY_PAYLOAD_ON], config[CONF_KEY_PAYLOAD_OFF]]:
-                log.debug("Setting GPIO{pin} to initial state '{state}'".format(
-                        pin=pin, state=pins[pin][CONF_KEY_INITIAL]))
+                log.debug("Setting {name} on GPIO{pin} to initial state '{state}'".format(
+                        name=pins[pin]["name"], pin=pin, state=pins[pin][CONF_KEY_INITIAL]))
                 set_pin(pin, pins[pin][CONF_KEY_INITIAL])
             else:
-                log.warn("Invalid initial state '{initial_state}' for GPIO{pin}, setting pin to {state}".format(
-                        initial_state=pins[pin][CONF_KEY_INITIAL], pin=pin, state=config[CONF_KEY_PAYLOAD_OFF]))
+                log.warn("Invalid initial state '{initial_state}' for {name} on GPIO{pin}, setting pin to {state}".format(
+                        name=pins[pin]["name"], initial_state=pins[pin][CONF_KEY_INITIAL], pin=pin, state=config[CONF_KEY_PAYLOAD_OFF]))
                 set_pin(pin, config[CONF_KEY_PAYLOAD_OFF])
 
         subscribe(
@@ -232,7 +275,7 @@ def post_loop():
     """
     Actions to be done in the subprocess after the loop is exited
     """
-    if config[CONF_KEY_POLL_INT] > 0:
+    if config[CONF_KEY_POLL_INT] > 0 and polling_timer is not None:
         log.debug("Stopping polling timer")
         polling_timer.cancel()
 
@@ -293,7 +336,8 @@ def interrupt_handler(pin):
     """
     Handles GPIO pin interrupt callbacks
     """
-    log.debug("Interrupt triggered on GPIO{pin}".format(pin=pin))
+    log.debug("Interrupt triggered for {name} on GPIO{pin}".format(
+            name=pins[pin]["name"], pin=pin))
     get_pin(pin)
 
 
@@ -304,10 +348,12 @@ def get_pin(pin):
     try:
         state = bool(gpio.input(pin)) ^ pins[pin][CONF_KEY_INVERT] # apply the invert flag
     except:
-        log.error("An exception occurred while reading GPIO{pin}".format(pin=pin))
+        log.error("An exception occurred while reading {name} on GPIO{pin}".format(
+                name=pins[pin]["name"], pin=pin))
         log_traceback(log)
     else:
-        log.debug("Read state '{state}' logic {logic} from GPIO{pin}".format(
+        log.debug("Read state '{state}' logic {logic} from {name} on GPIO{pin}".format(
+            name=pins[pin]["name"],
             state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
             logic=TEXT_LOGIC_STATE[int(state)], pin=pin))
         publish(
@@ -326,18 +372,19 @@ def set_pin(pin, payload):
     elif payload == config[CONF_KEY_PAYLOAD_OFF]:
         state = False
     else:
-        log.warn("Received unrecognized SET payload '{payload}' for GPIO{pin}".format(
-                payload=payload, pin=pin))
+        log.warn("Received unrecognized SET payload '{payload}' for {name} on GPIO{pin}".format(
+                name=pins[pin]["name"], payload=payload, pin=pin))
         return
 
     try:
         gpio.output(pin, state ^ pins[pin][CONF_KEY_INVERT])
     except:
-        log.error("An exception occurred while setting GPIO{pin}".format(pin=pin))
+        log.error("An exception occurred while setting {name} on GPIO{pin}".format(
+                name=pins[pin]["name"], pin=pin))
         log_traceback(log)
     else:
-        log.debug("Set GPIO{pin} to '{state}' logic {logic}".format(
-            pin=pin, state=payload, logic=TEXT_LOGIC_STATE[int(state)]))
+        log.debug("Set {name} on GPIO{pin} to '{state}' logic {logic}".format(
+            name=pins[pin]["name"], pin=pin, state=payload, logic=TEXT_LOGIC_STATE[int(state)]))
         get_pin(pin) # publish pin state
 
 
