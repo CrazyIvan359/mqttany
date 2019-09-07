@@ -164,7 +164,6 @@ def init(config_data={}):
         for device_name in [key for key in raw_config if isinstance(raw_config[key], dict)]:
             device_config = raw_config.pop(device_name)
             device_config["name"] = device_name
-            device_config["pins"] = {}
             if device_config[CONF_KEY_BUS_ID] in buses:
                 if device_config[CONF_KEY_ADDRESS] in buses[device_config[CONF_KEY_BUS_ID]]["devices"]:
                     log.warn("Duplicate configuration {device_name} found for device at address {address:02x} on I2C bus '{bus_id}' will be ignored, address already configured under '{original}'".format(
@@ -173,9 +172,9 @@ def init(config_data={}):
                 else:
                     buses[device_config[CONF_KEY_BUS_ID]]["used"] = True
                     buses[device_config[CONF_KEY_BUS_ID]]["devices"].append(device_config[CONF_KEY_ADDRESS])
+                    pins = {}
                     for pin_name in [key for key in device_config if isinstance(device_config[key], dict)]:
                         pin_config = device_config.pop(pin_name)
-                        log.warn(pin_config)
                         if isinstance(pin_config[CONF_KEY_PIN], int):
                             pin = pin_config[CONF_KEY_PIN]
                             if pin in device_config["pins"]:
@@ -202,6 +201,7 @@ def init(config_data={}):
                                     log.debug("Configured GP{pin} on {device} at address 0x{address:02x} with options: {options}".format(
                                             pin=pin, device=device_config[CONF_KEY_DEVICE_TYPE], address=device_config[CONF_KEY_ADDRESS], options=device_config["pins"][pin]))
                     device_config["bus"] = buses[device_config[CONF_KEY_BUS_ID]]
+                    device_config["pins"] = pins
                     devices.append(device_config)
             else:
                 log.error("Invalid bus id '{bus_id}' for device {name}".format(
