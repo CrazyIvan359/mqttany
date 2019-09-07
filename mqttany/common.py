@@ -147,7 +147,7 @@ def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
     def lock_bus():
         if not _i2c_lock[bus]["lock"].acquire(False):
             if _i2c_lock[bus]["module"].raw != module:
-            return False
+                return False
 
         if bus_lock or _i2c_lock[bus]["lock"].acquire(False):
             bus_lock = True
