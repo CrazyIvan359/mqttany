@@ -450,11 +450,11 @@ def init_device(device):
                             state=_get_bit(gpio, pin), pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_CHIP], address=device["address"], bus_id=bus["id"]))
 
                 log.debug("Writing IODIR register to {device} {device_name} at address 0x{address:02x} on I2C bus '{bus_id}': {value}".format(
-                        device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(gpio)))
+                        device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(iodir)))
                 device["device"].iodir = iodir
 
                 log.debug("Writing GPPU register to {device} {device_name} at address 0x{address:02x} on I2C bus '{bus_id}': {value}".format(
-                        device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(gpio)))
+                        device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(gppu)))
                 device["device"].gppu = gppu
 
                 log.debug("Writing GPIO register to {device} {device_name} at address 0x{address:02x} on I2C bus '{bus_id}': {value}".format(
