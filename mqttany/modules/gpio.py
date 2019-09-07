@@ -159,20 +159,20 @@ def init(config_data={}):
                 pin = named_config[CONF_KEY_PIN]
                 if pin not in pins:
                     pins[pin] = build_pin(name, named_config)
-                    log.debug("Configured GPIO{pin} with options: {options}".format(
+                    log.debug("Configured GPIO{pin:02d} with options: {options}".format(
                             pin=pin, options=pins[pin]))
                 else:
-                    log.warn("Duplicate configuration for GPIO{pin} found in '{name}' will be ignored, pin already configured under '{original}'".format(
+                    log.warn("Duplicate configuration for GPIO{pin:02d} found in '{name}' will be ignored, pin already configured under '{original}'".format(
                             pin=pin, name=name, original=pins[pin]["name"]))
             elif isinstance(named_config[CONF_KEY_PIN], list):
                 for index in range(len(named_config[CONF_KEY_PIN])):
                     pin = named_config[CONF_KEY_PIN][index]
                     if pin not in pins:
                         pins[pin] = build_pin(name, named_config, index=index)
-                        log.debug("Configured GPIO{pin} with options: {options}".format(
+                        log.debug("Configured GPIO{pin:02d} with options: {options}".format(
                                 pin=pin, options=pins[pin]))
                     else:
-                        log.warn("Duplicate configuration for GPIO{pin} found in '{name}' will be ignored, pin already configured under '{original}'".format(
+                        log.warn("Duplicate configuration for GPIO{pin:02d} found in '{name}' will be ignored, pin already configured under '{original}'".format(
                                 pin=pin, name=name, original=pins[pin]["name"]))
 
         config.update(raw_config)
@@ -187,19 +187,19 @@ def pre_loop():
     """
     log.debug("Setting up hardware")
     for pin in pins:
-        log.info("Setting up {name} on GPIO{pin} as {direction}".format(
+        log.info("Setting up {name} on GPIO{pin:02d} as {direction}".format(
                 name=pins[pin]["name"], pin=pin, direction=TEXT_DIRECTION[pins[pin][CONF_KEY_DIRECTION]]))
         log.debug("  with options [{options}]".format(options=pins[pin]))
 
         if not acquire_gpio_lock(pin, TEXT_NAME, timeout=2000):
-            log.error("Failed to acquire a lock on GPIO{pin}".format(pin=pin))
+            log.error("Failed to acquire a lock on GPIO{pin:02d}".format(pin=pin))
             pins.pop(pin)
             continue
 
         try:
             gpio.setup(pin, pins[pin][CONF_KEY_DIRECTION], pull_up_down=pins[pin][CONF_KEY_RESISTOR])
         except:
-            log.error("An exception occurred while setting up {name} on GPIO{pin}".format(
+            log.error("An exception occurred while setting up {name} on GPIO{pin:02d}".format(
                     name=pins[pin]["name"], pin=pin))
             log_traceback(log)
             release_gpio_lock(pin, TEXT_NAME)
@@ -207,7 +207,7 @@ def pre_loop():
             continue
 
         if pins[pin][CONF_KEY_DIRECTION] == GPIO.IN and pins[pin][CONF_KEY_INTERRUPT] is not None:
-            log.debug("Adding interrupt event for {name} on GPIO{pin} with edge trigger '{edge}'".format(
+            log.debug("Adding interrupt event for {name} on GPIO{pin:02d} with edge trigger '{edge}'".format(
                     name=pins[pin]["name"], pin=pin, edge=TEXT_INTERRUPT[pins[pin][CONF_KEY_INTERRUPT]]))
             gpio.add_event_detect(
                     pin,
@@ -216,7 +216,7 @@ def pre_loop():
                     bouncetime=config[CONF_KEY_DEBOUNCE]
                 )
         elif pins[pin][CONF_KEY_DIRECTION] == GPIO.OUT:
-            log.debug("Adding MQTT subscriptions for {name} on GPIO{pin}".format(
+            log.debug("Adding MQTT subscriptions for {name} on GPIO{pin:02d}".format(
                     name=pins[pin]["name"], pin=pin))
             subscribe(
                     pins[pin][CONF_KEY_TOPIC] + "/{setter}",
@@ -230,11 +230,11 @@ def pre_loop():
                     }
                 )
             if pins[pin][CONF_KEY_INITIAL] in [config[CONF_KEY_PAYLOAD_ON], config[CONF_KEY_PAYLOAD_OFF]]:
-                log.debug("Setting {name} on GPIO{pin} to initial state '{state}'".format(
+                log.debug("Setting {name} on GPIO{pin:02d} to initial state '{state}'".format(
                         name=pins[pin]["name"], pin=pin, state=pins[pin][CONF_KEY_INITIAL]))
                 set_pin(pin, pins[pin][CONF_KEY_INITIAL])
             else:
-                log.warn("Invalid initial state '{initial_state}' for {name} on GPIO{pin}, setting pin to {state}".format(
+                log.warn("Invalid initial state '{initial_state}' for {name} on GPIO{pin:02d}, setting pin to {state}".format(
                         name=pins[pin]["name"], initial_state=pins[pin][CONF_KEY_INITIAL], pin=pin, state=config[CONF_KEY_PAYLOAD_OFF]))
                 set_pin(pin, config[CONF_KEY_PAYLOAD_OFF])
 
@@ -336,7 +336,7 @@ def interrupt_handler(pin):
     """
     Handles GPIO pin interrupt callbacks
     """
-    log.debug("Interrupt triggered for {name} on GPIO{pin}".format(
+    log.debug("Interrupt triggered for {name} on GPIO{pin:02d}".format(
             name=pins[pin]["name"], pin=pin))
     get_pin(pin)
 
@@ -348,11 +348,11 @@ def get_pin(pin):
     try:
         state = bool(gpio.input(pin)) ^ pins[pin][CONF_KEY_INVERT] # apply the invert flag
     except:
-        log.error("An exception occurred while reading {name} on GPIO{pin}".format(
+        log.error("An exception occurred while reading {name} on GPIO{pin:02d}".format(
                 name=pins[pin]["name"], pin=pin))
         log_traceback(log)
     else:
-        log.debug("Read state '{state}' logic {logic} from {name} on GPIO{pin}".format(
+        log.debug("Read state '{state}' logic {logic} from {name} on GPIO{pin:02d}".format(
             name=pins[pin]["name"],
             state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
             logic=TEXT_LOGIC_STATE[int(state)], pin=pin))
@@ -372,18 +372,18 @@ def set_pin(pin, payload):
     elif payload == config[CONF_KEY_PAYLOAD_OFF]:
         state = False
     else:
-        log.warn("Received unrecognized SET payload '{payload}' for {name} on GPIO{pin}".format(
+        log.warn("Received unrecognized SET payload '{payload}' for {name} on GPIO{pin:02d}".format(
                 name=pins[pin]["name"], payload=payload, pin=pin))
         return
 
     try:
         gpio.output(pin, state ^ pins[pin][CONF_KEY_INVERT])
     except:
-        log.error("An exception occurred while setting {name} on GPIO{pin}".format(
+        log.error("An exception occurred while setting {name} on GPIO{pin:02d}".format(
                 name=pins[pin]["name"], pin=pin))
         log_traceback(log)
     else:
-        log.debug("Set {name} on GPIO{pin} to '{state}' logic {logic}".format(
+        log.debug("Set {name} on GPIO{pin:02d} to '{state}' logic {logic}".format(
             name=pins[pin]["name"], pin=pin, state=payload, logic=TEXT_LOGIC_STATE[int(state)]))
         get_pin(pin) # publish pin state
 
