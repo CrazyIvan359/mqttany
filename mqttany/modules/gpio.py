@@ -121,6 +121,7 @@ def init(config_data={}):
                             "module_topic": raw_config[CONF_KEY_TOPIC],
                             "module_name": TEXT_NAME,
                             "pin": pin,
+                            "pin_name": name,
                             "index": index_sub
                         }
                     ),
