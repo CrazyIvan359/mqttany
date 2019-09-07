@@ -26,7 +26,7 @@ Common
 # SOFTWARE.
 
 import time
-from ctypes import c_char_p
+from ctypes import c_char_p, c_int
 import multiprocessing as mproc
 
 from mqttany import logger
@@ -91,10 +91,10 @@ _gpio_lock = [ # GPIO pin locks
 ]
 
 _i2c_lock = [ # I2C bus locks
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(int, 0), "sda": mproc.Value(int, 0)}, # Bus 0
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(int, 0), "sda": mproc.Value(int, 0)}, # Bus 1
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(int, 0), "sda": mproc.Value(int, 0)}, # Bus 2
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(int, 0), "sda": mproc.Value(int, 0)}, # Bus 3
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(c_int, 0), "sda": mproc.Value(c_int, 0)}, # Bus 0
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(c_int, 0), "sda": mproc.Value(c_int, 0)}, # Bus 1
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(c_int, 0), "sda": mproc.Value(c_int, 0)}, # Bus 2
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(c_int, 0), "sda": mproc.Value(c_int, 0)}, # Bus 3
 ]
 
 

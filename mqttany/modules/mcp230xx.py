@@ -74,7 +74,7 @@ CONF_OPTIONS = OrderedDict([
         ("type", "section"),
         ("required", False),
         (CONF_KEY_BUS_ID, {}),
-        (CONF_KEY_ADDRESS, {"selection": [0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27]}), # '{address:02x}' address in hex, 0 padded 2 chars
+        (CONF_KEY_ADDRESS, {"type": int, "selection": [32, 33, 34, 35, 36, 37, 38, 39]}), # '{address:02x}' address in hex, 0 padded 2 chars
         (CONF_KEY_DEVICE_TYPE, {"selection": {"mcp23008": "MCP23008", "MCP23008": "MCP23008", "23008": "MCP23008", "mcp23017": "MCP23017", "MCP23017": "MCP23017", "23017": "MCP23017"}}),
         (CONF_KEY_TOPIC, {"default": "{device_name}"}),
         ("regex:.+", {
@@ -83,7 +83,7 @@ CONF_OPTIONS = OrderedDict([
             CONF_KEY_PIN: {"type": (int, list)},
             CONF_KEY_TOPIC: {"type": (int, list), "default": "{pin}"},
             CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
-            CONF_KEY_DIRECTION: {"selection": {"input": Direction.INPUT, "in": Direction.INPUT, "output": Direction.OUTPUT, "out": Direction.OUTPUT}},
+            CONF_KEY_DIRECTION: {"default": Direction.INPUT, "selection": {"input": Direction.INPUT, "in": Direction.INPUT, "output": Direction.OUTPUT, "out": Direction.OUTPUT}},
             CONF_KEY_RESISTOR: {"default": "off", "selection": {"pullup": Pull.UP, "up": Pull.UP, "off": "off", "none": "off"}},
             CONF_KEY_INVERT: {"type": bool, "default": False},
             CONF_KEY_INITIAL: {"default": "{payload_off}"},
@@ -128,7 +128,7 @@ def init(config_data={}):
                             "module_topic": raw_config[CONF_KEY_TOPIC],
                             "module_name": TEXT_NAME,
                             "device_topic": device_config[CONF_KEY_TOPIC],
-                            "bus_id": device_config["bus"]["id"],
+                            "bus_id": device_config[CONF_KEY_BUS_ID],
                             "address": device_config[CONF_KEY_ADDRESS],
                             "device_name": device_config["name"],
                             "pin": pin,
@@ -144,7 +144,8 @@ def init(config_data={}):
             }
 
     if detector.board.any_raspberry_pi_40_pin:
-        for bus in microcontroller.i2cPorts:
+        import adafruit_blinka.microcontroller.bcm283x.pin as mc_pins
+        for bus in mc_pins.i2cPorts:
             buses[bus[0]] = {
                     "id": bus[0],
                     "scl": bus[1],
@@ -152,7 +153,7 @@ def init(config_data={}):
                     "devices": [] # list of used addresses
                 }
     else:
-        log.error("Unknown Board {board}".format(board=board_id))
+        log.error("Unsupported Board {board}".format(board=board_id))
         return False
     log.debug("Board is {board}".format(board=board_id))
 
@@ -170,11 +171,11 @@ def init(config_data={}):
                             device_name=device_name, address=device_config[CONF_KEY_ADDRESS],
                             bus_id=device_config[CONF_KEY_BUS_ID], original=[dev for dev in devices if dev[CONF_KEY_ADDRESS]==device_config[CONF_KEY_ADDRESS]][0]["name"]))
                 else:
-                    device_config["bus"] = buses[device_config[CONF_KEY_BUS_ID]]
                     buses[device_config[CONF_KEY_BUS_ID]]["used"] = True
                     buses[device_config[CONF_KEY_BUS_ID]]["devices"].append(device_config[CONF_KEY_ADDRESS])
                     for pin_name in [key for key in device_config if isinstance(device_config[key], dict)]:
                         pin_config = device_config.pop(pin_name)
+                        log.warn(pin_config)
                         if isinstance(pin_config[CONF_KEY_PIN], int):
                             pin = pin_config[CONF_KEY_PIN]
                             if pin in device_config["pins"]:
@@ -200,6 +201,7 @@ def init(config_data={}):
                                     device_config["pins"][pin] = build_pin(pin_name, pin_config, index=index)
                                     log.debug("Configured GP{pin} on {device} at address 0x{address:02x} with options: {options}".format(
                                             pin=pin, device=device_config[CONF_KEY_DEVICE_TYPE], address=device_config[CONF_KEY_ADDRESS], options=device_config["pins"][pin]))
+                    device_config["bus"] = buses[device_config[CONF_KEY_BUS_ID]]
                     devices.append(device_config)
             else:
                 log.error("Invalid bus id '{bus_id}' for device {name}".format(
