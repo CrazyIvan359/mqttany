@@ -104,8 +104,10 @@ def init(config_data={}):
         if pin is None:
             if isinstance(pin_config[CONF_KEY_PIN], list):
                 pin = pin_config[CONF_KEY_PIN][index]
+                index_sub = index + pin_config[CONF_KEY_FIRST_INDEX]
             else:
                 pin = pin_config[CONF_KEY_PIN]
+                index_sub = ""
         if isinstance(pin_config[CONF_KEY_TOPIC], list):
             topic = pin_config[CONF_KEY_TOPIC][index]
         else:
@@ -119,7 +121,7 @@ def init(config_data={}):
                             "module_topic": raw_config[CONF_KEY_TOPIC],
                             "module_name": TEXT_NAME,
                             "pin": pin,
-                            "index": index + pin_config[CONF_KEY_FIRST_INDEX]
+                            "index": index_sub
                         }
                     ),
                 CONF_KEY_DIRECTION: pin_config[CONF_KEY_DIRECTION],
