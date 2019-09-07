@@ -527,7 +527,7 @@ def get_pin(device, pin, gpio=None):
     if device.get("device", False) or init_device(device):
         state = _get_bit(gpio, pin) ^ device["pins"][pin][CONF_KEY_INVERT]
         log.debug("Read state '{state}' logic {logic} from GP{pin} on {device} {device_name} at address {address:02x} on I2C bus '{bus_id}'".format(
-                state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
+                state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF], pin=pin,
                 logic=TEXT_LOGIC_STATE[state], device=device[CONF_KEY_CHIP], device_name=device["name"],
                 address=device["address"], bus_id=device["bus"]["id"]))
         publish(
