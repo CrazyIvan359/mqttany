@@ -144,10 +144,12 @@ def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
     Acquire lock on I2C bus
     Timeout is ms
     """
-    def lock_bus(bus_lock):
+    def lock_bus():
+        bus_lock = False
+        scl_lock = False
         if not _i2c_lock[bus]["lock"].acquire(False):
             if _i2c_lock[bus]["module"].raw != module:
-                return False
+                return (False, False, False)
 
         if bus_lock or _i2c_lock[bus]["lock"].acquire(False):
             bus_lock = True
@@ -155,28 +157,29 @@ def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
             if scl_lock or acquire_gpio_lock(scl, module):
                 scl_lock = True
             else:
-                return False
+                return (False, False, False)
 
             if not acquire_gpio_lock(sda, module):
-                return False
+                return (False, False, False)
 
             _i2c_lock[bus]["module"].raw = module
 
-        return True
+        return (True, bus_lock, scl_lock)
 
 
-    bus_lock = False
-    scl_lock = False
 
     if timeout:
         then = time.time() + ( timeout / 1000 )
         while time.time() < then:
-            if lock_bus(bus_lock):
+            lock, bus_lock, scl_lock = lock_bus()
+            if lock:
                 return True
             else:
                 time.sleep(0.01)
-    elif lock_bus(bus_lock):
-        return True
+    else:
+        lock, bus_lock, scl_lock = lock_bus()
+        if lock:
+            return True
 
     if scl_lock and bus_lock:
         log.warn("Module '{module}' failed to acquire a lock on I2C bus '{bus_id}' because SDA pin {pin} is locked by another module".format(
