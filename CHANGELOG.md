@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.4.0
+
+* __BREAKING CHANGE__: GPIO module configuration changed to friendly names for pin sections.
+  Also supports configuring multiple pins in a single section, refer to example configuration file for details.
+
 ## 0.3.8
 
 * __Added__: Provide MQTT client function `topic_matches_sub` directly from MQTT module.
