@@ -498,7 +498,8 @@ def set_pin(device, pin, payload):
         release_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME)
         log.debug("Set state '{state}' logic {logic} from GP{pin:02d} on {device} {device_name} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
                 state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
-                logic=TEXT_LOGIC_STATE[state], device=device[CONF_KEY_CHIP], device_name=device["name"],
+                logic=TEXT_LOGIC_STATE[state ^ device["pins"][pin][CONF_KEY_INVERT]],
+                device=device[CONF_KEY_CHIP], device_name=device["name"],
                 address=device["address"], bus_id=device["bus"]["id"]))
         get_pin(device, pin)
     else:
@@ -527,7 +528,8 @@ def get_pin(device, pin, gpio=None):
         state = _get_bit(gpio, pin) ^ device["pins"][pin][CONF_KEY_INVERT]
         log.debug("Read state '{state}' logic {logic} from GP{pin:02d} on {device} {device_name} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
                 state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF], pin=pin,
-                logic=TEXT_LOGIC_STATE[state], device=device[CONF_KEY_CHIP], device_name=device["name"],
+                logic=TEXT_LOGIC_STATE[state ^ device["pins"][pin][CONF_KEY_INVERT]],
+                device=device[CONF_KEY_CHIP], device_name=device["name"],
                 address=device["address"], bus_id=device["bus"]["id"]))
         publish(
                 device["pins"][pin][CONF_KEY_TOPIC],
