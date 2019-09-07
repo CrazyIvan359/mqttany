@@ -113,8 +113,10 @@ def init(config_data={}):
         if pin is None:
             if isinstance(pin_config[CONF_KEY_PIN], list):
                 pin = pin_config[CONF_KEY_PIN][index]
+                index_sub = index + pin_config[CONF_KEY_FIRST_INDEX]
             else:
                 pin = pin_config[CONF_KEY_PIN]
+                index_sub = ""
         if isinstance(pin_config[CONF_KEY_TOPIC], list):
             topic = pin_config[CONF_KEY_TOPIC][index]
         else:
@@ -132,7 +134,7 @@ def init(config_data={}):
                             "address": device_config[CONF_KEY_ADDRESS],
                             "device_name": device_config["name"],
                             "pin": pin,
-                            "index": index + pin_config[CONF_KEY_FIRST_INDEX]
+                            "index": index_sub
                         }
                     ),
                 CONF_KEY_DIRECTION: pin_config[CONF_KEY_DIRECTION],
