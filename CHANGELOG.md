@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.4.1
+
+* __Added__: GPIO pin topics can now use `pin_name` substitution.
+* __Fixed__: GPIO logging of logic state wrong if using `invert: true` for pin.
+* __Fixed__: MQTT `resolve_topic` now replaces whitespace with `_`.
+* __Fixed__: Argparse error where no verbosity would result in an invalid `NoneType` comparison.
+
 ## 0.4.0
 
 * __BREAKING CHANGE__: GPIO module configuration changed to friendly names for pin sections.
