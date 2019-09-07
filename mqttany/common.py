@@ -216,3 +216,7 @@ def release_i2c_lock(bus, scl, sda, module):
         _i2c_lock[bus]["lock"].release()
 
     return True
+
+
+for key in _i2c_lock:
+    _i2c_lock[key]["module"].raw = ""

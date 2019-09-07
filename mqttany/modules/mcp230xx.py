@@ -55,7 +55,7 @@ CONF_KEY_PAYLOAD_OFF = "payload off"
 CONF_KEY_POLL_INT = "polling interval"
 CONF_KEY_BUS_ID = "bus id"
 CONF_KEY_ADDRESS = "address"
-CONF_KEY_DEVICE_TYPE = "device"
+CONF_KEY_CHIP = "chip"
 CONF_KEY_PIN = "pin"
 CONF_KEY_FIRST_INDEX = "first index"
 CONF_KEY_DIRECTION = "direction"
@@ -75,7 +75,7 @@ CONF_OPTIONS = OrderedDict([
         ("required", False),
         (CONF_KEY_BUS_ID, {}),
         (CONF_KEY_ADDRESS, {"type": int, "selection": [32, 33, 34, 35, 36, 37, 38, 39]}), # '{address:02x}' address in hex, 0 padded 2 chars
-        (CONF_KEY_DEVICE_TYPE, {"selection": {"mcp23008": "MCP23008", "MCP23008": "MCP23008", "23008": "MCP23008", "mcp23017": "MCP23017", "MCP23017": "MCP23017", "23017": "MCP23017"}}),
+        (CONF_KEY_CHIP, {"selection": {"mcp23008": "MCP23008", "MCP23008": "MCP23008", "23008": "MCP23008", "mcp23017": "MCP23017", "MCP23017": "MCP23017", "23017": "MCP23017"}}),
         (CONF_KEY_TOPIC, {"default": "{device_name}"}),
         ("regex:.+", {
             "type": "section",
@@ -180,26 +180,26 @@ def init(config_data={}):
                             if pin in device_pins:
                                 log.warn("Duplicate configuration for GP{pin} found in {pin_name} for {device_name} will be ignored, pin already configured under '{original}'".format(
                                         pin=pin, pin_name=pin_name, device_name=device_name, original=device_pins[pin]["name"]))
-                            elif pin > DEVICE_PIN_MAX[device_config[CONF_KEY_DEVICE_TYPE]]:
+                            elif pin > DEVICE_PIN_MAX[device_config[CONF_KEY_CHIP]]:
                                 log.warn("Found pin GP{pin} in {pin_name} for {device_name} but highest pin for {device} is GP{max}".format(
-                                        pin=pin, pin_name=pin_name, device_name=device_name, device=device_config[CONF_KEY_DEVICE_TYPE], max=DEVICE_PIN_MAX[device_config[CONF_KEY_DEVICE_TYPE]]))
+                                        pin=pin, pin_name=pin_name, device_name=device_name, device=device_config[CONF_KEY_CHIP], max=DEVICE_PIN_MAX[device_config[CONF_KEY_CHIP]]))
                             else:
                                 device_pins[pin] = build_pin(pin_name, pin_config)
                                 log.debug("Configured GP{pin} on {device} at address 0x{address:02x} with options: {options}".format(
-                                        pin=pin, device=device_config[CONF_KEY_DEVICE_TYPE], address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
+                                        pin=pin, device=device_config[CONF_KEY_CHIP], address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
                         elif isinstance(pin_config[CONF_KEY_PIN], list):
                             for index in range(len(pin_config[CONF_KEY_PIN])):
                                 pin = pin_config[CONF_KEY_PIN][index]
                                 if pin in device_pins:
                                     log.warn("Duplicate configuration for GP{pin} found in {pin_name} for {device_name} will be ignored, pin already configured under '{original}'".format(
                                             pin=pin, pin_name=pin_name, device_name=device_name, original=device_pins[pin]["name"]))
-                                elif pin > DEVICE_PIN_MAX[device_config[CONF_KEY_DEVICE_TYPE]]:
+                                elif pin > DEVICE_PIN_MAX[device_config[CONF_KEY_CHIP]]:
                                     log.warn("Found pin GP{pin} in {pin_name} for {device_name} but highest pin for {device} is GP{max}".format(
-                                            pin=pin, pin_name=pin_name, device_name=device_name, device=device_config[CONF_KEY_DEVICE_TYPE], max=DEVICE_PIN_MAX[device_config[CONF_KEY_DEVICE_TYPE]]))
+                                            pin=pin, pin_name=pin_name, device_name=device_name, device=device_config[CONF_KEY_CHIP], max=DEVICE_PIN_MAX[device_config[CONF_KEY_CHIP]]))
                                 else:
                                     device_pins[pin] = build_pin(pin_name, pin_config, index=index)
                                     log.debug("Configured GP{pin} on {device} at address 0x{address:02x} with options: {options}".format(
-                                            pin=pin, device=device_config[CONF_KEY_DEVICE_TYPE], address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
+                                            pin=pin, device=device_config[CONF_KEY_CHIP], address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
                     device_config["bus"] = buses[device_config[CONF_KEY_BUS_ID]]
                     device_config["pins"] = device_pins
                     devices.append(device_config)
@@ -380,10 +380,10 @@ def init_device(device):
     if bus.get("busio", False):
         log.info("Initializing {device_name}".format(device_name=device["name"]))
         log.info("Initializing {device} at address {address:02x} on I2C bus '{bus_id}'".format(
-                device=device[CONF_KEY_DEVICE_TYPE], address=device["address"], bus_id=bus["id"]))
+                device=device[CONF_KEY_CHIP], address=device["address"], bus_id=bus["id"]))
         if acquire_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME, timeout=5000):
             try:
-                clazz = getattr(sys.modules[__name__], device[CONF_KEY_DEVICE_TYPE])
+                clazz = getattr(sys.modules[__name__], device[CONF_KEY_CHIP])
                 device["device"] = clazz(bus["busio"], device["address"])
 
             except ValueError:
@@ -415,7 +415,7 @@ def init_device(device):
                     pin_config = device["pins"][pin]
                     log.debug("Setting up {pin_name} on GP{pin} as {direction} on {device} at address {address:02x} on I2C bus '{bus_id}'".format(
                             pin_name=pin_config["name"], pin=pin, direction=TEXT_DIRECTION[pin_config[CONF_KEY_DIRECTION]],
-                            device=device[CONF_KEY_DEVICE_TYPE], address=device["address"], bus_id=bus["id"]))
+                            device=device[CONF_KEY_CHIP], address=device["address"], bus_id=bus["id"]))
                     subscribe(
                             pin_config[CONF_KEY_TOPIC] + "/{getter}",
                             callback=callback_getter,
@@ -435,7 +435,7 @@ def init_device(device):
 
                     if pin_config[CONF_KEY_RESISTOR] == Pull.UP:
                         log.debug("Setting pull-up resistor for {pin_name} on GP{pin} on {device} at address {address:02x} on I2C bus '{bus_id}'".format(
-                                pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_DEVICE_TYPE], address=device["address"], bus_id=bus["id"]))
+                                pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_CHIP], address=device["address"], bus_id=bus["id"]))
                         gppu = _set_bit(gppu, pin)
 
                     if pin_config[CONF_KEY_INITIAL] == config[CONF_KEY_PAYLOAD_ON]:
@@ -444,35 +444,35 @@ def init_device(device):
                         gpio = _set_bit(gpio, pin, 0 ^ pin_config[CONF_KEY_INVERT])
                     else:
                         log.warn("Invalid initial state '{state}' for {pin_name} on GP{pin} on {device} at address {address:02x} on I2C bus '{bus_id}'".format(
-                            state=_get_bit(gpio, pin), pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_DEVICE_TYPE], address=device["address"], bus_id=bus["id"]))
+                            state=_get_bit(gpio, pin), pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_CHIP], address=device["address"], bus_id=bus["id"]))
                         gpio = _set_bit(gpio, pin, 0 ^ pin_config[CONF_KEY_INVERT])
                     log.debug("Setting initial state '{state}' for {pin_name} on GP{pin} on {device} at address {address:02x} on I2C bus '{bus_id}'".format(
-                            state=_get_bit(gpio, pin), pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_DEVICE_TYPE], address=device["address"], bus_id=bus["id"]))
+                            state=_get_bit(gpio, pin), pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_CHIP], address=device["address"], bus_id=bus["id"]))
 
                 log.debug("Writing IODIR register to {device} {device_name} at address {address:02x} on I2C bus '{bus_id}': {value}".format(
-                        device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(gpio)))
+                        device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(gpio)))
                 device["device"].iodir = iodir
 
                 log.debug("Writing GPPU register to {device} {device_name} at address {address:02x} on I2C bus '{bus_id}': {value}".format(
-                        device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(gpio)))
+                        device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(gpio)))
                 device["device"].gppu = gppu
 
                 log.debug("Writing GPIO register to {device} {device_name} at address {address:02x} on I2C bus '{bus_id}': {value}".format(
-                        device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(gpio)))
+                        device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"], value=bin(gpio)))
                 device["device"].gpio = gpio
 
                 log.debug("Successfully initialized {device} {device_name} at address {address:02x} on I2C bus '{bus_id}'".format(
-                        device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
+                        device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
 
             finally:
                 release_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME)
         else:
             log.error("Failed to initialize {device} {device_name} at address {address:02x} was not able to lock I2C bus '{bus_id}'".format(
-                    device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
+                    device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
 
     else:
         log.error("Unable to initialize {device} {device_name} at address {address:02x} because I2C bus '{bus_id}' is not configured".format(
-                device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
+                device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
 
     return True if device.get("device", False) else False
 
@@ -499,12 +499,12 @@ def set_pin(device, pin, payload):
         release_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME)
         log.debug("Set state '{state}' logic {logic} from GP{pin} on {device} {device_name} at address {address:02x} on I2C bus '{bus_id}'".format(
                 state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
-                logic=TEXT_LOGIC_STATE[state], device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"],
+                logic=TEXT_LOGIC_STATE[state], device=device[CONF_KEY_CHIP], device_name=device["name"],
                 address=device["address"], bus_id=device["bus"]["id"]))
         get_pin(device, pin)
     else:
         log.warn("Failed to set {pin_name} GP{pin} on {device} {device_name} was not able to lock I2C bus '{bus_id}'".format(
-                pin_name=device["pins"][pin]["name"], pin=pin, device=device[CONF_KEY_DEVICE_TYPE],
+                pin_name=device["pins"][pin]["name"], pin=pin, device=device[CONF_KEY_CHIP],
                 device_name=device["name"], bus_id=bus["id"]))
 
 
@@ -520,7 +520,7 @@ def get_pin(device, pin, gpio=None):
             release_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME)
         else:
             log.warn("Failed to read {pin_name} GP{pin} on {device} {device_name} was not able to lock I2C bus '{bus_id}'".format(
-                    pin_name=device["pins"][pin]["name"], pin=pin, device=device[CONF_KEY_DEVICE_TYPE],
+                    pin_name=device["pins"][pin]["name"], pin=pin, device=device[CONF_KEY_CHIP],
                     device_name=device["name"], bus_id=bus["id"]))
             return
 
@@ -528,7 +528,7 @@ def get_pin(device, pin, gpio=None):
         state = _get_bit(gpio, pin) ^ device["pins"][pin][CONF_KEY_INVERT]
         log.debug("Read state '{state}' logic {logic} from GP{pin} on {device} {device_name} at address {address:02x} on I2C bus '{bus_id}'".format(
                 state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
-                logic=TEXT_LOGIC_STATE[state], device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"],
+                logic=TEXT_LOGIC_STATE[state], device=device[CONF_KEY_CHIP], device_name=device["name"],
                 address=device["address"], bus_id=device["bus"]["id"]))
         publish(
                 device["pins"][pin][CONF_KEY_TOPIC],
@@ -545,7 +545,7 @@ def poll_device(device):
 
     if device.get("device", False) or init_device(device):
         log.debug("Polling all pins of {device} {device_name} at address {address:02x} on I2C bus '{bus_id}'".format(
-                device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
+                device=device[CONF_KEY_CHIP], device_name=device["name"], address=device["address"], bus_id=bus["id"]))
 
         if acquire_i2c_lock(bus["id"], bus["scl"], bus["sda"], TEXT_NAME, timeout=5000):
             gpio = device["device"].gpio
@@ -554,7 +554,7 @@ def poll_device(device):
                 get_pin(device, pin, gpio=gpio)
         else:
             log.warn("Failed to poll all pins of {device} {device_name} was not able to lock I2C bus '{bus_id}'".format(
-                    device=device[CONF_KEY_DEVICE_TYPE], device_name=device["name"], bus_id=bus["id"]))
+                    device=device[CONF_KEY_CHIP], device_name=device["name"], bus_id=bus["id"]))
 
 
 
