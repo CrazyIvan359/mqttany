@@ -90,6 +90,13 @@ _gpio_lock = [ # GPIO pin locks
     {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 47
 ]
 
+_i2c_lock = [ # I2C bus locks
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(int, 0), "sda": mproc.Value(int, 0)}, # Bus 0
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(int, 0), "sda": mproc.Value(int, 0)}, # Bus 1
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(int, 0), "sda": mproc.Value(int, 0)}, # Bus 2
+    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(int, 0), "sda": mproc.Value(int, 0)}, # Bus 3
+]
+
 
 def acquire_gpio_lock(pin, module, timeout=0):
     """
@@ -128,5 +135,81 @@ def release_gpio_lock(pin, module):
             return False
     else:
         _gpio_lock[pin]["lock"].release()
+
+    return True
+
+
+def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
+    """
+    Acquire lock on I2C bus
+    Timeout is ms
+    """
+    def lock_bus():
+        if _i2c_lock[bus]["lock"].locked and _i2c_lock[bus]["module"].raw != module:
+            return False
+
+        if bus_lock or _i2c_lock[bus]["lock"].acquire(False):
+            bus_lock = True
+
+            if scl_lock or acquire_gpio_lock(scl, module):
+                scl_lock = True
+            else:
+                return False
+
+            if not acquire_gpio_lock(sda, module):
+                return False
+
+            _i2c_lock[bus]["module"].raw = module
+
+        return True
+
+
+    bus_lock = False
+    scl_lock = False
+
+    if timeout:
+        then = time.time() + ( timeout / 1000 )
+        while time.time() < then:
+            if lock_bus():
+                return True
+            else:
+                time.sleep(0.01)
+    elif lock_bus():
+        return True
+
+    if scl_lock and bus_lock:
+        log.warn("Module '{module}' failed to acquire a lock on I2C bus '{bus_id}' because SDA pin {pin} is locked by another module".format(
+                module=module, bus_id=bus, pin=sda))
+    elif bus_lock:
+        log.warn("Module '{module}' failed to acquire a lock on I2C bus '{bus_id}' because SCL pin {pin} is locked by another module".format(
+                module=module, bus_id=bus, pin=scl))
+    else:
+        log.warn("Module '{module}' failed to acquire a lock on I2C bus '{bus_id}' because '{owner}' already has a lock on it".format(
+                module=module, bus_id=bus, owner=_i2c_lock[bus]["module"].raw))
+
+    if scl_lock:
+        release_gpio_lock(scl, module)
+
+    if bus_lock:
+        _i2c_lock[bus]["lock"].release()
+
+    return False
+
+
+def release_i2c_lock(bus, scl, sda, module):
+    """
+    Release lock on I2C bus
+    """
+    if _i2c_lock[bus]["lock"].locked:
+        # prevent releasing a lock a module doesn't have
+        if _i2c_lock[bus]["module"].raw == module:
+            release_gpio_lock(sda, module)
+            release_gpio_lock(scl, module)
+            _i2c_lock[bus]["lock"].release()
+            _i2c_lock[bus]["module"].raw = ""
+        else:
+            log.warn("Module '{module}' attempted to release a lock on I2C bus '{bus_id}' but it is locked by '{owner}'".format(
+                module=module, bus_id=bus, owner=_i2c_lock[bus]["module"].raw))
+            return False
 
     return True

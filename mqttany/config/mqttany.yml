@@ -73,7 +73,7 @@ mqtt:
   #debounce: 200 # in milliseconds
 
   ### Single Pin Configuration
-  #Single:
+  #Friendly Name:
 
     ### Pin Number
     #pin: 1
@@ -113,3 +113,61 @@ mqtt:
     ### First Index
     # this number will be added to 'index' when substituting '{index}' in topics
     #first index: 1
+
+
+
+######## MCP230xx Module ########
+#mcp230xx:
+
+  ### Module Topic
+  #topic: '{module_name}'
+
+  ### Setter Topic
+  # messages sent here will set a pin if it's configured as an output
+  # default resolves to '{root_topic}/{module_name}/{bus_id}/{address:02x}/{pin}/set'
+  #topic set: 'set'
+
+  ### Getter Topic
+  # any message here will cause pin state to be read published
+  # default resolves to '{root_topic}/{module_name}/{bus_id}/{address:02x}/{pin}/get'
+  #topic get: 'get'
+
+  ### Poll Topic
+  # any message here will cause all pin states to be published
+  # default for all devices resolves to '{root_topic}/{module_name}/poll'
+  # default for single device resolves to '{root_topic}/{module_name}/{bus_id}/{address:02x}/poll'
+  #topic poll: 'poll'
+
+  ### ON Payload
+  #payload on: 'ON' # message for pin ON
+
+  ### OFF Payload
+  #payload off: 'OFF' # message for pin OFF
+
+  ### Polling Interval
+  #polling interval: 0.0 # interval in seconds to poll all pins
+
+  ### Device Configuration
+  #Friendly Name:
+
+    ### I2C Bus ID
+    # ID of the I2C bus to use on your SBC
+    # ex. Raspberry Pi 3 this will probably be 1
+    #bus id:
+
+    ### Device Address
+    # 7-bit hex address of the device (ex. 0x20)
+    #address: 0x
+
+    ### Device Type
+    # Can be either 'MCP23017' or 'MCP23008'
+    #device:
+
+    ### Device Topic
+    # Substitutions: {device_name} = Friendly name of device's section in config file
+    #                {address:02x} = Device address in hex (ex. '20')
+    #topic: '{device_name}'
+
+    ### Pin Configurations
+    # Refer to the GPIO Module pin configurations
+    # The 'interrupt' option is not yet supported
