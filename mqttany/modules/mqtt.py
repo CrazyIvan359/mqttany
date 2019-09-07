@@ -185,6 +185,7 @@ def resolve_topic(topic, subtopics=[], substitutions={}):
         )
 
     topic = topic.strip("/") # remove leading or trailing slash
+    topic = topic.replace(" ", "_") # remove spaces
     return topic
 
 def publish(topic, payload, qos=None, retain=None, subtopics=[], substitutions={}):
