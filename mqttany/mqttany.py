@@ -25,7 +25,7 @@ MQTTany
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__version__ = "0.4.1"
+__version__ = "0.5.0"
 
 import signal, time, sys, argparse
 import multiprocessing as mproc

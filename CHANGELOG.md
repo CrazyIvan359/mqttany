@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.5.0
+
+* __Added__: MCP230xx module to support MCP23017 and MCP23008 I/O Expanders over I2C.
+
 ## 0.4.1
 
 * __Added__: GPIO pin topics can now use `pin_name` substitution.
