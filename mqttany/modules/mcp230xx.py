@@ -426,17 +426,16 @@ def init_device(device):
 
                     if pin_config[CONF_KEY_DIRECTION] == Direction.INPUT:
                         iodir = _set_bit(iodir, pin)
+                        if pin_config[CONF_KEY_RESISTOR] == Pull.UP:
+                            log.debug("Setting pull-up resistor for {pin_name} on GP{pin:02d} on {device} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
+                                    pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_CHIP], address=device["address"], bus_id=bus["id"]))
+                            gppu = _set_bit(gppu, pin)
                     else:
                         subscribe(
                                 pin_config[CONF_KEY_TOPIC] + "/{setter}",
                                 callback=callback_setter,
                                 substitutions={"setter": config[CONF_KEY_TOPIC_SETTER]}
                             )
-
-                    if pin_config[CONF_KEY_RESISTOR] == Pull.UP:
-                        log.debug("Setting pull-up resistor for {pin_name} on GP{pin:02d} on {device} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
-                                pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_CHIP], address=device["address"], bus_id=bus["id"]))
-                        gppu = _set_bit(gppu, pin)
 
                     if pin_config[CONF_KEY_INITIAL] == config[CONF_KEY_PAYLOAD_ON]:
                         gpio = _set_bit(gpio, pin, 1 ^ pin_config[CONF_KEY_INVERT])
