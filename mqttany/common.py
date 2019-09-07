@@ -145,7 +145,8 @@ def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
     Timeout is ms
     """
     def lock_bus():
-        if _i2c_lock[bus]["lock"].locked and _i2c_lock[bus]["module"].raw != module:
+        if not _i2c_lock[bus]["lock"].acquire(False):
+            if _i2c_lock[bus]["module"].raw != module:
             return False
 
         if bus_lock or _i2c_lock[bus]["lock"].acquire(False):
@@ -200,7 +201,7 @@ def release_i2c_lock(bus, scl, sda, module):
     """
     Release lock on I2C bus
     """
-    if _i2c_lock[bus]["lock"].locked:
+    if not _i2c_lock[bus]["lock"].acquire(False):
         # prevent releasing a lock a module doesn't have
         if _i2c_lock[bus]["module"].raw == module:
             release_gpio_lock(sda, module)
@@ -211,5 +212,7 @@ def release_i2c_lock(bus, scl, sda, module):
             log.warn("Module '{module}' attempted to release a lock on I2C bus '{bus_id}' but it is locked by '{owner}'".format(
                 module=module, bus_id=bus, owner=_i2c_lock[bus]["module"].raw))
             return False
+    else:
+        _i2c_lock[bus]["lock"].release()
 
     return True
