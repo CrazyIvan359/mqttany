@@ -355,7 +355,7 @@ def get_pin(pin):
         log.debug("Read state '{state}' logic {logic} from {name} on GPIO{pin:02d}".format(
             name=pins[pin]["name"],
             state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
-            logic=TEXT_LOGIC_STATE[int(state)], pin=pin))
+            logic=TEXT_LOGIC_STATE[int(state ^ pins[pin][CONF_KEY_INVERT])], pin=pin))
         publish(
                 pins[pin][CONF_KEY_TOPIC],
                 payload=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF]
@@ -384,7 +384,7 @@ def set_pin(pin, payload):
         log_traceback(log)
     else:
         log.debug("Set {name} on GPIO{pin:02d} to '{state}' logic {logic}".format(
-            name=pins[pin]["name"], pin=pin, state=payload, logic=TEXT_LOGIC_STATE[int(state)]))
+            name=pins[pin]["name"], pin=pin, state=payload, logic=TEXT_LOGIC_STATE[int(state ^ pins[pin][CONF_KEY_INVERT])]))
         get_pin(pin) # publish pin state
 
 
