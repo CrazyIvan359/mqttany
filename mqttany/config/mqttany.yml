@@ -124,18 +124,18 @@ mqtt:
 
   ### Setter Topic
   # messages sent here will set a pin if it's configured as an output
-  # default resolves to '{root_topic}/{module_name}/{bus_id}/{address:02x}/{pin}/set'
+  # default resolves to '{root_topic}/{module_name}/{device_name}/{pin}/set'
   #topic set: 'set'
 
   ### Getter Topic
   # any message here will cause pin state to be read published
-  # default resolves to '{root_topic}/{module_name}/{bus_id}/{address:02x}/{pin}/get'
+  # default resolves to '{root_topic}/{module_name}/{device_name}/{pin}/get'
   #topic get: 'get'
 
   ### Poll Topic
-  # any message here will cause all pin states to be published
+  # any message here will cause pin states from all devices to be published
   # default for all devices resolves to '{root_topic}/{module_name}/poll'
-  # default for single device resolves to '{root_topic}/{module_name}/{bus_id}/{address:02x}/poll'
+  # default for single device resolves to '{root_topic}/{module_name}/{device_name}/poll'
   #topic poll: 'poll'
 
   ### ON Payload
@@ -164,8 +164,10 @@ mqtt:
     #device:
 
     ### Device Topic
-    # Substitutions: {device_name} = Friendly name of device's section in config file
-    #                {address:02x} = Device address in hex (ex. '20')
+    # Additional Substitutions:
+    # - {device_name} = friendly name of device's section in config file
+    # - {address:02x} = device address in hex (ex. '20')
+    # - {bus_id} = device's I2C bus id
     #topic: '{device_name}'
 
     ### Pin Configurations
