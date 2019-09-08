@@ -29,7 +29,7 @@ import socket, time, sys
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 import paho.mqtt.client as mqtt
-from paho.mqtt.client import topic_matches_sub
+from paho.mqtt.client import topic_matches_sub as mqtt_topic_matches_sub
 
 import logger
 log = logger.get_module_logger()
@@ -183,9 +183,18 @@ def resolve_topic(topic, subtopics=[], substitutions={}):
             **substitutions
         )
 
-    topic = topic.strip("/") # remove leading or trailing slash
     topic = topic.replace(" ", "_") # remove spaces
     return topic
+
+def topic_matches_sub(sub, topic):
+    """Check whether a topic matches a subscription.
+
+    For example:
+
+    foo/bar would match the subscription foo/# or +/bar
+    non/matching would not match the subscription non/+/+
+    """
+    return mqtt_topic_matches_sub(sub, topic.strip("/"))
 
 def publish(topic, payload, qos=None, retain=None, subtopics=[], substitutions={}):
     """
@@ -204,7 +213,7 @@ def publish(topic, payload, qos=None, retain=None, subtopics=[], substitutions={
 
 def _publish(topic, payload, qos=None, retain=None, subtopics=[], substitutions={}):
     client.publish(
-            resolve_topic(topic, subtopics=subtopics, substitutions=substitutions),
+            resolve_topic(topic, subtopics=subtopics, substitutions=substitutions).strip("/"),
             payload=payload,
             qos=qos if qos is not None else config[CONF_KEY_QOS],
             retain=retain if retain is not None else config[CONF_KEY_RETAIN]
@@ -228,7 +237,7 @@ def subscribe(topic, qos=0, callback=None, subtopics=[], substitutions={}):
         })
 
 def _subscribe(topic, qos=0, callback=None, subtopics=[], substitutions={}):
-    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
+    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions).strip("/")
     log.debug("Subscribing to topic '{topic}'".format(topic=topic))
     if not [sub for sub in subscriptions if sub["topic"] == topic]:
         subscriptions.append({"topic": topic, "qos": qos})
@@ -253,7 +262,7 @@ def unsubscribe(topic, callback=None, subtopics=[], substitutions={}):
         })
 
 def _unsubscribe(topic, callback=None, subtopics=[], substitutions={}):
-    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
+    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions).strip("/")
     log.debug("Removing subscription to topic '{topic}'".format(topic=topic))
     subs = [sub for sub in subscriptions if sub["topic"] == topic]
     for sub in subs: subscriptions.remove(sub)
@@ -275,7 +284,7 @@ def add_message_callback(topic, callback, subtopics=[], substitutions={}):
         })
 
 def _add_message_callback(topic, callback, subtopics=[], substitutions={}):
-    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
+    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions).strip("/")
     if not [cb for cb in on_message_callbacks if cb["topic"] == topic]:
         log.debug("Adding callback '{callback}' for messages matching topic '{topic}'".format(
                 callback=callback.__name__, topic=topic))
@@ -300,7 +309,7 @@ def remove_message_callback(topic, subtopics=[], substitutions={}):
         })
 
 def _remove_message_callback(topic, subtopics=[], substitutions={}):
-    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
+    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions).strip("/")
     log.debug("Removing callback for messages matching topic '{topic}'".format(topic=topic))
     cbs = [cb for cb in on_message_callbacks if cb["topic"] == topic]
     for cb in cbs: on_message_callbacks.remove(cb)
