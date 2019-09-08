@@ -119,9 +119,9 @@ def pre_loop():
         )
     client.will_set(
             topic=resolve_topic(config[CONF_KEY_TOPIC_LWT]),
-            payload="0",
+            payload="Offline",
             qos=config[CONF_KEY_QOS],
-            retain=config[CONF_KEY_RETAIN]
+            retain=True
         )
     client.reconnect_delay_set(
             min_delay=1,
@@ -152,9 +152,8 @@ def post_loop():
     log.debug("Disconnecting")
     discon_msg = client.publish(
             topic=resolve_topic(config[CONF_KEY_TOPIC_LWT]),
-            payload="0",
-            qos=config[CONF_KEY_QOS],
-            retain=config[CONF_KEY_RETAIN]
+            payload="Offline",
+            retain=True
         )
     if discon_msg.rc == mqtt.MQTT_ERR_SUCCESS: discon_msg.wait_for_publish()
     client.disconnect()
@@ -373,9 +372,8 @@ def _on_connect(client, userdata, flags, rc):
         log.debug("Resuming previous session" if flags["session present"] else "Starting new session")
         client.publish(
             topic=resolve_topic(config[CONF_KEY_TOPIC_LWT]),
-            payload="1",
-            qos=config[CONF_KEY_QOS],
-            retain=config[CONF_KEY_RETAIN]
+            payload="Online",
+            retain=True
         )
         for sub in subscriptions:
             subscribe(**sub)
