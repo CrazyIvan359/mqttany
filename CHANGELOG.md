@@ -1,4 +1,12 @@
-# Change Log
+# MQTTany Change Log
+
+## 0.5.1
+
+* __Fixed__: MQTT prevent ability to provide reserved substitutions to `resolve_topic`.
+* __Fixed__: MQTT absolute topics not being resolved correctly.
+* __Changed__: Improvements to service file.
+* __Changed__: Requirements separated based on modules.
+* __Fixed__: MQTT LWT messages are now retained.
 
 ## 0.5.0
 
