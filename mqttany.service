@@ -1,15 +1,18 @@
 [Unit]
-Description=MQTT connector for many things
+Description=MQTTany connects things to MQTT
 After=syslog.target network.target
 
 [Service]
 Type=simple
-;User=
-;Group=
+User=
+Group=
 WorkingDirectory=/opt/mqttany/mqttany
 ExecStart=/usr/bin/python3 mqttany.py
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
 ;StandardOutput=syslog
-StandardError=syslog
+;StandardError=syslog
 
 [Install]
 WantedBy=multi-user.target
