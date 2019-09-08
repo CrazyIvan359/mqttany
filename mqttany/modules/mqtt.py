@@ -174,6 +174,11 @@ def resolve_topic(topic, subtopics=[], substitutions={}):
                 topic = subtopics[i] + "/" + topic
             topic = "{root_topic}/" + topic
 
+    # remove reserved substitutions
+    substitutions.pop("root_topic", None)
+    substitutions.pop("hostname", None)
+    substitutions.pop("client_id", None)
+
     for i in range(4):
         # this is done in case any substitutions contain substitutions
         topic = topic.format(
