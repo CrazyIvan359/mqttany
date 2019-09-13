@@ -173,5 +173,7 @@ def resolve_type(value):
             return literal_eval(value)
         except ValueError:
             pass
+        except SyntaxError: # happens with single topics starting with '/'
+            pass
         # unparseable, return as str
         return value
