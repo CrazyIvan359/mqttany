@@ -1,5 +1,10 @@
 # MQTTany Change Log
 
+## 0.5.2
+
+* __Fixed__: Crash when parsing single relative topics.
+  `literal_eval` throws a syntax error when passed a string starting with `/`.
+
 ## 0.5.1
 
 * __Fixed__: MQTT prevent ability to provide reserved substitutions to `resolve_topic`.
