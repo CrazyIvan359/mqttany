@@ -1,5 +1,13 @@
 # MQTTany Change Log
 
+## 0.5.3
+
+* __Fixed__: MCP230xx wrong pin state being published after setting pin.
+  State was being read back from device too fast, now we cache the new state.
+* __Fixed__: MCP230xx not matching messages for pins with absolute topics because of leading `/`.
+* __Fixed__: MCP230xx incorrect types `(int, list)` for pin topics, should be `(str, list)`.
+* __Fixed__: MCP230xx missing key `pin_name` in topic substitutions for pin topics.
+
 ## 0.5.2
 
 * __Fixed__: Crash when parsing single relative topics.
