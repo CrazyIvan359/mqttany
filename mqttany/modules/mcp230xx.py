@@ -133,6 +133,7 @@ def init(config_data={}):
                             "bus_id": device_config[CONF_KEY_BUS_ID],
                             "address": device_config[CONF_KEY_ADDRESS],
                             "device_name": device_config["name"],
+                            "pin_name": name,
                             "pin": pin,
                             "index": index_sub
                         }
