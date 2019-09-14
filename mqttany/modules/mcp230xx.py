@@ -81,7 +81,7 @@ CONF_OPTIONS = OrderedDict([
             "type": "section",
             "required": False,
             CONF_KEY_PIN: {"type": (int, list)},
-            CONF_KEY_TOPIC: {"type": (int, list), "default": "{pin}"},
+            CONF_KEY_TOPIC: {"type": (str, list), "default": "{pin}"},
             CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
             CONF_KEY_DIRECTION: {"default": Direction.INPUT, "selection": {"input": Direction.INPUT, "in": Direction.INPUT, "output": Direction.OUTPUT, "out": Direction.OUTPUT}},
             CONF_KEY_RESISTOR: {"default": "off", "selection": {"pullup": Pull.UP, "up": Pull.UP, "off": "off", "none": "off"}},
