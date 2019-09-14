@@ -500,14 +500,15 @@ def set_pin(device, pin, payload):
 
     if acquire_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME, timeout=5000):
         state = state ^ device["pins"][pin][CONF_KEY_INVERT]
-        device["device"].gpio = _set_bit(device["device"].gpio, pin, state)
+        device_gpio = device["device"].gpio
+        device["device"].gpio = _set_bit(device_gpio, pin, state)
         release_i2c_lock(bus["id"], bus["scl"].id, bus["sda"].id, TEXT_NAME)
         log.debug("Set state '{state}' logic {logic} from GP{pin:02d} on {device} {device_name} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
                 state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
                 logic=TEXT_LOGIC_STATE[state ^ device["pins"][pin][CONF_KEY_INVERT]],
                 pin=pin, device=device[CONF_KEY_CHIP], device_name=device["name"],
                 address=device["address"], bus_id=device["bus"]["id"]))
-        get_pin(device, pin)
+        get_pin(device, pin, gpio=device_gpio)
     else:
         log.warn("Failed to set {pin_name} GP{pin:02d} on {device} {device_name} was not able to lock I2C bus '{bus_id}'".format(
                 pin_name=device["pins"][pin]["name"], pin=pin, device=device[CONF_KEY_CHIP],
