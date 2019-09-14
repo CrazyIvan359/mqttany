@@ -269,6 +269,51 @@ def post_loop():
         polling_timer.cancel()
 
 
+def get_pin_for_topic(topic):
+    """
+    Get the device and pin matching a topic
+    """
+    # attempt to determine device from device topic
+    for device in devices:
+        #log.trace("Comparing '{device_name}' topic '{device_topic}' to message topic '{topic}'".format(
+        #        device_name=device["name"], device_topic=device[CONF_KEY_TOPIC].strip("/")+"/#", topic=topic))
+        if topic_matches_sub(device[CONF_KEY_TOPIC].strip("/")+"/#", topic):
+            log.debug("Inferred device '{device_name}' from message topic '{topic}'".format(
+                    device_name=device["name"], topic=topic))
+            break
+        device = None
+
+    if device is None: # no device topic match
+        # attempt to match topic to pin topic
+        for device in devices:
+            for pin in device["pins"]:
+                pin_config = device["pins"][pin]
+                #log.trace("Comparing pin '{pin_name}' GP{pin:02d} on '{device_name}' topic '{pin_topic}' to message topic '{topic}'".format(
+                #        pin_name=pin_config["name"], pin=pin, device_name=device["name"],
+                #        pin_topic=pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic=topic))
+                if topic_matches_sub(pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic):
+                    log.debug("Found '{pin_name}' GP{pin:02d} on '{device_name}' for message topic '{topic}'".format(
+                            pin_name=pin_config["name"], pin=pin, device_name=device["name"], topic=topic))
+                    break
+                pin = None
+            if pin is not None:
+                break
+            device = None
+    else: # device match found
+        for pin in device["pins"]:
+            pin_config = device["pins"][pin]
+            #log.trace("Comparing pin '{pin_name}' GP{pin:02d} on '{device_name}' topic '{pin_topic}' to message topic '{topic}'".format(
+            #        pin_name=pin_config["name"], pin=pin, device_name=device["name"],
+            #        pin_topic=pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic=topic))
+            if topic_matches_sub(pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic):
+                log.debug("Found '{pin_name}' GP{pin:02d} on '{device_name}' for message topic '{topic}'".format(
+                        pin_name=pin_config["name"], pin=pin, device_name=device["name"], topic=topic))
+                break
+            pin = None
+
+    return device, pin
+
+
 def callback_setter(client, userdata, message):
     """
     Callback for setters
@@ -279,28 +324,7 @@ def callback_setter(client, userdata, message):
     })
 
 def _callback_setter(topic, payload):
-    device, pin = None, None
-    # attempt to determine device from device topic
-    for device in devices:
-        if topic_matches_sub(device[CONF_KEY_TOPIC]+"/#", topic):
-            break
-        device = None
-
-    if device is None: # no device topic match
-        # attempt to match topic to pin topic
-        for device in devices:
-            for pin in device["pins"]:
-                if topic_matches_sub(device["pins"][pin][CONF_KEY_TOPIC]+"/+", topic):
-                    break
-                pin = None
-            if pin is not None:
-                break
-            device = None
-    else: # device match found
-        for pin in device["pins"]:
-            if topic_matches_sub(device["pins"][pin][CONF_KEY_TOPIC]+"/+", topic):
-                break
-            pin = None
+    device, pin = get_pin_for_topic(topic)
 
     if device is not None and pin is not None:
         set_pin(device, pin, payload)
@@ -319,28 +343,7 @@ def callback_getter(client, userdata, message):
     })
 
 def _callback_getter(topic):
-    device, pin = None, None
-    # attempt to determine device from device topic
-    for device in devices:
-        if topic_matches_sub(device[CONF_KEY_TOPIC]+"/#", topic):
-            break
-        device = None
-
-    if device is None: # no device topic match
-        # attempt to match topic to pin topic
-        for device in devices:
-            for pin in device["pins"]:
-                if topic_matches_sub(device["pins"][pin][CONF_KEY_TOPIC]+"/+", topic):
-                    break
-                pin = None
-            if pin is not None:
-                break
-            device = None
-    else: # device match found
-        for pin in device["pins"]:
-            if topic_matches_sub(device["pins"][pin][CONF_KEY_TOPIC]+"/+", topic):
-                break
-            pin = None
+    device, pin = get_pin_for_topic(topic)
 
     if device is not None and pin is not None:
         get_pin(device, pin)
