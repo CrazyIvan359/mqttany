@@ -1,5 +1,12 @@
 # MQTTany Change Log
 
+## 0.6.0
+
+* __BREAKING CHANGE__: GPIO and MCP230xx `topic poll` settings have been removed and now
+  use the value of `topic get` for the same functions.
+* __Changed__: MQTT `topic_matches_sub` now strips `/` to ensure absolute topics are matched.
+* __Fixed__: GPIO not matching messages for pins with absolute topics because of leading `/`.
+
 ## 0.5.3
 
 * __Fixed__: MCP230xx wrong pin state being published after setting pin.
