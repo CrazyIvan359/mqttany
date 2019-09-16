@@ -45,7 +45,6 @@ all = [  ]
 CONF_KEY_TOPIC = "topic"
 CONF_KEY_TOPIC_SETTER = "topic set"
 CONF_KEY_TOPIC_GETTER = "topic get"
-CONF_KEY_TOPIC_POLL = "topic poll"
 CONF_KEY_PAYLOAD_ON = "payload on"
 CONF_KEY_PAYLOAD_OFF = "payload off"
 CONF_KEY_POLL_INT = "polling interval"
@@ -61,8 +60,7 @@ CONF_KEY_INITIAL = "initial state"
 CONF_OPTIONS = OrderedDict([
     (CONF_KEY_TOPIC, {"default": "{module_name}"}),
     (CONF_KEY_TOPIC_SETTER, {"default": "set"}),
-    (CONF_KEY_TOPIC_GETTER, {"default": "get"}),
-    (CONF_KEY_TOPIC_POLL, {"default": "poll"}),
+    (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
     (CONF_KEY_PAYLOAD_ON, {"default": "ON"}),
     (CONF_KEY_PAYLOAD_OFF, {"default": "OFF"}),
     (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
@@ -237,7 +235,7 @@ def pre_loop():
 
     log.debug("Adding MQTT subscription to poll all devices topic")
     subscribe(
-            config[CONF_KEY_TOPIC_POLL],
+            config[CONF_KEY_TOPIC_GETTER],
             callback=callback_poll_all,
             subtopics=["{module_topic}"],
             substitutions={
@@ -397,7 +395,7 @@ def init_device(device):
             else:
                 log.debug("Adding MQTT subscription to device poll topic")
                 subscribe(
-                        config[CONF_KEY_TOPIC_POLL],
+                        config[CONF_KEY_TOPIC_GETTER],
                         callback=callback_poll_device,
                         subtopics=["{module_topic}", "{device_topic}"],
                         substitutions={
