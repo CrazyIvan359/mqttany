@@ -27,22 +27,18 @@ MCP230xx Module
 
 import time, sys
 from threading import Timer
-import multiprocessing as mproc
 from collections import OrderedDict
 
 import busio, microcontroller
 from adafruit_blinka.agnostic import board_id, detector
-import adafruit_platformdetect.board as ap_board
 from adafruit_mcp230xx.mcp23008 import MCP23008
 from adafruit_mcp230xx.mcp23017 import MCP23017
 from digitalio import Direction, Pull
 
-import logger
-log = logger.get_module_logger()
-from config import parse_config
-from common import POISON_PILL, acquire_i2c_lock, release_i2c_lock
-
-from modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe, add_message_callback
+from mqttany import logger
+from mqttany.config import parse_config
+from mqttany.common import acquire_i2c_lock, release_i2c_lock
+from mqttany.modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
 
 all = [  ]
 
@@ -98,11 +94,12 @@ TEXT_LOGIC_STATE = ["LOW", "HIGH"]
 
 DEVICE_PIN_MAX = {"MCP23008": 7, "MCP23017": 15}
 
+log = logger.get_module_logger()
+queue = None
+polling_timer = None
 buses = {}
 devices = []
 config = {}
-queue = mproc.Queue()
-polling_timer = None
 
 
 def init(config_data={}):

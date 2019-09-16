@@ -30,11 +30,10 @@ from importlib import import_module
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 
-import logger
-log = logger.get_logger()
-from logger import log_traceback
-from config import load_config
-from common import POISON_PILL
+from mqttany import logger
+from mqttany.logger import log_traceback
+from mqttany.config import load_config
+from mqttany.common import POISON_PILL
 
 all = [ "load", "unload" ]
 
@@ -44,6 +43,7 @@ ATTR_PRE_LOOP = "pre_loop"
 ATTR_POST_LOOP = "post_loop"
 ATTR_QUEUE = "queue"
 
+log = logger.get_logger()
 modules_loaded = []
 module_queues = {}
 

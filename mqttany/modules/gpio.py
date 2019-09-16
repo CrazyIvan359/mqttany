@@ -25,19 +25,16 @@ GPIO Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time, os, sys
+import time, os
 from threading import Timer
-import multiprocessing as mproc
 from collections import OrderedDict
 from Adafruit_GPIO import GPIO, Platform
 
-import logger
-log = logger.get_module_logger()
-from logger import log_traceback
-from config import parse_config
-from common import POISON_PILL, acquire_gpio_lock, release_gpio_lock
-
-from modules.mqtt import resolve_topic, publish, subscribe, add_message_callback
+from mqttany import logger
+from mqttany.logger import log_traceback
+from mqttany.config import parse_config
+from mqttany.common import GPIO_PINS_RPI3, acquire_gpio_lock, release_gpio_lock
+from mqttany.modules.mqtt import resolve_topic, publish, subscribe
 
 all = [  ]
 
@@ -86,14 +83,14 @@ TEXT_RESISTOR = {GPIO.PUD_UP: "up", GPIO.PUD_DOWN: "down", GPIO.PUD_OFF: "off"}
 TEXT_INTERRUPT = {GPIO.RISING: "rising", GPIO.FALLING: "falling", GPIO.BOTH: "both", None: "none"}
 TEXT_LOGIC_STATE = ["LOW", "HIGH"]
 
-GPIO_PINS_RPI3 = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
 GPIO_PINS = []
 
+log = logger.get_module_logger()
+polling_timer = None
+queue = None
 gpio = None
 config = {}
-queue = None
 pins = {}
-polling_timer = None
 
 
 def init(config_data={}):

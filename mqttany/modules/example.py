@@ -25,12 +25,11 @@ Example Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logger
-log = logger.get_module_logger()
-from logger import log_traceback
-from config import parse_config
+from mqttany import logger
+from mqttany.logger import log_traceback
+from mqttany.config import parse_config
 
-from modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe, add_message_callback
+from mqttany.modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
 
 all = [  ]
 
@@ -55,7 +54,7 @@ CONF_OPTIONS = {
             # the config will be invalid if the value is not in "selection".
             # if "selection" is a dict then the key's value will be returned, not the key.
         CONF_KEY_SELECTION: {"default": None, "selection": {"option 1": 1, "option 2": 2}}
-    }
+    },
     "regex:pattern": { # regex pattern sections can also be used, their key must be "regex:{pattern}"
         "type": "section" # when using regex sections that may match other keys they should be last
     }                     # and CONF_OPTIONS should be an OrderedDict
@@ -64,6 +63,8 @@ CONF_OPTIONS = {
 # Module name, this should be included in all modules and used when the module name is needed
 TEXT_NAME = __name__.split(".")[-1]
 
+# Get a logger with this file's name
+log = logger.get_module_logger()
 # Filled with configuration by `init`
 config = {}
 # All modules must have a `queue`, this will be set by the module loader

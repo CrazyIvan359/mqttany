@@ -29,7 +29,7 @@ import os, re
 from ast import literal_eval
 import yaml, yamlloader
 
-import logger
+from mqttany import logger
 log = logger.get_logger()
 
 all = [ "load_config", "parse_config" ]

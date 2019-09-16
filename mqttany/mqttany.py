@@ -28,11 +28,11 @@ MQTTany
 import version as mqttanyversion
 __version__ = mqttanyversion.__version__
 
-import signal, time, sys, argparse
+import signal, time, argparse
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 
-import logger, modules
+from mqttany import logger, modules
 log = logger.get_logger()
 
 queue = mproc.Queue()

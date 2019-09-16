@@ -25,18 +25,15 @@ MQTT Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import socket, time, sys
-import multiprocessing as mproc
-from queue import Empty as QueueEmptyError
+import socket
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import topic_matches_sub as mqtt_topic_matches_sub
 
-import logger
-log = logger.get_module_logger()
-from logger import log_traceback
+from mqttany import logger
+from mqttany.logger import log_traceback
 from mqttany import queue as main_queue
-from config import parse_config
-from common import POISON_PILL
+from mqttany.config import parse_config
+from mqttany.common import POISON_PILL
 
 all = [
     "resolve_topic", "topic_matches_sub",
@@ -70,9 +67,10 @@ CONF_OPTIONS = {
 
 MQTT_MAX_RETRIES = 10
 
+log = logger.get_module_logger()
+queue = None
 config = {}
 hostname = socket.gethostname()
-queue = None
 client = None
 retries = MQTT_MAX_RETRIES
 subscriptions = []
