@@ -197,7 +197,7 @@ def topic_matches_sub(sub, topic):
     foo/bar would match the subscription foo/# or +/bar
     non/matching would not match the subscription non/+/+
     """
-    return mqtt_topic_matches_sub(sub, topic.strip("/"))
+    return mqtt_topic_matches_sub(sub.strip("/"), topic.strip("/"))
 
 def publish(topic, payload, qos=None, retain=None, subtopics=[], substitutions={}):
     """

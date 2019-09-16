@@ -34,7 +34,7 @@ from mqttany import logger
 from mqttany.logger import log_traceback
 from mqttany.config import parse_config
 from mqttany.common import GPIO_PINS_RPI3, acquire_gpio_lock, release_gpio_lock
-from mqttany.modules.mqtt import resolve_topic, publish, subscribe
+from mqttany.modules.mqtt import resolve_topic, publish, subscribe, topic_matches_sub
 
 all = [  ]
 
@@ -295,9 +295,7 @@ def callback_setter(client, userdata, message):
     })
 
 def _callback_setter(topic, payload):
-    if config[CONF_KEY_TOPIC_SETTER]:
-        topic = topic[:-len("/" + config[CONF_KEY_TOPIC_SETTER])]
-    matches = [pin for pin in pins if topic == pins[pin][CONF_KEY_TOPIC]]
+    matches = [pin for pin in pins if topic_matches_sub(pins[pin][CONF_KEY_TOPIC]+"/+", topic)]
     if matches:
         for pin in matches:
             set_pin(pin, payload)
@@ -316,10 +314,8 @@ def callback_getter(client, userdata, message):
     })
 
 def _callback_getter(topic):
-    if config[CONF_KEY_TOPIC_GETTER]:
-        topic = topic[:-len("/" + config[CONF_KEY_TOPIC_GETTER])]
     for pin in pins:
-        if topic == pins[pin][CONF_KEY_TOPIC]:
+        if topic_matches_sub(pins[pin][CONF_KEY_TOPIC]+"/+", topic):
             get_pin(pin)
 
 

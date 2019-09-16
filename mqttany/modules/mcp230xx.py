@@ -274,7 +274,7 @@ def get_pin_for_topic(topic):
     for device in devices:
         #log.trace("Comparing '{device_name}' topic '{device_topic}' to message topic '{topic}'".format(
         #        device_name=device["name"], device_topic=device[CONF_KEY_TOPIC].strip("/")+"/#", topic=topic))
-        if topic_matches_sub(device[CONF_KEY_TOPIC].strip("/")+"/#", topic):
+        if topic_matches_sub(device[CONF_KEY_TOPIC]+"/#", topic):
             log.debug("Inferred device '{device_name}' from message topic '{topic}'".format(
                     device_name=device["name"], topic=topic))
             break
@@ -288,7 +288,7 @@ def get_pin_for_topic(topic):
                 #log.trace("Comparing pin '{pin_name}' GP{pin:02d} on '{device_name}' topic '{pin_topic}' to message topic '{topic}'".format(
                 #        pin_name=pin_config["name"], pin=pin, device_name=device["name"],
                 #        pin_topic=pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic=topic))
-                if topic_matches_sub(pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic):
+                if topic_matches_sub(pin_config[CONF_KEY_TOPIC]+"/+", topic):
                     log.debug("Found '{pin_name}' GP{pin:02d} on '{device_name}' for message topic '{topic}'".format(
                             pin_name=pin_config["name"], pin=pin, device_name=device["name"], topic=topic))
                     break
@@ -302,7 +302,7 @@ def get_pin_for_topic(topic):
             #log.trace("Comparing pin '{pin_name}' GP{pin:02d} on '{device_name}' topic '{pin_topic}' to message topic '{topic}'".format(
             #        pin_name=pin_config["name"], pin=pin, device_name=device["name"],
             #        pin_topic=pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic=topic))
-            if topic_matches_sub(pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic):
+            if topic_matches_sub(pin_config[CONF_KEY_TOPIC]+"/+", topic):
                 log.debug("Found '{pin_name}' GP{pin:02d} on '{device_name}' for message topic '{topic}'".format(
                         pin_name=pin_config["name"], pin=pin, device_name=device["name"], topic=topic))
                 break
