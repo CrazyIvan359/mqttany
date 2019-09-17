@@ -1,5 +1,9 @@
 # MQTTany Change Log
 
+## 0.6.1
+
+* __Fixed__: Import name errors in cleanup done for `v0.6.0`.
+
 ## 0.6.0
 
 * __BREAKING CHANGE__: GPIO and MCP230xx `topic poll` settings have been removed and now
