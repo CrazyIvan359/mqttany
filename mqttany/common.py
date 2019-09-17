@@ -29,7 +29,7 @@ import time
 from ctypes import c_char_p, c_int
 import multiprocessing as mproc
 
-from mqttany import logger
+import logger
 log = logger.get_logger()
 
 all = [

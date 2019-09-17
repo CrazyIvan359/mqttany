@@ -30,11 +30,11 @@ from threading import Timer
 from collections import OrderedDict
 from Adafruit_GPIO import GPIO, Platform
 
-from mqttany import logger
-from mqttany.logger import log_traceback
-from mqttany.config import parse_config
-from mqttany.common import GPIO_PINS_RPI3, acquire_gpio_lock, release_gpio_lock
-from mqttany.modules.mqtt import resolve_topic, publish, subscribe, topic_matches_sub
+import logger
+from logger import log_traceback
+from config import parse_config
+from common import GPIO_PINS_RPI3, acquire_gpio_lock, release_gpio_lock
+from modules.mqtt import resolve_topic, publish, subscribe, topic_matches_sub
 
 all = [  ]
 

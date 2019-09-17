@@ -29,11 +29,11 @@ import socket
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import topic_matches_sub as mqtt_topic_matches_sub
 
-from mqttany import logger
-from mqttany.logger import log_traceback
+import logger
+from logger import log_traceback
 from mqttany import queue as main_queue
-from mqttany.config import parse_config
-from mqttany.common import POISON_PILL
+from config import parse_config
+from common import POISON_PILL
 
 all = [
     "resolve_topic", "topic_matches_sub",

@@ -35,10 +35,10 @@ from adafruit_mcp230xx.mcp23008 import MCP23008
 from adafruit_mcp230xx.mcp23017 import MCP23017
 from digitalio import Direction, Pull
 
-from mqttany import logger
-from mqttany.config import parse_config
-from mqttany.common import acquire_i2c_lock, release_i2c_lock
-from mqttany.modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
+import logger
+from config import parse_config
+from common import acquire_i2c_lock, release_i2c_lock
+from modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
 
 all = [  ]
 

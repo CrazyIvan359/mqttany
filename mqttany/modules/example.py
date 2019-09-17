@@ -25,11 +25,11 @@ Example Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from mqttany import logger
-from mqttany.logger import log_traceback
-from mqttany.config import parse_config
+import logger
+from logger import log_traceback
+from config import parse_config
 
-from mqttany.modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
+from modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
 
 all = [  ]
 

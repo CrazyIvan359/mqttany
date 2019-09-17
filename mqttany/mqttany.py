@@ -32,7 +32,7 @@ import signal, time, argparse
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 
-from mqttany import logger, modules
+import logger, modules
 log = logger.get_logger()
 
 queue = mproc.Queue()
@@ -88,6 +88,7 @@ if __name__ == '__main__':
         raise
 
     else:
+        print() # newline after '^C'
         log.info("MQTTany stopping")
         modules.unload()
 
