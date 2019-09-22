@@ -58,11 +58,11 @@ class rpiGPIO(baseGPIO):
     GPIO Library Wrapper for RPi.GPIO
     """
 
-    def __init__(self, mode=rpi_gpio.BCM):
+    def __init__(self, rpi_mode=rpi_gpio.BCM):
         # supress the constant warnings
         rpi_gpio.setwarnings(False)
-        if mode in [rpi_gpio.BCM, rpi_gpio.BOARD]:
-            rpi_gpio.setmode(mode)
+        if rpi_mode in [rpi_gpio.BCM, rpi_gpio.BOARD]:
+            rpi_gpio.setmode(rpi_mode)
         else:
             raise ValueError("Unexpected value for mode, must be BCM or BOARD")
 
