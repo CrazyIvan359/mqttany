@@ -54,6 +54,8 @@ def load(config_file):
     """
     config = load_config(config_file)
 
+    if not config: return False
+
     for module_name in [key for key in config if isinstance(config[key], dict)]:
         log.debug("Loading module '{name}'".format(name=module_name))
         try:

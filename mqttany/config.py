@@ -30,9 +30,11 @@ from ast import literal_eval
 import yaml, yamlloader
 
 import logger
-log = logger.get_logger()
+from logger import log_traceback
 
 all = [ "load_config", "parse_config" ]
+
+log = logger.get_logger()
 
 
 def load_config(config_file):
@@ -55,8 +57,12 @@ def load_config(config_file):
 
     if config_file:
         log.debug("Loading config")
-        with open(config_file) as fh:
-            config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)
+        try:
+            with open(config_file) as fh:
+                config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)
+        except:
+            log.error("Config file contains errors")
+            log_traceback(log, limit=0)
     else:
         log.error("Config file does not exist: {path}".format(path=config_file))
 
