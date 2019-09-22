@@ -118,6 +118,8 @@ class DigitalPin(Pin):
                 log.warn("Invalid initial state '{initial_state}' for '{name}' on GPIO{pin:02d}, setting pin to '{state}'".format(
                         name=self._name, initial_state=self._initial, pin=self._pin, state=config[CONF_KEY_PAYLOAD_OFF]))
                 self._set(config[CONF_KEY_PAYLOAD_OFF])
+        else:
+            self.publish_state()
 
         return True
 
