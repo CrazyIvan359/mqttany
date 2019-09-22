@@ -25,7 +25,7 @@ GPIO Library Wrapper
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from adafruit_blinka.agnostic import detector
+import adafruit_platformdetect
 
 from logger import log_traceback
 
@@ -39,6 +39,7 @@ def getGPIO(**kwargs):
     Returns a class to interface with the hardware GPIO or ``None`` if one is
     not available.
     """
+    detector = adafruit_platformdetect.Detector()
     if detector.board.any_raspberry_pi:
         try:
             from modules.gpio.GPIO.rpi import rpiGPIO

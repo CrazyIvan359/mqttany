@@ -5,6 +5,10 @@
 * **Added**
   * Catch configuration file syntax errors and exit cleanly.
 
+* **Changed**
+  * GPIO remove dependence on `Adafruit-Blinka` and use `Adafruit-PlatformDetect`
+    since that is the only component being used.
+
 ## 0.7.0
 
 * **Added**

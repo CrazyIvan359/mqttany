@@ -1,2 +1,2 @@
-Adafruit-Blinka>=2.5.0
+Adafruit-PlatformDetect>=1.3.4
 mprop>=0.16.0

@@ -26,7 +26,7 @@ GPIO Module
 # SOFTWARE.
 
 from threading import Timer
-from adafruit_blinka.agnostic import board_id, detector
+import adafruit_platformdetect
 
 from config import parse_config
 
@@ -75,14 +75,15 @@ def init(config_data={}):
                 dir=pin_config[CONF_KEY_DIRECTION], name=name, pin=pin))
             return None
 
+    detector = adafruit_platformdetect.Detector()
     if detector.board.any_raspberry_pi_40_pin:
         gpio_pins = PINS_RPI_40
     elif detector.board.any_raspberry_pi:
         gpio_pins = PINS_RPI_26
     else:
-        log.error("Unsupported board {board}".format(board=board_id))
+        log.error("Unsupported board {board}".format(board=detector.board.id))
         return False
-    log.debug("Board is {board}".format(board=board_id))
+    log.debug("Board is {board}".format(board=detector.board.id))
 
     conf_options = updateConfOptions(CONF_OPTIONS)
     conf_options.move_to_end("regex:.+")
