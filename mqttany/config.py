@@ -168,6 +168,15 @@ def resolve_type(value):
     elif value.lower() == "none":
         return None
     else:
+        # attempt to cast
+        try:
+            return int(value)
+        except:
+            pass
+        try:
+            return float(value)
+        except:
+            pass
         # attempt to parse
         try:
             return literal_eval(value)
