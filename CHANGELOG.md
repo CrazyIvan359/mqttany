@@ -2,123 +2,169 @@
 
 ## 0.6.1
 
-* __Fixed__: Import name errors in cleanup done for `v0.6.0`.
+* **Fixed**
+  * Import name errors in cleanup done for `v0.6.0`.
 
 ## 0.6.0
 
-* __BREAKING CHANGE__: GPIO and MCP230xx `topic poll` settings have been removed and now
-  use the value of `topic get` for the same functions.
-* __Changed__: MQTT `topic_matches_sub` now strips `/` to ensure absolute topics are matched.
-* __Fixed__: GPIO not matching messages for pins with absolute topics because of leading `/`.
+* ***BREAKING CHANGE***
+  * GPIO and MCP230xx `topic poll` settings have been removed and now
+    use the value of `topic get` for the same functions.
+
+* **Changed**
+  * MQTT `topic_matches_sub` now strips `/` to ensure absolute topics are matched.
+
+* **Fixed**
+  * GPIO not matching messages for pins with absolute topics because of leading `/`.
 
 ## 0.5.3
 
-* __Fixed__: MCP230xx wrong pin state being published after setting pin.
-  State was being read back from device too fast, now we cache the new state.
-* __Fixed__: MCP230xx not matching messages for pins with absolute topics because of leading `/`.
-* __Fixed__: MCP230xx incorrect types `(int, list)` for pin topics, should be `(str, list)`.
-* __Fixed__: MCP230xx missing key `pin_name` in topic substitutions for pin topics.
+* **Fixed**
+  * MCP230xx wrong pin state being published after setting pin.
+    State was being read back from device too fast, now we cache the new state.
+  * MCP230xx not matching messages for pins with absolute topics because of leading `/`.
+  * MCP230xx incorrect types `(int, list)` for pin topics, should be `(str, list)`.
+  * MCP230xx missing key `pin_name` in topic substitutions for pin topics.
 
 ## 0.5.2
 
-* __Fixed__: Crash when parsing single relative topics.
-  `literal_eval` throws a syntax error when passed a string starting with `/`.
+* **Fixed**
+  * Crash when parsing single relative topics.
+    `literal_eval` throws a syntax error when passed a string starting with `/`.
 
 ## 0.5.1
 
-* __Fixed__: MQTT prevent ability to provide reserved substitutions to `resolve_topic`.
-* __Fixed__: MQTT absolute topics not being resolved correctly.
-* __Changed__: Improvements to service file.
-* __Changed__: Requirements separated based on modules.
-* __Fixed__: MQTT LWT messages are now retained.
+* **Changed**
+  * Improvements to service file.
+  * Requirements separated based on modules.
+
+* **Fixed**
+  * MQTT prevent ability to provide reserved substitutions to `resolve_topic`.
+  * MQTT absolute topics not being resolved correctly.
+  * MQTT LWT messages are now retained.
 
 ## 0.5.0
 
-* __Added__: MCP230xx module to support MCP23017 and MCP23008 I/O Expanders over I2C.
+* **Added**
+  * MCP230xx module to support MCP23017 and MCP23008 I/O Expanders over I2C.
 
 ## 0.4.1
 
-* __Added__: GPIO pin topics can now use `pin_name` substitution.
-* __Fixed__: GPIO logging of logic state wrong if using `invert: true` for pin.
-* __Fixed__: MQTT `resolve_topic` now replaces whitespace with `_`.
-* __Fixed__: Argparse error where no verbosity would result in an invalid `NoneType` comparison.
+* **Added**
+  * GPIO pin topics can now use `pin_name` substitution.
+
+* **Fixed**
+  * GPIO logging of logic state wrong if using `invert: true` for pin.
+  * MQTT `resolve_topic` now replaces whitespace with `_`.
+  * Argparse error where no verbosity would result in an invalid `NoneType` comparison.
 
 ## 0.4.0
 
-* __BREAKING CHANGE__: GPIO module configuration changed to friendly names for pin sections.
-  Also supports configuring multiple pins in a single section, refer to example configuration file for details.
+* ***BREAKING CHANGE***
+  * GPIO module configuration changed to friendly names for pin sections.
+    Also supports configuring multiple pins in a single section, refer to example configuration file for details.
 
 ## 0.3.8
 
-* __Added__: Provide MQTT client function `topic_matches_sub` directly from MQTT module.
-* __Added__: `log_traceback` function to support printing stack traces when errors occur without processes crashing.
-* __Changed__: Verify subprocess queue message `func` is callable before attempting to do so.
+* **Added**
+  * Provide MQTT client function `topic_matches_sub` directly from MQTT module.
+  * `log_traceback` function to support printing stack traces when errors occur without processes crashing.
+
+* **Changed**
+  * Verify subprocess queue message `func` is callable before attempting to do so.
 
 ## 0.3.7
 
-* __Added__: Command line argument parsing.
-* __Added__: Configuration file can now be specified as a command line argument.
+* **Added**
+  * Command line argument parsing.
+  * Configuration file can now be specified as a command line argument.
 
 ## 0.3.6
 
-* __Added__: GPIO log entry if no pins match topic for SET.
-* __Added__: Example module.
-* __Added__: Logging automatically gets module name, call `logger.get_module_logger` with no args.
-* __Fixed__: GPIO if `initial state` is not `payload on` or `payload off`, pin will be set to `payload off` and a warning displayed.
-* __Added__: Config file verfication and path expansion.
-* __Added__: Debug logging now shows process name.
-* __Changed__: Subprocess loop moved to `modules.__init__.py`.
-* __Fixed__: 2 things in GPIO??
+* **Added**
+  * GPIO log entry if no pins match topic for SET.
+  * Example module.
+  * Logging automatically gets module name, call `logger.get_module_logger` with no args.
+  * Config file verfication and path expansion.
+  * Debug logging now shows process name.
+
+* **Changed**
+  * Subprocess loop moved to `modules.__init__.py`.
+
+* **Fixed**
+  * GPIO if `initial state` is not `payload on` or `payload off`, pin will be set to `payload off` and a warning displayed.
+  * GPIO will write to log if it cannot match a message topic to a configured pin.
 
 ## 0.3.5
 
-* __Fixed__: Remove module validation check for `queue` that should have been removed.
-* __Fixed__: GPIO interrupt log message print number instead of the word.
+* **Fixed**
+  * Remove module validation check for `queue` that should have been removed.
+  * GPIO interrupt log message print number instead of the word.
 
 ## 0.3.4
 
-* __Changed__: GPIO message callbacks rewritten for effeciency gains and simplicity.
-* __Added__: GPIO `initial state` option to specify the state of the pin when the module is loaded. Fixes #5
-* __Fixed__: GPIO `set` payload as `bytes` not matching string `payload on`/`payload off`. Fixes #6
-* __Fixed__: Queues not being accessible to all modules. Fixes #6
+* **Added**
+  * GPIO `initial state` option to specify the state of the pin when the module is loaded. Fixes #5
+
+* **Changed**
+  * GPIO message callbacks rewritten for effeciency gains and simplicity.
+
+* **Fixed**
+  * GPIO `set` payload as `bytes` not matching string `payload on`/`payload off`. Fixes #6
+  * Queues not being accessible to all modules. Fixes #6
 
 ## 0.3.3
 
-* __Fixed__: GPIO lock release causing process crashes
-* __Fixed__: Fixed typo in configuration file `/set` should have been `/get`
-* __Fixed__: Module name now display only the module name instead of `modules.[name]`
-* __Added__: GPIO module `direction` default is now `input`
-* __Fixed__: GPIO module `resistor` default is now `Resistor.OFF` instead of invalid `None`
-* __Fixed__: Config `selection` type not adding value to config dict.
-* __Fixed__: Modules loading in random order. MQTT module needs to be loaded first.
-  Switched to `yamlloader` to load config sections in file order.
-* __Fixed__: Added missing dependency `RPi.GPIO`
+* **Changed**
+  * GPIO module `direction` default is now `input`
+
+* **Fixed**
+  * GPIO lock release causing process crashes
+  * Fixed typo in configuration file `/set` should have been `/get`
+  * Module name now display only the module name instead of `modules.[name]`
+  * GPIO module `resistor` default is now `Resistor.OFF` instead of invalid `None`
+  * Config `selection` type not adding value to config dict.
+  * Modules loading in random order. MQTT module needs to be loaded first.
+    Switched to `yamlloader` to load config sections in file order.
+  * Added missing dependency `RPi.GPIO`
 
 ## 0.3.2
 
-* __Fixed__: GPIO module was not updated when `resolve_topic` was changed in v0.3.1
+* **Fixed**
+  * GPIO module was not updated when `resolve_topic` was changed in v0.3.1
 
 ## 0.3.1
 
-* __Added__: `selection` type to configuration options. Allows limiting option to a list or mapping of choices.
-* __Changed__: Improvements to `resolve_topic`. Can apply nested subtopics now.
-  More substitutions available `module_topic`, `module_name`.
-* __Changed__: Improvements to GPIO locking. Now registers the module doing the locking and only that module can unlock.
+* **Added**
+  * `selection` type to configuration options. Allows limiting option to a list or mapping of choices.
+
+* **Changed**
+  * Improvements to `resolve_topic`. Can apply nested subtopics now.
+    More substitutions available `module_topic`, `module_name`.
+  * Improvements to GPIO locking. Now registers the module doing the locking and only that module can unlock.
 
 ## 0.3.0
 
-* __BREAKING CHANGE__: Move to single YAML configuration file instead of per module CONF files.
-* __Fixed__: GPIO pin locks now work correctly, using `multiprocessing.Lock`s
+* ***BREAKING CHANGE***
+  * Move to single YAML configuration file instead of per module CONF files.
+
+* **Fixed**
+  * GPIO pin locks now work correctly, using `multiprocessing.Lock`s
 
 ## 0.2.0
 
-* __Fixed__: Wrap `modules.load()` call in try/except to avoid issues where the main process crashes but children survive.
-* __Added__: GPIO Module. Currently supports RPi3
-* __Added__: GPIO pin lock acquire/release. Does not work inter-process yet.
-* __Changed__: Allow optional sections in configuration
-* __Fixed__: MQTT public functions now add messages to queue.
-  Previously they would run in the calling process and fail because the MQTT client is running in another process.
+* **Added**
+  * GPIO Module. Currently supports RPi3
+  * GPIO pin lock acquire/release. Does not work inter-process yet.
+
+* **Changed**
+  * Allow optional sections in configuration
+
+* **Fixed**
+  * Wrap `modules.load()` call in try/except to avoid issues where the main process crashes but children survive.
+  * MQTT public functions now add messages to queue.
+    Previously they would run in the calling process and fail because the MQTT client is running in another process.
 
 ## 0.1.0
 
-* Initial Beta release
+Initial development release
