@@ -29,6 +29,7 @@ from mprop import mproperty
 
 from modules.gpio import core
 from modules.gpio.core import init, pre_loop, post_loop
+from modules.gpio.core import _pin_message, poll_all
 from modules.gpio.common import log
 
 all = [ "init", "pre_loop", "post_loop", "queue" ]
