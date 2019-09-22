@@ -33,6 +33,7 @@ from config import parse_config
 from modules.mqtt import subscribe, topic_matches_sub
 
 from modules.gpio.pin import getPin, updateConfOptions
+import modules.gpio.common
 from modules.gpio.common import *
 
 all = [  ]
@@ -40,6 +41,7 @@ all = [  ]
 TEXT_NAME = TEXT_PACKAGE_NAME
 
 pins = []
+config = modules.gpio.common.config
 queue = None
 polling_timer = None
 
