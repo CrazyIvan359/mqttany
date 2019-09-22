@@ -63,7 +63,7 @@ class Pin(object):
 
     def setup(self):
         """
-        Makes sure we can get a lock on the pin.
+        Makes sure we have a valid GPIO library and can get a lock on the pin.
         Returns ``True`` if it succeeds, ``False`` otherwise.
         Subclasses must override this method and ``super()`` it or acquire
         their own lock on the pin.
