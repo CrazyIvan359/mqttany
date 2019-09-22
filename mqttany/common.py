@@ -25,7 +25,7 @@ Common
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time
+import time, collections
 from ctypes import c_char_p, c_int
 import multiprocessing as mproc
 
@@ -223,6 +223,23 @@ def release_i2c_lock(bus, scl, sda, module):
         _i2c_lock[bus]["lock"].release()
 
     return True
+
+
+def update_dict(d, u):
+    """
+    Recursively update dict ``d`` with dict ``u``
+    """
+    for k in u:
+        dv = d.get(k, {})
+        if not isinstance(dv, collections.Mapping):
+            d[k] = u[k]
+        elif isinstance(u[k], collections.Mapping):
+            d[k] = update_dict(dv, u[k])
+        else:
+            d[k] = u[k]
+    return d
+
+
 
 
 for bus in _i2c_lock:
