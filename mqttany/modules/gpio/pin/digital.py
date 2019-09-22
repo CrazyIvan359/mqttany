@@ -39,7 +39,7 @@ from modules.gpio.GPIO.common import Direction, Resistor, Interrupt
 CONF_OPTIONS = {
     "regex:.+": {
         CONF_KEY_DIRECTION: {"selection": {"input": Direction.INPUT, "in": Direction.INPUT, "output": Direction.OUTPUT, "out": Direction.OUTPUT}},
-        CONF_KEY_INTERRUPT: {"default": 0, "selection": {"rising": Interrupt.RISING, "falling": Interrupt.FALLING, "both": Interrupt.BOTH, "none": Interrupt.NONE}},
+        CONF_KEY_INTERRUPT: {"default": Interrupt.NONE, "selection": {"rising": Interrupt.RISING, "falling": Interrupt.FALLING, "both": Interrupt.BOTH, "none": Interrupt.NONE}},
         CONF_KEY_RESISTOR: {"default": Resistor.OFF, "selection": {"pullup": Resistor.PULL_UP, "up": Resistor.PULL_UP, "pulldown": Resistor.PULL_DOWN, "down": Resistor.PULL_DOWN, "off": Resistor.OFF, "none": Resistor.OFF}},
     }
 }
