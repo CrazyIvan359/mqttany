@@ -1,5 +1,18 @@
 # MQTTany Change Log
 
+## 0.7.0
+
+* **Added**
+  * Log traceback on module import errors.
+
+* **Changed**
+  * Moved requirements to a folder.
+  * GPIO module rewrite. Now uses pin classes and custom GPIO library wrappers
+    to allow support of libraries for other boards.
+  * `resolve_type` now tries to cast to `int` and `float` first.
+  * Requirements now use `>=` and split board specific requirements.
+  * MCP230xx logging cleaned up and made more uniform.
+
 ## 0.6.1
 
 * **Fixed**
