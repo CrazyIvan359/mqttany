@@ -84,6 +84,7 @@ class Pin(object):
         Cleanup actions when stopping
         """
         self._setup = False
+        self._gpio.cleanup(self._pin)
         release_gpio_lock(self._pin, TEXT_PACKAGE_NAME)
 
     def publish_state(self):
