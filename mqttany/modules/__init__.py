@@ -61,7 +61,8 @@ def load(config_file):
 
         except ImportError as err:
             log.error("Failed to import module '{name}'".format(name=module_name))
-            log.error("  {error}".format(error=err))
+            #log.error("  {error}".format(error=err))
+            log_traceback(log)
             log.error("Module '{name}' was not loaded".format(name=module_name))
 
         except ImportWarning as err:
