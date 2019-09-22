@@ -87,7 +87,7 @@ all = [
 
     "TEXT_PACKAGE_NAME", "TEXT_LOGIC_STATE",
 
-    "log", "config"
+    "log"
 ]
 
 @mproperty
