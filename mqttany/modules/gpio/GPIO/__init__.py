@@ -30,7 +30,7 @@ from adafruit_blinka.agnostic import detector
 from logger import log_traceback
 
 from modules.gpio.common import log
-from modules.gpio.GPIO.common import *
+from modules.gpio.GPIO.common import Direction, Resistor, Interrupt
 
 all = [ "getGPIO", "Direction", "Resistor", "Interrupt" ]
 
