@@ -88,7 +88,7 @@
 * __Fixed__: Fixed typo in configuration file `/set` should have been `/get`
 * __Fixed__: Module name now display only the module name instead of `modules.[name]`
 * __Added__: GPIO module `direction` default is now `input`
-* __Fixed__: GPIO module `resistor` default is now `GPIO.PUD_OFF` instead of invalid `None`
+* __Fixed__: GPIO module `resistor` default is now `Resistor.OFF` instead of invalid `None`
 * __Fixed__: Config `selection` type not adding value to config dict.
 * __Fixed__: Modules loading in random order. MQTT module needs to be loaded first.
   Switched to `yamlloader` to load config sections in file order.
