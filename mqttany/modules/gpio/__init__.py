@@ -40,5 +40,5 @@ def queue(module):
 
 @queue.setter
 def queue(module, value):
-    _queue = value
+    module._queue = value
     core.queue = value
