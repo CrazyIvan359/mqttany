@@ -129,7 +129,6 @@ def init(config_data={}):
                         pins.append(pin_object)
                         pin_object = None
 
-
         return True
     else:
         log.error("Error loading config")
@@ -145,7 +144,7 @@ def pre_loop():
     for index, pin in enumerate(pins):
         if pin.setup():
             subscribe(
-                "{}/#".format(pin.topic),
+                "{}/+/#".format(pin.topic),
                 callback=callback_pin_message
             )
         else:
@@ -194,7 +193,7 @@ def callback_pin_message(client, userdata, message):
 
 def _pin_message(topic, payload):
     for pin in pins:
-        if topic_matches_sub("{}/#".format(pin.topic), topic):
+        if topic_matches_sub("{}/+/#".format(pin.topic), topic):
             pin.handle_message(topic, payload)
 
 
