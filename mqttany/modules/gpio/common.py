@@ -30,7 +30,7 @@ from mprop import mproperty
 
 import logger
 
-from modules.gpio.GPIO import Direction
+from modules.gpio.GPIO.common import Direction
 
 CONF_KEY_TOPIC = "topic"
 CONF_KEY_TOPIC_SETTER = "topic set"
