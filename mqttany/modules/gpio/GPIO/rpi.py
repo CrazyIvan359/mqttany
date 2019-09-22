@@ -1,7 +1,7 @@
 """
-****************************
-GPIO Library Wrapper for RPi
-****************************
+*********************************
+GPIO Library Wrapper for RPi.GPIO
+*********************************
 
 :Author: Michael Murton
 """
