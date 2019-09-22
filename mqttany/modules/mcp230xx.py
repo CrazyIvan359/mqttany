@@ -262,7 +262,7 @@ def post_loop():
     """
     Actions to be done in the subprocess after the loop is exited
     """
-    if config[CONF_KEY_POLL_INT] > 0 and polling_timer is not None:
+    if polling_timer is not None:
         log.debug("Stopping polling timer")
         polling_timer.cancel()
 
