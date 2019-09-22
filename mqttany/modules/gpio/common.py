@@ -42,8 +42,6 @@ CONF_KEY_DEBOUNCE = "debounce"
 CONF_KEY_PIN = "pin"
 CONF_KEY_FIRST_INDEX = "first index"
 CONF_KEY_DIRECTION = "direction"
-CONF_KEY_INTERRUPT = "interrupt"
-CONF_KEY_RESISTOR = "resistor"
 CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
 

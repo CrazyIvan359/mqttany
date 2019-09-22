@@ -36,6 +36,9 @@ from modules.gpio.common import config
 from modules.gpio.common import *
 from modules.gpio.GPIO.common import Direction, Resistor, Interrupt
 
+CONF_KEY_INTERRUPT = "interrupt"
+CONF_KEY_RESISTOR = "resistor"
+
 CONF_OPTIONS = {
     "regex:.+": {
         CONF_KEY_DIRECTION: {"selection": {"input": Direction.INPUT, "in": Direction.INPUT, "output": Direction.OUTPUT, "out": Direction.OUTPUT}},
