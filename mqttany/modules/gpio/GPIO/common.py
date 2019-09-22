@@ -27,7 +27,7 @@ GPIO Library Wrapper Common
 
 from enum import Enum
 
-all = [ "Logic", "Direction", "Resistor", "Interrupt" ]
+all = [ "baseGPIO", "Logic", "Direction", "Resistor", "Interrupt" ]
 
 class Logic(Enum):
     LOW = 0
@@ -47,3 +47,44 @@ class Interrupt(Enum):
     RISING = 30
     FALLING = 31
     BOTH = 32
+
+class baseGPIO():
+    """
+    GPIO Library Wrapper base class
+    """
+
+    def setup(self, pin, direction, resistor):
+        """
+        Set the pin direction (input or output).
+        """
+        raise NotImplementedError
+
+    def output(self, pin, value):
+        """
+        Set the pin state (high or low).
+        """
+        raise NotImplementedError
+
+    def input(self, pin):
+        """
+        Read the pin state (high or low).
+        """
+        raise NotImplementedError
+
+    def add_event_detect(self, pin, edge, callback, bouncetime=0):
+        """
+        Add a pin change interrupt with callback.
+        """
+        raise NotImplementedError
+
+    def remove_event_detect(self, pin):
+        """
+        Remove a pin change interurpt.
+        """
+        raise NotImplementedError
+
+    def cleanup(self, pin=None):
+        """
+        Clean up interrupts for pin or all if pin is ``None``.
+        """
+        raise NotImplementedError

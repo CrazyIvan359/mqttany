@@ -41,13 +41,13 @@ def getGPIO(**kwargs):
     """
     if detector.board.any_raspberry_pi:
         try:
-            from modules.gpio.GPIO.rpi import RPiGPIO
+            from modules.gpio.GPIO.rpi import rpiGPIO
         except RuntimeError:
             log.error("A RuntimeError while trying to import RPi.GPIO. This is likely because you do not have the correct permissions.")
         except:
             log.error("An error occurred while trying to import RPi.GPIO")
             log_traceback(log)
         else:
-            return RPiGPIO(**kwargs)
+            return rpiGPIO(**kwargs)
 
     return None

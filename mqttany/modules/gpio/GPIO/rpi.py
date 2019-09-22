@@ -27,8 +27,7 @@ GPIO Library Wrapper for RPi
 
 import RPi.GPIO as rpi_gpio
 
-from modules.gpio.GPIO.base import GPIO
-from modules.gpio.GPIO.common import Logic, Direction, Resistor, Interrupt
+from modules.gpio.GPIO.common import baseGPIO, Logic, Direction, Resistor, Interrupt
 
 map_direction = {
     Direction.INPUT: rpi_gpio.IN,
@@ -54,7 +53,7 @@ map_interrupt = {
 }
 
 
-class RPiGPIO(GPIO):
+class rpiGPIO(baseGPIO):
     """
     GPIO Library Wrapper for RPi.GPIO
     """
