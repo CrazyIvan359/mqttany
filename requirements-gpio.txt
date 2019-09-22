@@ -1,1 +1,2 @@
 Adafruit-Blinka>=2.5.0
+mprop>=0.16.0
