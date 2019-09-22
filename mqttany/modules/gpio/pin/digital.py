@@ -106,7 +106,10 @@ class DigitalPin(Pin):
                     callback=self.handle_interrupt,
                     bouncetime=config[CONF_KEY_DEBOUNCE]
                 )
-        elif self._direction == Direction.OUTPUT:
+
+        self._setup = True
+
+        if self._direction == Direction.OUTPUT:
             if self._initial in [config[CONF_KEY_PAYLOAD_ON], config[CONF_KEY_PAYLOAD_OFF]]:
                 log.debug("Setting '{name}' on GPIO{pin:02d} to initial state '{state}'".format(
                         name=self._name, pin=self._pin, state=self._initial))
@@ -116,7 +119,6 @@ class DigitalPin(Pin):
                         name=self._name, initial_state=self._initial, pin=self._pin, state=config[CONF_KEY_PAYLOAD_OFF]))
                 self._set(config[CONF_KEY_PAYLOAD_OFF])
 
-        self._setup = True
         return True
 
     def publish_state(self):
