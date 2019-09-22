@@ -1,5 +1,10 @@
 # MQTTany Change Log
 
+## Development
+
+* **Added**
+  * Catch configuration file syntax errors and exit cleanly.
+
 ## 0.7.0
 
 * **Added**
