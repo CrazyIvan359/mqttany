@@ -32,6 +32,7 @@ from common import release_gpio_lock
 from modules.mqtt import publish, topic_matches_sub
 
 from modules.gpio.pin.base import Pin
+from modules.gpio.common import config
 from modules.gpio.common import *
 from modules.gpio.GPIO.common import Direction, Resistor, Interrupt
 

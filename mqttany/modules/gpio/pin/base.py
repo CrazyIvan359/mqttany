@@ -31,6 +31,7 @@ from common import acquire_gpio_lock, release_gpio_lock
 from modules.mqtt import resolve_topic, topic_matches_sub
 
 from modules.gpio.GPIO import getGPIO
+from modules.gpio.common import config
 from modules.gpio.common import *
 
 TEXT_NAME = ".".join(__name__.split(".")[-3:3]) # gives gpio.pin

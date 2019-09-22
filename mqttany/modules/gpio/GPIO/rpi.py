@@ -31,10 +31,10 @@ from modules.gpio.GPIO.base import GPIO
 from modules.gpio.GPIO.common import Logic, Direction, Resistor, Interrupt
 
 map_direction = {
-    Direction.INPUT: rpi_gpio.INPUT,
-    Direction.OUTPUT: rpi_gpio.OUTPUT,
-    rpi_gpio.INPUT: Direction.INPUT,
-    rpi_gpio.OUTPUT: Direction.OUTPUT
+    Direction.INPUT: rpi_gpio.IN,
+    Direction.OUTPUT: rpi_gpio.OUT,
+    rpi_gpio.IN: Direction.INPUT,
+    rpi_gpio.OUT: Direction.OUTPUT
 }
 map_resistor = {
     Resistor.OFF: rpi_gpio.PUD_OFF,
