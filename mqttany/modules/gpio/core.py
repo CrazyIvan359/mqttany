@@ -107,6 +107,11 @@ def init(config_data={}):
                 else:
                     pin_object = build_pin(name, named_config)
 
+                if pin_object:
+                    used_pins[pin] = len(pins)
+                    pins.append(pin_object)
+                    pin_object = None
+
             elif isinstance(named_config[CONF_KEY_PIN], list):
                 for index in range(len(named_config[CONF_KEY_PIN])):
                     pin = named_config[CONF_KEY_PIN][index]
@@ -119,9 +124,11 @@ def init(config_data={}):
                     else:
                         pin_object = build_pin(name, named_config, index)
 
-            if pin_object:
-                used_pins[pin] = len(pins)
-                pins.append(pin_object)
+                    if pin_object:
+                        used_pins[pin] = len(pins)
+                        pins.append(pin_object)
+                        pin_object = None
+
 
         return True
     else:
