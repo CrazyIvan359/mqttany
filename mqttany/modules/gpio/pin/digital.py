@@ -33,7 +33,7 @@ from modules.mqtt import publish, topic_matches_sub
 
 from modules.gpio.pin.base import Pin
 from modules.gpio.common import *
-from modules.gpio.GPIO import Direction, Resistor, Interrupt
+from modules.gpio.GPIO.common import Direction, Resistor, Interrupt
 
 CONF_OPTIONS = {
     "regex:.+": {
