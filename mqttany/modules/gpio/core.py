@@ -33,7 +33,7 @@ from config import parse_config
 from modules.mqtt import subscribe, topic_matches_sub
 
 from modules.gpio.pin import getPin, updateConfOptions
-from modules.gpio.common import config, log
+from modules.gpio.common import config
 from modules.gpio.common import *
 
 all = [  ]
