@@ -27,6 +27,7 @@ GPIO Module
 
 from mprop import mproperty
 
+from modules.gpio import core
 from modules.gpio.core import init, pre_loop, post_loop
 
 all = [ "init", "pre_loop", "post_loop", "queue" ]
