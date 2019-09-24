@@ -1,5 +1,7 @@
 # MQTTany
 
+[![GitHub version](https://badge.fury.io/gh/CrazyIvan359%2Fmqttany@2x.png)](https://badge.fury.io/gh/CrazyIvan359%2Fmqttany)
+
 MQTTany aims to make it easier to connect things to an MQTT broker. It is a
 collection of modules that each provide support for connecting one thing.
 
