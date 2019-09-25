@@ -1,6 +1,6 @@
 # MQTTany
 
-![Latest Version](https://img.shields.io/github/v/tag/CrazyIvan359/mqttany)
+![Latest Version](https://img.shields.io/github/v/tag/CrazyIvan359/mqttany?label=release)
 ![Gitter](https://img.shields.io/gitter/room/mqttany/community)
 ![License](https://img.shields.io/github/license/CrazyIvan359/mqttany)
 
