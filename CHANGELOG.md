@@ -10,7 +10,8 @@
     since that is the only component being used.
 
 * **Fixed**
-  * MCP230xx outdated key `device` in example configuration, should be `chip`.
+  * MCP230xx outdated key `device` in example configuration, should be `chip` (#21).
+  * MCP230xx fix missing log format key (#21).
 
 ## 0.7.0
 

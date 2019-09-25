@@ -162,9 +162,10 @@ def init(config_data={}):
         for device_name in [key for key in raw_config if isinstance(raw_config[key], dict)]:
             device_config = raw_config.pop(device_name)
             device_config["name"] = device_name
-            log.debug("Configuring {device} '{name}' at address 0x{address:02x} on I2C bus '{bus_id}' with options: {options}".format(
-                    device=device_config[CONF_KEY_CHIP], address=device_config[CONF_KEY_ADDRESS],
-                    bus_id=device_config[CONF_KEY_BUS_ID], options=device_config))
+            log.debug("Configuring {device} '{device_name}' at address 0x{address:02x} on I2C bus '{bus_id}' with options: {options}".format(
+                    device=device_config[CONF_KEY_CHIP], device_name=device_name,
+                    address=device_config[CONF_KEY_ADDRESS], bus_id=device_config[CONF_KEY_BUS_ID],
+                    options=device_config))
             if device_config[CONF_KEY_BUS_ID] in buses:
                 if device_config[CONF_KEY_ADDRESS] in buses[device_config[CONF_KEY_BUS_ID]]["devices"]:
                     log.warn("Duplicate configuration '{device_name}' found for device at address 0x{address:02x} on I2C bus '{bus_id}' will be ignored, address already configured under '{original}'".format(
