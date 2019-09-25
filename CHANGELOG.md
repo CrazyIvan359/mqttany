@@ -9,6 +9,9 @@
   * GPIO remove dependence on `Adafruit-Blinka` and use `Adafruit-PlatformDetect`
     since that is the only component being used.
 
+* **Fixed**
+  * MCP230xx outdated key `device` in example configuration, should be `chip`.
+
 ## 0.7.0
 
 * **Added**

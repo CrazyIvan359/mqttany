@@ -165,9 +165,9 @@ mqtt:
     # 7-bit hex address of the device (ex. 0x20)
     #address: 0x
 
-    ### Device Type
+    ### Chip Type
     # Can be either 'MCP23017' or 'MCP23008'
-    #device:
+    #chip:
 
     ### Device Topic
     # Additional Substitutions:
