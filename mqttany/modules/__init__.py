@@ -81,7 +81,7 @@ def load(config_file):
                 log.warn("Module '{name}' not initialized".format(name=module_name))
                 continue
 
-            log.info("Module '{name}' loaded successfully".format(name=module_name))
+            log.debug("Module '{name}' loaded successfully".format(name=module_name))
             modules_loaded.append(module)
 
     for i in range(len(modules_loaded)):
@@ -131,16 +131,16 @@ def _start_proc(module):
     """
     module_name = module.__name__.split(".")[-1]
     try:
-        log.debug("Creating process for '{name}'".format(name=module_name))
+        log.trace("Creating process for '{name}'".format(name=module_name))
         module.process = mproc.Process(name=module_name, target=_proc_loop, args=(module,), daemon=False)
     except Exception as err:
         log.error("Failed to create process for module '{name}'".format(name=module_name))
         log.error("  {}".format(err))
         return False
     else:
-        log.debug("Process created successfully for module '{name}'".format(name=module_name))
+        log.trace("Process created successfully for module '{name}'".format(name=module_name))
         try:
-            log.debug("Starting process for '{name}'".format(name=module_name))
+            log.trace("Starting process for '{name}'".format(name=module_name))
             module.process.start()
         except Exception as err:
             log.error("Failed to start process for module '{name}'".format(name=module_name))
@@ -166,7 +166,7 @@ def _proc_loop(module):
                 poison_pill = True # terminate signal
                 module.log.debug("Received poison pill")
             else:
-                module.log.debug("Received message [{message}]".format(message=message))
+                module.log.trace("Received message [{message}]".format(message=message))
                 func = getattr(module, message["func"])
                 if callable(func):
                     try:
@@ -187,7 +187,7 @@ def _stop_proc(module):
     module_name = module.__name__.split(".")[-1]
     if hasattr(module, "process"):
         if module.process.is_alive():
-            log.debug("Stopping subprocess for '{name}' with 10s timeout".format(name=module_name))
+            log.trace("Stopping subprocess for '{name}' with 10s timeout".format(name=module_name))
             module.queue.put_nowait(POISON_PILL)
             module.process.join(10)
             if module.process.is_alive():

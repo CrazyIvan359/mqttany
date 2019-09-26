@@ -101,7 +101,7 @@ class DigitalPin(Pin):
             return False
 
         if self._direction == Direction.INPUT and self._interrupt is not None:
-            log.debug("Adding interrupt event for '{name}' on GPIO{pin:02d} with edge trigger '{edge}'".format(
+            log.trace("Adding interrupt event for '{name}' on GPIO{pin:02d} with edge trigger '{edge}'".format(
                     name=self._name, pin=self._pin, edge=TEXT_INTERRUPT[self._interrupt]))
             self._gpio.add_event_detect(
                     self._pin,
@@ -114,7 +114,7 @@ class DigitalPin(Pin):
 
         if self._direction == Direction.OUTPUT:
             if self._initial in [config[CONF_KEY_PAYLOAD_ON], config[CONF_KEY_PAYLOAD_OFF]]:
-                log.debug("Setting '{name}' on GPIO{pin:02d} to initial state '{state}'".format(
+                log.trace("Setting '{name}' on GPIO{pin:02d} to initial state '{state}'".format(
                         name=self._name, pin=self._pin, state=self._initial))
                 self._set(self._initial)
             else:

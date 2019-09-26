@@ -56,7 +56,7 @@ def load_config(config_file):
             config_file = None
 
     if config_file:
-        log.debug("Loading config")
+        log.debug("Loading config file")
         try:
             with open(config_file) as fh:
                 config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)
@@ -98,7 +98,7 @@ def parse_config(data, options, log=log):
                     return False
                 elif value == "**NO DATA**":
                     value = option["default"]
-                    log.debug("Using default value '{value}' for config option '{option}'".format(
+                    log.trace("Using default value '{value}' for config option '{option}'".format(
                             value=value, option=name))
                     config[name] = value
                 else:
@@ -111,7 +111,7 @@ def parse_config(data, options, log=log):
                             except: pass
 
                         if isinstance(value, option.get("type", type(value))):
-                            log.debug("Got value '{value}' for config option '{option}'".format(
+                            log.trace("Got value '{value}' for config option '{option}'".format(
                                     value="*"*len(value) if "pass" in name.lower() else value, option=name))
                             config[name] = value
                         else:
@@ -121,7 +121,7 @@ def parse_config(data, options, log=log):
 
                     elif "selection" in option:
                         if str(value).lower() in option["selection"]:
-                            log.debug("Got selection '{value}' for config option '{option}'".format(
+                            log.trace("Got selection '{value}' for config option '{option}'".format(
                                     value=value, option=name))
                             if isinstance(option["selection"], dict):
                                 config[name] = option["selection"][str(value).lower()]
@@ -131,7 +131,7 @@ def parse_config(data, options, log=log):
                             return False
 
                     else:
-                        log.debug("Got value '{value}' for config option '{option}'".format(
+                        log.trace("Got value '{value}' for config option '{option}'".format(
                                 value="*"*len(value) if "pass" in name.lower() else value, option=name))
                         config[name] = value
             return True
@@ -143,10 +143,10 @@ def parse_config(data, options, log=log):
                 continue # 'required' option, skip
 
             if str(key).split(":", 1)[0] == "regex":
-                log.debug("Found regex '{key}' in options".format(key=str(key).split(":", 1)[-1]))
+                log.trace("Found regex '{key}' in options".format(key=str(key).split(":", 1)[-1]))
                 for data_key in [data_key for data_key in data]:
                     if re.fullmatch(str(key).split(":", 1)[-1], str(data_key)):
-                        log.debug("Config key '{data_key}' matched to options regex '{key}'".format(data_key=data_key, key=str(key).split(":", 1)[-1]))
+                        log.trace("Config key '{data_key}' matched to options regex '{key}'".format(data_key=data_key, key=str(key).split(":", 1)[-1]))
                         valid = valid and process_option(data_key, data.pop(data_key, "**NO DATA**"), options[key], config)
             else:
                 valid = valid and process_option(key, data.pop(key, "**NO DATA**"), options[key], config)

@@ -61,7 +61,9 @@ def get_args():
 
 if __name__ == '__main__':
     args = get_args()
-    if args.verbose > 0:
+    if args.verbose > 1:
+        logger.set_level(logger.TRACE)
+    elif args.verbose > 0:
         logger.set_level(logger.DEBUG)
 
     mproc.current_process().name = "mqttany"

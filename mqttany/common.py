@@ -105,17 +105,23 @@ def acquire_gpio_lock(pin, module, timeout=0):
     Acquire lock on GPIO pin
     Timeout is ms
     """
+    log.trace("Module '{module}' requested a lock on GPIO{pin:02d}".format(
+        module=module, pin=pin))
     if timeout:
         then = time.time() + ( timeout / 1000 )
         while time.time() < then:
             if _gpio_lock[pin]["lock"].acquire(False):
                 _gpio_lock[pin]["module"].raw = module
+                log.debug("Module '{module}' locked GPIO{pin:02d}".format(
+                    module=module, pin=pin))
                 return True
             else:
                 time.sleep(0.025)
 
     elif _gpio_lock[pin]["lock"].acquire(False):
         _gpio_lock[pin]["module"].raw = module
+        log.debug("Module '{module}' locked GPIO{pin:02d}".format(
+            module=module, pin=pin))
         return True
 
     log.warn("Module '{module}' failed to acquire a lock on GPIO{pin} because '{owner}' already has a lock on it".format(
@@ -127,6 +133,8 @@ def release_gpio_lock(pin, module):
     """
     Release lock on GPIO pin
     """
+    log.trace("Module '{module}' requested to release a lock on GPIO{pin:02d}".format(
+        module=module, pin=pin))
     if not _gpio_lock[pin]["lock"].acquire(False):
         # prevent releasing a lock a module doesn't have
         if _gpio_lock[pin]["module"].raw == module:
@@ -138,6 +146,8 @@ def release_gpio_lock(pin, module):
     else:
         _gpio_lock[pin]["lock"].release()
 
+    log.debug("Module '{module}' released lock on GPIO{pin:02d}".format(
+        module=module, pin=pin))
     return True
 
 
@@ -171,19 +181,22 @@ def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
         return (True, bus_lock, scl_lock)
 
 
+    log.trace("Module '{module}' requested a lock on I2C bus '{bus_id}'".format(
+        module=module, bus_id=bus))
 
     if timeout:
         then = time.time() + ( timeout / 1000 )
         while time.time() < then:
             lock, bus_lock, scl_lock = lock_bus()
-            if lock:
-                return True
-            else:
+            if not lock:
                 time.sleep(0.01)
     else:
         lock, bus_lock, scl_lock = lock_bus()
-        if lock:
-            return True
+
+    if lock:
+        log.debug("Module '{module}' locked I2C bus '{bus_id}'".format(
+            module=module, bus_id=bus))
+        return True
 
     if scl_lock and bus_lock:
         log.warn("Module '{module}' failed to acquire a lock on I2C bus '{bus_id}' because SDA pin {pin} is locked by another module".format(
@@ -208,6 +221,8 @@ def release_i2c_lock(bus, scl, sda, module):
     """
     Release lock on I2C bus
     """
+    log.trace("Module '{module}' requested to release a lock on I2C bus '{bus_id}'".format(
+        module=module, bus_id=bus))
     if not _i2c_lock[bus]["lock"].acquire(False):
         # prevent releasing a lock a module doesn't have
         if _i2c_lock[bus]["module"].raw == module:
@@ -222,6 +237,8 @@ def release_i2c_lock(bus, scl, sda, module):
     else:
         _i2c_lock[bus]["lock"].release()
 
+    log.debug("Module '{module}' released lock on I2C bus '{bus_id}'".format(
+        module=module, bus_id=bus))
     return True
 
 

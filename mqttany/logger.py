@@ -26,15 +26,26 @@ Logger
 # SOFTWARE.
 
 import os, sys, errno, inspect, traceback
+from types import MethodType
 import logging
 from logging import handlers
 from logging import DEBUG, INFO, WARN, ERROR
 
 all = [ "get_logger", "set_level", "log_traceback", "uninit" ]
 
+TRACE = 5   # trace level logging
+
 _log_file = os.path.join(os.path.dirname(__file__), "log", "mqttany.log")
 _log_format = "%(asctime)s [%(levelname)-5s] [%(name)-24s] %(message)s"
 _log_format_debug = "%(asctime)s [%(levelname)-5s] [%(processName)-8s] [%(name)-24s] %(message)s"
+
+
+def trace_log(self, msg, *args, **kwargs):
+    """
+    Trace method that will be injected into ``logging.Logger``
+    """
+    if self.isEnabledFor(TRACE):
+        self._log(TRACE, msg, args, **kwargs)
 
 
 def _init_logger():
@@ -42,8 +53,10 @@ def _init_logger():
     Creates the root logger for MQTTany
     """
     logging.addLevelName(logging.WARN, "WARN")
+    logging.addLevelName(TRACE, "TRACE")
 
     log = logging.getLogger("mqttany")
+    log.trace = MethodType(trace_log, log)
     log.setLevel(logging.INFO)
 
     if not os.path.exists(os.path.dirname(_log_file)):
@@ -69,6 +82,7 @@ def get_logger(name="mqttany", level=None):
     Returns a logger
     """
     logger = logging.getLogger(name)
+    logger.trace = MethodType(trace_log, logger)
     logger.setLevel(level or logging.getLogger("mqttany").level)
     return logger
 
@@ -88,7 +102,7 @@ def set_level(level):
     Sets logging level to level
     """
     _log.setLevel(level)
-    if level == DEBUG:
+    if level <= DEBUG:
         for handler in _log.handlers:
             handler.setFormatter(logging.Formatter(_log_format_debug))
     else:

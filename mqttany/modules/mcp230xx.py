@@ -274,8 +274,8 @@ def get_pin_for_topic(topic):
     """
     # attempt to determine device from device topic
     for device in devices:
-        #log.trace("Comparing '{device_name}' topic '{device_topic}' to message topic '{topic}'".format(
-        #        device_name=device["name"], device_topic=device[CONF_KEY_TOPIC].strip("/")+"/#", topic=topic))
+        log.trace("Comparing '{device_name}' topic '{device_topic}' to message topic '{topic}'".format(
+                device_name=device["name"], device_topic=device[CONF_KEY_TOPIC].strip("/")+"/#", topic=topic))
         if topic_matches_sub(device[CONF_KEY_TOPIC]+"/#", topic):
             log.debug("Inferred device '{device_name}' from message topic '{topic}'".format(
                     device_name=device["name"], topic=topic))
@@ -287,9 +287,9 @@ def get_pin_for_topic(topic):
         for device in devices:
             for pin in device["pins"]:
                 pin_config = device["pins"][pin]
-                #log.trace("Comparing pin '{pin_name}' GP{pin:02d} on '{device_name}' topic '{pin_topic}' to message topic '{topic}'".format(
-                #        pin_name=pin_config["name"], pin=pin, device_name=device["name"],
-                #        pin_topic=pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic=topic))
+                log.trace("Comparing pin '{pin_name}' GP{pin:02d} on '{device_name}' topic '{pin_topic}' to message topic '{topic}'".format(
+                        pin_name=pin_config["name"], pin=pin, device_name=device["name"],
+                        pin_topic=pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic=topic))
                 if topic_matches_sub(pin_config[CONF_KEY_TOPIC]+"/+", topic):
                     log.debug("Found '{pin_name}' GP{pin:02d} on '{device_name}' for message topic '{topic}'".format(
                             pin_name=pin_config["name"], pin=pin, device_name=device["name"], topic=topic))
@@ -301,9 +301,9 @@ def get_pin_for_topic(topic):
     else: # device match found
         for pin in device["pins"]:
             pin_config = device["pins"][pin]
-            #log.trace("Comparing pin '{pin_name}' GP{pin:02d} on '{device_name}' topic '{pin_topic}' to message topic '{topic}'".format(
-            #        pin_name=pin_config["name"], pin=pin, device_name=device["name"],
-            #        pin_topic=pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic=topic))
+            log.trace("Comparing pin '{pin_name}' GP{pin:02d} on '{device_name}' topic '{pin_topic}' to message topic '{topic}'".format(
+                    pin_name=pin_config["name"], pin=pin, device_name=device["name"],
+                    pin_topic=pin_config[CONF_KEY_TOPIC].strip("/")+"/+", topic=topic))
             if topic_matches_sub(pin_config[CONF_KEY_TOPIC]+"/+", topic):
                 log.debug("Found '{pin_name}' GP{pin:02d} on '{device_name}' for message topic '{topic}'".format(
                         pin_name=pin_config["name"], pin=pin, device_name=device["name"], topic=topic))
@@ -418,7 +418,7 @@ def init_device(device):
 
                 for pin in device["pins"]:
                     pin_config = device["pins"][pin]
-                    log.debug("Setting up '{pin_name}' on GP{pin:02d} as {direction} on {device} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
+                    log.trace("Setting up '{pin_name}' on GP{pin:02d} as {direction} on {device} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
                             pin_name=pin_config["name"], pin=pin, direction=TEXT_DIRECTION[pin_config[CONF_KEY_DIRECTION]],
                             device=device[CONF_KEY_CHIP], address=device[CONF_KEY_ADDRESS], bus_id=bus["id"]))
                     subscribe(
@@ -432,7 +432,7 @@ def init_device(device):
                     if pin_config[CONF_KEY_DIRECTION] == Direction.INPUT:
                         iodir = _set_bit(iodir, pin)
                         if pin_config[CONF_KEY_RESISTOR] == Pull.UP:
-                            log.debug("Setting pull-up resistor for '{pin_name}' on GP{pin:02d} on {device} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
+                            log.trace("Setting pull-up resistor for '{pin_name}' on GP{pin:02d} on {device} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
                                     pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_CHIP],
                                     address=device[CONF_KEY_ADDRESS], bus_id=bus["id"]))
                             gppu = _set_bit(gppu, pin)
@@ -452,21 +452,21 @@ def init_device(device):
                             state=_get_bit(gpio, pin), pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_CHIP],
                             address=device[CONF_KEY_ADDRESS], bus_id=bus["id"]))
                         gpio = _set_bit(gpio, pin, 0 ^ pin_config[CONF_KEY_INVERT])
-                    log.debug("Setting initial state '{state}' for '{pin_name}' on GP{pin:02d} on {device} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
+                    log.trace("Setting initial state '{state}' for '{pin_name}' on GP{pin:02d} on {device} at address 0x{address:02x} on I2C bus '{bus_id}'".format(
                             state=_get_bit(gpio, pin), pin_name=pin_config["name"], pin=pin, device=device[CONF_KEY_CHIP],
                             address=device[CONF_KEY_ADDRESS], bus_id=bus["id"]))
 
-                log.debug("Writing IODIR register to {device} '{device_name}' at address 0x{address:02x} on I2C bus '{bus_id}': {value}".format(
+                log.trace("Writing IODIR register to {device} '{device_name}' at address 0x{address:02x} on I2C bus '{bus_id}': {value}".format(
                         device=device[CONF_KEY_CHIP], device_name=device["name"], address=device[CONF_KEY_ADDRESS],
                         bus_id=bus["id"], value=bin(iodir)))
                 device["device"].iodir = iodir
 
-                log.debug("Writing GPPU register to {device} '{device_name}' at address 0x{address:02x} on I2C bus '{bus_id}': {value}".format(
+                log.trace("Writing GPPU register to {device} '{device_name}' at address 0x{address:02x} on I2C bus '{bus_id}': {value}".format(
                         device=device[CONF_KEY_CHIP], device_name=device["name"], address=device[CONF_KEY_ADDRESS],
                         bus_id=bus["id"], value=bin(gppu)))
                 device["device"].gppu = gppu
 
-                log.debug("Writing GPIO register to {device} '{device_name}' at address 0x{address:02x} on I2C bus '{bus_id}': {value}".format(
+                log.trace("Writing GPIO register to {device} '{device_name}' at address 0x{address:02x} on I2C bus '{bus_id}': {value}".format(
                         device=device[CONF_KEY_CHIP], device_name=device["name"], address=device[CONF_KEY_ADDRESS],
                         bus_id=bus["id"], value=bin(gpio)))
                 device["device"].gpio = gpio

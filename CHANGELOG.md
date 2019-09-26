@@ -1,5 +1,10 @@
 # MQTTany Change Log
 
+## Development
+
+* **Added**
+  * Log level `trace`, available by passing `-vv` when launching MQTTany.
+
 ## 0.7.1
 
 * **Added**
