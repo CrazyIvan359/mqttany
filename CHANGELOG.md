@@ -5,6 +5,9 @@
 * **Added**
   * Log level `trace`, available by passing `-vv` when launching MQTTany.
 
+* **Fixed**
+  * I2C lock acquisition waiting full timeout before returning on sucessful bus lock ([#22](https://github.com/CrazyIvan359/mqttany/issues/22))
+
 ## 0.7.1
 
 * **Added**
@@ -15,8 +18,8 @@
     since that is the only component being used.
 
 * **Fixed**
-  * MCP230xx outdated key `device` in example configuration, should be `chip` (#21).
-  * MCP230xx fix missing log format key (#21).
+  * MCP230xx outdated key `device` in example configuration, should be `chip` ([#21](https://github.com/CrazyIvan359/mqttany/issues/21)).
+  * MCP230xx fix missing log format key ([#21](https://github.com/CrazyIvan359/mqttany/issues/21)).
 
 ## 0.7.0
 
