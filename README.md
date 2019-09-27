@@ -1,8 +1,8 @@
 # MQTTany
 
-![Latest Version](https://img.shields.io/github/v/tag/CrazyIvan359/mqttany?label=release)
-![Gitter](https://img.shields.io/gitter/room/mqttany/community)
-![License](https://img.shields.io/github/license/CrazyIvan359/mqttany)
+[![Latest Version](https://img.shields.io/github/v/tag/CrazyIvan359/mqttany?label=release)](https://github.com/CrazyIvan359/mqttany/releases)
+[![Gitter](https://img.shields.io/gitter/room/mqttany/community)](https://gitter.im/mqttany/community)
+[![License](https://img.shields.io/github/license/CrazyIvan359/mqttany)](https://github.com/CrazyIvan359/mqttany/blob/master/LICENSE)
 
 MQTTany aims to make it easier to connect things to an MQTT broker. It is a
 collection of modules that each provide support for connecting one thing.
