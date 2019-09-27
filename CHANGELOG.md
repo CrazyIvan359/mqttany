@@ -6,7 +6,8 @@
   * Log level `trace`, available by passing `-vv` when launching MQTTany.
 
 * **Fixed**
-  * I2C lock acquisition waiting full timeout before returning on sucessful bus lock ([#22](https://github.com/CrazyIvan359/mqttany/issues/22))
+  * I2C lock acquisition waiting full timeout before returning on sucessful bus lock ([#22](https://github.com/CrazyIvan359/mqttany/issues/22)).
+  * MCP230xx log and publish wrong pin states if new state != old state ([#22](https://github.com/CrazyIvan359/mqttany/issues/22)).
 
 ## 0.7.1
 
