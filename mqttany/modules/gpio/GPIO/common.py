@@ -29,7 +29,7 @@ from enum import Enum
 
 all = [ "baseGPIO", "Logic", "Direction", "Resistor", "Interrupt" ]
 
-class Logic(Enum):
+class Logic():
     LOW = 0
     HIGH = 1
 

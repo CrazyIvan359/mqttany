@@ -49,9 +49,6 @@ CONF_OPTIONS = {
 SUPPORTED_DIRECTIONS = [Direction.INPUT, Direction.OUTPUT]
 
 TEXT_NAME = ".".join([__name__.split(".")[-3], __name__.split(".")[-1]]) # gives gpio.digital
-TEXT_DIRECTION = {Direction.INPUT: "input", Direction.OUTPUT: "output"}
-TEXT_RESISTOR = {Resistor.PULL_UP: "up", Resistor.PULL_DOWN: "down", Resistor.OFF: "off"}
-TEXT_INTERRUPT = {Interrupt.RISING: "rising", Interrupt.FALLING: "falling", Interrupt.BOTH: "both", Interrupt.NONE: "none"}
 
 log = logger.get_module_logger(module=TEXT_NAME)
 
@@ -75,9 +72,9 @@ class DigitalPin(Pin):
             name=name, pin=pin,
             options={
                 CONF_KEY_TOPIC: self._topic,
-                CONF_KEY_DIRECTION: TEXT_DIRECTION[self._direction],
-                CONF_KEY_INTERRUPT: TEXT_INTERRUPT[self._interrupt],
-                CONF_KEY_RESISTOR: TEXT_RESISTOR[self._resistor],
+                CONF_KEY_DIRECTION: self._direction.name,
+                CONF_KEY_INTERRUPT: self._interrupt.name,
+                CONF_KEY_RESISTOR: self._resistor.name,
                 CONF_KEY_INVERT: self._invert,
                 CONF_KEY_INITIAL: self._initial,
             }))
@@ -87,7 +84,7 @@ class DigitalPin(Pin):
         Configures the pin in hardware, returns ``True`` on success
         """
         log.info("Setting up '{name}' on GPIO{pin:02d} as {direction}".format(
-            name=self._name, pin=self._pin, direction=TEXT_DIRECTION[self._direction]))
+            name=self._name, pin=self._pin, direction=self._direction.name))
 
         if not super().setup(): return False
 
@@ -100,9 +97,9 @@ class DigitalPin(Pin):
             release_gpio_lock(self._pin, TEXT_PACKAGE_NAME)
             return False
 
-        if self._direction == Direction.INPUT and self._interrupt is not None:
+        if self._direction == Direction.INPUT and self._interrupt != Interrupt.NONE:
             log.trace("Adding interrupt event for '{name}' on GPIO{pin:02d} with edge trigger '{edge}'".format(
-                    name=self._name, pin=self._pin, edge=TEXT_INTERRUPT[self._interrupt]))
+                    name=self._name, pin=self._pin, edge=self._interrupt.name))
             self._gpio.add_event_detect(
                     self._pin,
                     self._interrupt,
