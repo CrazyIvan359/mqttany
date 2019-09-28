@@ -3,6 +3,14 @@
 ## 0.7.2
 
 * **Added**
+  * GPIO `mode` setting to allow specifying pin numbering mode `BOARD`, `SOC`, or `WIRINGPI`.
+
+* **Changed**
+  * GPIO underlying library moved from `RPi.GPIO` to `wiringpi` to allow selecting pin number mode.
+
+## 0.7.2
+
+* **Added**
   * Log level `trace`, available by passing `-vv` when launching MQTTany.
 
 * **Fixed**

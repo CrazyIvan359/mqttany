@@ -29,9 +29,11 @@ import adafruit_platformdetect
 
 from logger import log_traceback
 
-from modules.gpio.common import log
+from modules.gpio.common import log, config, CONF_KEY_MODE
 
 all = [ "getGPIO" ]
+
+gpio_mod = None
 
 
 def getGPIO(**kwargs):
@@ -39,16 +41,18 @@ def getGPIO(**kwargs):
     Returns a class to interface with the hardware GPIO or ``None`` if one is
     not available.
     """
+    global gpio_mod
     detector = adafruit_platformdetect.Detector()
     if detector.board.any_raspberry_pi:
-        try:
-            from modules.gpio.GPIO.rpi import rpiGPIO
-        except RuntimeError:
-            log.error("A RuntimeError while trying to import RPi.GPIO. This is likely because you do not have the correct permissions.")
-        except:
-            log.error("An error occurred while trying to import RPi.GPIO")
-            log_traceback(log)
-        else:
-            return rpiGPIO(**kwargs)
+        if not gpio_mod:
+            try:
+                from modules.gpio.GPIO.rpi import rpiGPIO
+            except RuntimeError:
+                log.error("A RuntimeError while trying to import RPi.GPIO. This is likely because you do not have the correct permissions.")
+            except:
+                log.error("An error occurred while trying to import RPi.GPIO")
+                log_traceback(log)
+            else:
+                gpio_mod = rpiGPIO(mode=config[CONF_KEY_MODE])
 
-    return None
+    return gpio_mod

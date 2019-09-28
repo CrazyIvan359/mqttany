@@ -30,8 +30,9 @@ from mprop import mproperty
 
 import logger
 
-from modules.gpio.GPIO.common import Direction
+from modules.gpio.GPIO.common import Mode, Direction
 
+CONF_KEY_MODE = "mode"
 CONF_KEY_TOPIC = "topic"
 CONF_KEY_TOPIC_SETTER = "topic set"
 CONF_KEY_TOPIC_GETTER = "topic get"
@@ -46,6 +47,10 @@ CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
 
 CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
+    (CONF_KEY_MODE, {"default": Mode.SOC, "selection": {
+        "BOARD": Mode.BOARD, "board": Mode.BOARD,
+        "SOC": Mode.SOC, "soc": Mode.SOC, "BCM": Mode.SOC, "bcm": Mode.SOC,
+        "WIRINGPI": Mode.WIRINGPI, "wiringpi": Mode.WIRINGPI, "WiringPi": Mode.WIRINGPI}}),
     (CONF_KEY_TOPIC, {"default": "{module_name}"}),
     (CONF_KEY_TOPIC_SETTER, {"default": "set"}),
     (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
@@ -65,11 +70,13 @@ CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTH
     })
 ])
 
-PINS_RPI_26 = [2, 3, 4,       7, 8, 9, 10, 11,         14, 15,     17, 18,             22, 23, 24, 25,     27]
-PINS_RPI_40 = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
-
 TEXT_PACKAGE_NAME = __name__.split(".")[-2] # gives gpio
 TEXT_LOGIC_STATE = ["LOW", "HIGH"]
+TEXT_PIN_PREFIX = {
+    Mode.BOARD: "pin ",
+    Mode.SOC: "GPIO",
+    Mode.WIRINGPI: "WiringPi pin "
+}
 
 log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}
