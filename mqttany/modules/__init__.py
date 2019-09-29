@@ -164,7 +164,7 @@ def _proc_loop(module):
         else:
             if message == POISON_PILL:
                 poison_pill = True # terminate signal
-                module.log.debug("Received poison pill")
+                module.log.trace("Received poison pill")
             else:
                 module.log.trace("Received message [{message}]".format(message=message))
                 func = getattr(module, message["func"])
