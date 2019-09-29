@@ -72,6 +72,16 @@ if __name__ == '__main__':
 
     log.info("MQTTany {version} starting".format(version=__version__))
 
+    if "dev" in __version__:
+        log.warn("")
+        log.warn("########  DEVELOPMENT VERSION  ########")
+        log.warn("#                                     #")
+        log.warn("#  This is a development version and  #")
+        log.warn("#    may be incomplete or unstable    #")
+        log.warn("#                                     #")
+        log.warn("#######################################")
+        log.warn("")
+
     try:
         if modules.load(args.config_file):
             while not killer.kill_now:
