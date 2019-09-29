@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## Development
+## 0.7.3
 
 * **Added**
   * GPIO `mode` setting to allow specifying pin numbering mode `BOARD`, `SOC`, or `WIRINGPI`.
@@ -8,6 +8,7 @@
 * **Changed**
   * GPIO underlying library moved from `RPi.GPIO` to `wiringpi` to allow selecting pin number mode.
   * GPIO locks now handle pin numbering mode, locks always use `SOC` numbers.
+  * GPIO default debounce time is now 50ms.
 
 ## 0.7.2
 
