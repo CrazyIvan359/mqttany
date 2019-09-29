@@ -68,8 +68,8 @@ class DigitalPin(Pin):
             payload_on=config[CONF_KEY_PAYLOAD_ON],
             payload_off=config[CONF_KEY_PAYLOAD_OFF]
         )
-        log.debug("Configured '{name}' on GPIO{pin:02d} with options: {options}".format(
-            name=name, pin=pin,
+        log.debug("Configured '{name}' on {pin_prefix}{pin:02d} with options: {options}".format(
+            name=name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=pin,
             options={
                 CONF_KEY_TOPIC: self._topic,
                 CONF_KEY_DIRECTION: self._direction.name,
@@ -83,23 +83,25 @@ class DigitalPin(Pin):
         """
         Configures the pin in hardware, returns ``True`` on success
         """
-        log.info("Setting up '{name}' on GPIO{pin:02d} as {direction}".format(
-            name=self._name, pin=self._pin, direction=self._direction.name))
+        log.info("Setting up '{name}' on {pin_prefix}{pin:02d} as {direction}".format(
+            name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+            pin=self._pin, direction=self._direction.name))
 
         if not super().setup(): return False
 
         try:
             self._gpio.setup(self._pin, self._direction, self._resistor)
         except:
-            log.error("An exception occurred while setting up '{name}' on GPIO{pin:02d}".format(
-                name=self._name, pin=self._pin))
+            log.error("An exception occurred while setting up '{name}' on {pin_prefix}{pin:02d}".format(
+                name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=self._pin))
             log_traceback(log)
             release_gpio_lock(self._pin, TEXT_PACKAGE_NAME)
             return False
 
         if self._direction == Direction.INPUT and self._interrupt != Interrupt.NONE:
-            log.trace("Adding interrupt event for '{name}' on GPIO{pin:02d} with edge trigger '{edge}'".format(
-                    name=self._name, pin=self._pin, edge=self._interrupt.name))
+            log.trace("Adding interrupt event for '{name}' on {pin_prefix}{pin:02d} with edge trigger '{edge}'".format(
+                    name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                    pin=self._pin, edge=self._interrupt.name))
             self._gpio.add_event_detect(
                     self._pin,
                     self._interrupt,
@@ -111,12 +113,14 @@ class DigitalPin(Pin):
 
         if self._direction == Direction.OUTPUT:
             if self._initial in [config[CONF_KEY_PAYLOAD_ON], config[CONF_KEY_PAYLOAD_OFF]]:
-                log.trace("Setting '{name}' on GPIO{pin:02d} to initial state '{state}'".format(
-                        name=self._name, pin=self._pin, state=self._initial))
+                log.trace("Setting '{name}' on {pin_prefix}{pin:02d} to initial state '{state}'".format(
+                        name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                        pin=self._pin, state=self._initial))
                 self._set(self._initial)
             else:
-                log.warn("Invalid initial state '{initial_state}' for '{name}' on GPIO{pin:02d}, setting pin to '{state}'".format(
-                        name=self._name, initial_state=self._initial, pin=self._pin, state=config[CONF_KEY_PAYLOAD_OFF]))
+                log.warn("Invalid initial state '{initial_state}' for '{name}' on {pin_prefix}{pin:02d}, setting pin to '{state}'".format(
+                        name=self._name, initial_state=self._initial, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                        pin=self._pin, state=config[CONF_KEY_PAYLOAD_OFF]))
                 self._set(config[CONF_KEY_PAYLOAD_OFF])
         else:
             self.publish_state()
@@ -132,12 +136,12 @@ class DigitalPin(Pin):
         try:
             state = bool(self._gpio.input(self._pin)) ^ self._invert # apply the invert flag
         except:
-            log.error("An exception occurred while reading '{name}' on GPIO{pin:02d}".format(
-                    name=self._name, pin=self._pin))
+            log.error("An exception occurred while reading '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=self._pin))
             log_traceback(log)
         else:
-            log.debug("Read state '{state}' logic {logic} from '{name}' on GPIO{pin:02d}".format(
-                name=self._name,
+            log.debug("Read state '{state}' logic {logic} from '{name}' on {pin_prefix}{pin:02d}".format(
+                name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
                 state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
                 logic=TEXT_LOGIC_STATE[int(state ^ self._invert)], pin=self._pin))
             publish(
@@ -160,6 +164,8 @@ class DigitalPin(Pin):
         """
         Handles pin change interrupts
         """
+        log.debug("Interrupt fired for '{name}' on {pin_prefix}{pin:02d}".format(
+            name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
         self.publish_state()
 
     def _set(self, payload):
@@ -174,17 +180,20 @@ class DigitalPin(Pin):
         elif payload == config[CONF_KEY_PAYLOAD_OFF]:
             state = False
         else:
-            log.warn("Received unrecognized SET payload '{payload}' for '{name}' on GPIO{pin:02d}".format(
-                    name=self._name, payload=payload, pin=self._pin))
+            log.warn("Received unrecognized SET payload '{payload}' for '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name, payload=payload, pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
             return
 
         try:
             self._gpio.output(self._pin, state ^ self._invert)
         except:
-            log.error("An exception occurred while setting '{name}' on GPIO{pin:02d}".format(
-                    name=self._name, pin=self._pin))
+            log.error("An exception occurred while setting '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name, pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
             log_traceback(log)
         else:
-            log.debug("Set '{name}' on GPIO{pin:02d} to '{state}' logic {logic}".format(
-                name=self._name, pin=self._pin, state=payload, logic=TEXT_LOGIC_STATE[int(state ^ self._invert)]))
+            log.debug("Set '{name}' on {pin_prefix}{pin:02d} to '{state}' logic {logic}".format(
+                name=self._name, pin=self._pin, state=payload, logic=TEXT_LOGIC_STATE[int(state ^ self._invert)],
+                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], ))
             self.publish_state()

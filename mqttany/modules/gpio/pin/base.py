@@ -69,13 +69,13 @@ class Pin(object):
         their own lock on the pin.
         """
         if not self._gpio:
-            log.error("No GPIO library available for '{name}' on GPIO{pin:02d}".format(
-                name=self._name, pin=self._pin))
+            log.error("No GPIO library available for '{name}' on {pin_prefix}{pin:02d}".format(
+                name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
             return False
 
         if not acquire_gpio_lock(self._pin, TEXT_PACKAGE_NAME, timeout=2000):
-            log.error("Failed to acquire a lock for '{name}' on GPIO{pin:02d}".format(
-                name=self._name, pin=self._pin))
+            log.error("Failed to acquire a lock for '{name}' on {pin_prefix}{pin:02d}".format(
+                name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
             return False
         return True
 
@@ -84,7 +84,7 @@ class Pin(object):
         Cleanup actions when stopping
         """
         self._setup = False
-        self._gpio.cleanup(self._pin)
+        if self._gpio: self._gpio.cleanup(self._pin)
         release_gpio_lock(self._pin, TEXT_PACKAGE_NAME)
 
     def publish_state(self):

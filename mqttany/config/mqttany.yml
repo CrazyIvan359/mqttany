@@ -42,6 +42,9 @@ mqtt:
 ######## GPIO Module ########
 #gpio:
 
+  ### Pin Numbering Mode
+  #mode: 'SOC'
+
   ### Module Topic
   #topic: '{module_name}'
 

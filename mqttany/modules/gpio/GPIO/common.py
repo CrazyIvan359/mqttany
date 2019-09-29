@@ -27,7 +27,12 @@ GPIO Library Wrapper Common
 
 from enum import Enum
 
-all = [ "baseGPIO", "Logic", "Direction", "Resistor", "Interrupt" ]
+all = [ "baseGPIO", "Mode", "Logic", "Direction", "Resistor", "Interrupt" ]
+
+class Mode(Enum):
+    BOARD = 50
+    SOC = 51
+    WIRINGPI = 52
 
 class Logic():
     LOW = 0
@@ -52,6 +57,12 @@ class baseGPIO():
     """
     GPIO Library Wrapper base class
     """
+
+    def pin_valid(self, pin, direction):
+        """
+        Return ``True`` if pin can be used for ``direction``
+        """
+        raise NotImplementedError
 
     def setup(self, pin, direction, resistor):
         """
