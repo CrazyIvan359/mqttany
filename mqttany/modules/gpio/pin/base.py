@@ -26,7 +26,7 @@ GPIO Pin Base
 # SOFTWARE.
 
 import logger
-from common import acquire_gpio_lock, release_gpio_lock
+from common import acquire_gpio_lock, release_gpio_lock, TEXT_PIN_PREFIX
 
 from modules.mqtt import resolve_topic, topic_matches_sub
 
@@ -73,7 +73,7 @@ class Pin(object):
                 name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
             return False
 
-        if not acquire_gpio_lock(self._pin, TEXT_PACKAGE_NAME, timeout=2000):
+        if not acquire_gpio_lock(self._pin, self._gpio.getPinFromMode(self._pin, config[CONF_KEY_MODE]), TEXT_PACKAGE_NAME, timeout=2000, mode=config[CONF_KEY_MODE]):
             log.error("Failed to acquire a lock for '{name}' on {pin_prefix}{pin:02d}".format(
                 name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
             return False
@@ -85,7 +85,7 @@ class Pin(object):
         """
         self._setup = False
         if self._gpio: self._gpio.cleanup(self._pin)
-        release_gpio_lock(self._pin, TEXT_PACKAGE_NAME)
+        release_gpio_lock(self._pin, self._gpio.getPinFromMode(self._pin, config[CONF_KEY_MODE]), TEXT_PACKAGE_NAME, mode=config[CONF_KEY_MODE])
 
     def publish_state(self):
         """

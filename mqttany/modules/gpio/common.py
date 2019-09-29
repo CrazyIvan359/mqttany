@@ -29,8 +29,9 @@ from collections import OrderedDict
 from mprop import mproperty
 
 import logger
+from common import Mode
 
-from modules.gpio.GPIO.common import Mode, Direction
+from modules.gpio.GPIO.common import Direction
 
 CONF_KEY_MODE = "mode"
 CONF_KEY_TOPIC = "topic"
@@ -71,12 +72,6 @@ CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTH
 ])
 
 TEXT_PACKAGE_NAME = __name__.split(".")[-2] # gives gpio
-TEXT_LOGIC_STATE = ["LOW", "HIGH"]
-TEXT_PIN_PREFIX = {
-    Mode.BOARD: "pin ",
-    Mode.SOC: "GPIO",
-    Mode.WIRINGPI: "WiringPi pin "
-}
 
 log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}

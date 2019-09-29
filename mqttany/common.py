@@ -28,69 +28,65 @@ Common
 import time, collections
 from ctypes import c_char_p, c_int
 import multiprocessing as mproc
+from enum import Enum
 
 import logger
 log = logger.get_logger()
 
 all = [
     "POISON_PILL",
+    "Mode", "Logic", "TEXT_LOGIC_STATE", "TEXT_PIN_PREFIX",
     "acquire_gpio_lock", "release_gpio_lock",
 ]
 
 POISON_PILL = {"stop": True}
 
-GPIO_PINS_RPI3 = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+class Mode(Enum):
+    BOARD = 50
+    SOC = 51
+    WIRINGPI = 52
 
-_gpio_lock = [ # GPIO pin locks
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 0
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 1
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 2
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 3
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 4
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 5
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 6
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 7
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 8
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 9
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 10
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 11
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 12
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 13
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 14
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 15
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 16
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 17
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 18
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 19
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 20
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 21
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 22
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 23
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 24
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 25
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 26
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 27
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 28
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 29
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 30
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 31
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 32
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 33
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 34
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 35
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 36
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 37
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 38
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 39
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 40
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 41
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 42
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 43
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 44
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 45
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 46
-    {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16)}, # Pin 47
-]
+class Logic():
+    LOW = 0
+    HIGH = 1
+
+TEXT_LOGIC_STATE = ["LOW", "HIGH"]
+TEXT_PIN_PREFIX = {
+    Mode.BOARD: "pin ",
+    Mode.SOC: "GPIO",
+    Mode.WIRINGPI: "WiringPi pin "
+}
+
+_gpio_lock = { # GPIO pin locks
+      0: mproc.Array(c_char_p, 16), # 0
+      1: mproc.Array(c_char_p, 16), # 1
+      2: mproc.Array(c_char_p, 16), # 2
+      3: mproc.Array(c_char_p, 16), # 3
+      4: mproc.Array(c_char_p, 16), # 4
+      5: mproc.Array(c_char_p, 16), # 5
+      6: mproc.Array(c_char_p, 16), # 6
+      7: mproc.Array(c_char_p, 16), # 7
+      8: mproc.Array(c_char_p, 16), # 8
+      9: mproc.Array(c_char_p, 16), # 9
+     10: mproc.Array(c_char_p, 16), # 10
+     11: mproc.Array(c_char_p, 16), # 11
+     12: mproc.Array(c_char_p, 16), # 12
+     13: mproc.Array(c_char_p, 16), # 13
+     14: mproc.Array(c_char_p, 16), # 14
+     15: mproc.Array(c_char_p, 16), # 15
+     16: mproc.Array(c_char_p, 16), # 16
+     17: mproc.Array(c_char_p, 16), # 17
+     18: mproc.Array(c_char_p, 16), # 18
+     19: mproc.Array(c_char_p, 16), # 19
+     20: mproc.Array(c_char_p, 16), # 20
+     21: mproc.Array(c_char_p, 16), # 21
+     22: mproc.Array(c_char_p, 16), # 22
+     23: mproc.Array(c_char_p, 16), # 23
+     24: mproc.Array(c_char_p, 16), # 24
+     25: mproc.Array(c_char_p, 16), # 25
+     26: mproc.Array(c_char_p, 16), # 26
+     27: mproc.Array(c_char_p, 16), # 27
+}
 
 _i2c_lock = [ # I2C bus locks
     {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(c_int, 0), "sda": mproc.Value(c_int, 0)}, # Bus 0
@@ -100,54 +96,69 @@ _i2c_lock = [ # I2C bus locks
 ]
 
 
-def acquire_gpio_lock(pin, module, timeout=0):
+def acquire_gpio_lock(pin, gpio_pin, module, timeout=0, mode=Mode.SOC):
     """
     Acquire lock on GPIO pin
     Timeout is ms
     """
-    log.trace("Module '{module}' requested a lock on GPIO{pin:02d}".format(
-        module=module, pin=pin))
-    if timeout:
+    log.trace("Module '{module}' requested a lock on {pin_prefix}{pin:02d}{gpio_pin}".format(
+        module=module, pin=pin, pin_prefix=TEXT_PIN_PREFIX[mode],
+        gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin)))
+
+    if _gpio_lock[gpio_pin].raw == "":
+        _gpio_lock[gpio_pin].raw = module
+        log.debug("Module '{module}' locked {pin_prefix}{pin:02d}{gpio_pin}".format(
+            module=module, pin=pin, pin_prefix=TEXT_PIN_PREFIX[mode],
+            gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin)))
+        return True
+    elif _gpio_lock[gpio_pin].raw == module:
+        _gpio_lock[gpio_pin].raw = module
+        log.trace("Module '{module}' already has a lock on {pin_prefix}{pin:02d}{gpio_pin}".format(
+            module=module, pin=pin, pin_prefix=TEXT_PIN_PREFIX[mode],
+            gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin)))
+        return True
+    elif timeout:
         then = time.time() + ( timeout / 1000 )
         while time.time() < then:
-            if _gpio_lock[pin]["lock"].acquire(False):
-                _gpio_lock[pin]["module"].raw = module
-                log.debug("Module '{module}' locked GPIO{pin:02d}".format(
-                    module=module, pin=pin))
+            if _gpio_lock[gpio_pin].raw == "":
+                _gpio_lock[gpio_pin].raw = module
+                log.debug("Module '{module}' locked {pin_prefix}{pin:02d}{gpio_pin}".format(
+                    module=module, pin=pin, pin_prefix=TEXT_PIN_PREFIX[mode],
+                    gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin)))
                 return True
             else:
                 time.sleep(0.025)
 
-    elif _gpio_lock[pin]["lock"].acquire(False):
-        _gpio_lock[pin]["module"].raw = module
-        log.debug("Module '{module}' locked GPIO{pin:02d}".format(
-            module=module, pin=pin))
-        return True
-
-    log.warn("Module '{module}' failed to acquire a lock on GPIO{pin} because '{owner}' already has a lock on it".format(
-            module=module, pin=pin, owner=_gpio_lock[pin]["module"].raw))
+    log.warn("Module '{module}' failed to acquire a lock on {pin_prefix}{pin:02d}{gpio_pin} because '{owner}' already has a lock on it".format(
+            module=module, pin=pin, owner=_gpio_lock[pin].raw, pin_prefix=TEXT_PIN_PREFIX[mode],
+            gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin)))
     return False
 
 
-def release_gpio_lock(pin, module):
+def release_gpio_lock(pin, gpio_pin, module, mode=Mode.SOC):
     """
     Release lock on GPIO pin
     """
-    log.trace("Module '{module}' requested to release a lock on GPIO{pin:02d}".format(
-        module=module, pin=pin))
-    if not _gpio_lock[pin]["lock"].acquire(False):
-        # prevent releasing a lock a module doesn't have
-        if _gpio_lock[pin]["module"].raw == module:
-            _gpio_lock[pin]["lock"].release()
-        else:
-            log.warn("Module '{module}' attempted to release a lock on GPIO{pin} but it is locked by '{owner}'".format(
-                module=module, pin=pin, owner=_gpio_lock[pin]["module"].raw))
-            return False
-    else:
-        _gpio_lock[pin]["lock"].release()
+    log.trace("Module '{module}' requested to release a lock on {pin_prefix}{pin:02d}{gpio_pin}".format(
+        module=module, pin=pin, pin_prefix=TEXT_PIN_PREFIX[mode],
+        gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin)))
 
-    log.debug("Module '{module}' released lock on GPIO{pin:02d}".format(
-        module=module, pin=pin))
+    if _gpio_lock[gpio_pin].raw == module:
+        _gpio_lock[gpio_pin].raw == ""
+    elif _gpio_lock[gpio_pin].raw == "":
+        log.trace("Module '{module}' attempted to release {pin_prefix}{pin:02d}{gpio_pin} but it is not locked.".format(
+            module=module, pin=pin, pin_prefix=TEXT_PIN_PREFIX[mode],
+            gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin)))
+        return True
+    else:
+        log.warn("Module '{module}' attempted to release a lock on {pin_prefix}{pin:02d}{gpio_pin} but it is locked by '{owner}'".format(
+            module=module, pin=pin, owner=_gpio_lock[pin].raw, pin_prefix=TEXT_PIN_PREFIX[mode],
+            gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin)))
+        return False
+
+    log.debug("Module '{module}' released lock on {pin_prefix}{pin:02d}{gpio_pin}".format(
+        module=module, pin=pin, pin_prefix=TEXT_PIN_PREFIX[mode],
+        gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin)))
     return True
 
 
@@ -168,12 +179,12 @@ def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
         if bus_lock or _i2c_lock[bus]["lock"].acquire(False):
             bus_lock = True
 
-            if scl_lock or acquire_gpio_lock(scl, module):
+            if scl_lock or acquire_gpio_lock(scl, scl, module):
                 scl_lock = True
             else:
                 return (False, False, False)
 
-            if not acquire_gpio_lock(sda, module):
+            if not acquire_gpio_lock(sda, sda, module):
                 return (False, False, False)
 
             _i2c_lock[bus]["module"].raw = module
@@ -211,7 +222,7 @@ def acquire_i2c_lock(bus, scl, sda, module, timeout=0):
                 module=module, bus_id=bus, owner=_i2c_lock[bus]["module"].raw))
 
     if scl_lock:
-        release_gpio_lock(scl, module)
+        release_gpio_lock(scl, scl, module)
 
     if bus_lock:
         _i2c_lock[bus]["lock"].release()
@@ -228,8 +239,8 @@ def release_i2c_lock(bus, scl, sda, module):
     if not _i2c_lock[bus]["lock"].acquire(False):
         # prevent releasing a lock a module doesn't have
         if _i2c_lock[bus]["module"].raw == module:
-            release_gpio_lock(sda, module)
-            release_gpio_lock(scl, module)
+            release_gpio_lock(sda, sda, module)
+            release_gpio_lock(scl, scl, module)
             _i2c_lock[bus]["lock"].release()
             _i2c_lock[bus]["module"].raw = ""
         else:
@@ -260,6 +271,10 @@ def update_dict(d, u):
 
 
 
+### Initialize
+
+for pin in _gpio_lock:
+    _gpio_lock[pin].raw = ""
 
 for bus in _i2c_lock:
     bus["module"].raw = ""

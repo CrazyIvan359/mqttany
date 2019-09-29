@@ -27,7 +27,7 @@ GPIO Digital Pin
 
 import logger
 from logger import log_traceback
-from common import release_gpio_lock
+from common import release_gpio_lock, TEXT_PIN_PREFIX, TEXT_LOGIC_STATE
 
 from modules.mqtt import publish, topic_matches_sub
 
@@ -95,7 +95,7 @@ class DigitalPin(Pin):
             log.error("An exception occurred while setting up '{name}' on {pin_prefix}{pin:02d}".format(
                 name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=self._pin))
             log_traceback(log)
-            release_gpio_lock(self._pin, TEXT_PACKAGE_NAME)
+            release_gpio_lock(self._pin, self._gpio.getPinFromMode(self._pin, config[CONF_KEY_MODE]), TEXT_PACKAGE_NAME, mode=config[CONF_KEY_MODE])
             return False
 
         if self._direction == Direction.INPUT and self._interrupt != Interrupt.NONE:
