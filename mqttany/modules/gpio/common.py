@@ -58,7 +58,7 @@ CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTH
     (CONF_KEY_PAYLOAD_ON, {"default": "ON"}),
     (CONF_KEY_PAYLOAD_OFF, {"default": "OFF"}),
     (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
-    (CONF_KEY_DEBOUNCE, {"type": int, "default": 200}),
+    (CONF_KEY_DEBOUNCE, {"type": int, "default": 50}),
     ("regex:.+", {
         "type": "section",
         "required": False,

@@ -73,7 +73,7 @@ mqtt:
   #polling interval: 0.0 # interval in seconds to poll all pins
 
   ### Interrupt Debounce
-  #debounce: 200 # in milliseconds
+  #debounce: 50 # in milliseconds
 
   ### Single Pin Configuration
   #Friendly Name:
