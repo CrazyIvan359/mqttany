@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## 0.7.2
+## Development
 
 * **Added**
   * GPIO `mode` setting to allow specifying pin numbering mode `BOARD`, `SOC`, or `WIRINGPI`.
