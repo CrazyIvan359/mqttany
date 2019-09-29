@@ -27,16 +27,7 @@ GPIO Library Wrapper Common
 
 from enum import Enum
 
-all = [ "baseGPIO", "Mode", "Logic", "Direction", "Resistor", "Interrupt" ]
-
-class Mode(Enum):
-    BOARD = 50
-    SOC = 51
-    WIRINGPI = 52
-
-class Logic():
-    LOW = 0
-    HIGH = 1
+all = [ "baseGPIO", "Direction", "Resistor", "Interrupt" ]
 
 class Direction(Enum):
     INPUT = 10
@@ -57,6 +48,13 @@ class baseGPIO():
     """
     GPIO Library Wrapper base class
     """
+
+    @staticmethod
+    def getPinFromMode(pin, mode):
+        """
+        Returns SOC GPIO number for ``pin`` in mode ``mode``
+        """
+        raise NotImplementedError
 
     def pin_valid(self, pin, direction):
         """

@@ -56,3 +56,12 @@ def getGPIO(**kwargs):
                 gpio_mod = rpiGPIO(mode=config[CONF_KEY_MODE])
 
     return gpio_mod
+
+def getPinFromMode(pin, mode):
+    """
+    Returns SOC GPIO number for ``pin`` in mode ``mode``
+    """
+    if not gpio_mod:
+        getGPIO()
+
+    return gpio_mod.getPinFromMode(pin, mode)

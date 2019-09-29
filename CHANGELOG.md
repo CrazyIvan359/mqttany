@@ -7,6 +7,7 @@
 
 * **Changed**
   * GPIO underlying library moved from `RPi.GPIO` to `wiringpi` to allow selecting pin number mode.
+  * GPIO locks now handle pin numbering mode, locks always use `SOC` numbers.
 
 ## 0.7.2
 

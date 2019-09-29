@@ -32,8 +32,9 @@ now = datetime.now
 import wiringpi
 
 import logger
-from modules.gpio.common import TEXT_PIN_PREFIX, config, CONF_KEY_MODE
-from modules.gpio.GPIO.common import baseGPIO, Mode, Logic, Direction, Resistor, Interrupt
+from common import TEXT_PIN_PREFIX, Mode, Logic
+from modules.gpio.common import config, CONF_KEY_MODE
+from modules.gpio.GPIO.common import baseGPIO, Direction, Resistor, Interrupt
 
 import adafruit_platformdetect
 
@@ -113,7 +114,7 @@ rpi_26_r1 = detector.board.id in [
     adafruit_platformdetect.board.RASPBERRY_PI_A,
     adafruit_platformdetect.board.RASPBERRY_PI_B_REV1
 ]
-def _soc_pin(pin):
+def gpioPinToGpio(pin):
     if rpi_40:
         return PINS_40[pin]
     elif rpi_26_r1:
@@ -123,7 +124,7 @@ def _soc_pin(pin):
 
 map_pin_lookup = {
     Mode.BOARD: wiringpi.physPinToGpio,
-    Mode.SOC: _soc_pin,
+    Mode.SOC: gpioPinToGpio,
     Mode.WIRINGPI: wiringpi.wpiPinToGpio
 }
 
@@ -140,6 +141,13 @@ class rpiGPIO(baseGPIO):
             map_wiringpi_setup[mode]()
         else:
             raise ValueError("Unexpected value for mode, must be BOARD, SOC, or WIRINGPI")
+
+    @staticmethod
+    def getPinFromMode(pin, mode):
+        """
+        Returns SOC GPIO number for ``pin`` in mode ``mode``
+        """
+        return map_pin_lookup[mode](pin)
 
     def pin_valid(self, pin, direction):
         """
