@@ -54,14 +54,10 @@ mqtt:
   #topic set: 'set'
 
   ### Getter Topic
-  # any message here will cause pin state to be published
-  # default resolves to '{root_topic}/{module_name}/{pin}/get'
-  #topic get: 'get'
-
-  ### Poll Topic
-  # any message here will cause all pin states to be published
-  # default resolves to '{root_topic}/{module_name}/poll'
-  #topic poll: 'poll'
+  # any message here will cause pin states to be published
+  # default for all pins resolves to '{root_topic}/{module_name}/poll'
+  # default for single pin resolves to '{root_topic}/{module_name}/{pin}/get'
+  #topic get: 'poll'
 
   ### ON Payload
   #payload on: 'ON' # message for pin ON
@@ -137,15 +133,11 @@ mqtt:
   #topic set: 'set'
 
   ### Getter Topic
-  # any message here will cause pin state to be published
-  # default resolves to '{root_topic}/{module_name}/{device_name}/{pin}/get'
-  #topic get: 'get'
-
-  ### Poll Topic
-  # any message here will cause pin states from all devices to be published
-  # default for all devices resolves to '{root_topic}/{module_name}/poll'
+  # any message here will cause pin states to be published
+  # default for all pins resolves to '{root_topic}/{module_name}/{device_name}/poll'
   # default for single device resolves to '{root_topic}/{module_name}/{device_name}/poll'
-  #topic poll: 'poll'
+  # default for single pin resolves to '{root_topic}/{module_name}/{device_name}/{pin}/get'
+  #topic get: 'poll'
 
   ### ON Payload
   #payload on: 'ON' # message for pin ON
@@ -211,13 +203,13 @@ mqtt:
   #Friendly Name:
 
     ### Device Address
-    # The device's address, can be 7 or 8 bytes, can use `w1` style `xx-xxxxxxxxxxxx`
-    #address: ''
+    # The device's address, can be 7 or 8 bytes, can use w1 style `xx-xxxxxxxxxxxx`
+    #address: '' # **MUST BE IN SINGLE QUOTES `''`**
 
     ### Device Topic
     # Additional Substitutions:
-    # - {device_name} will be replaced with the device definition section name
-    # - {device_type} will be replaced with the device type (ex. `DS18B20`)
-    # - {address} will be replaced with the device's **FULL 8 BYTE ADDRESS**
-    # - {index} will be replaced with the device's index in the list of addresses
+    # - {device_name} = will be replaced with the device definition section name
+    # - {device_type} = will be replaced with the device type (ex. `DS18B20`)
+    # - {address} = will be replaced with the device's **FULL 8 BYTE ADDRESS**
+    # - {index} = will be replaced with the device's index in the list of addresses
     #topic: '{device_name}'
