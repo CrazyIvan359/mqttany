@@ -26,6 +26,13 @@ Supported boards:
 - Raspberry Pi - any up to 3B+ with the 40-pin header should work, but not all
   have been tested.
 
+### OneWire
+
+Provides access to Dallas OneWire devices using the `w1` kernel module. OWFS
+support is planned.
+Supported devices:
+- Temperature sensors - `DS18B20`, `DS18S20`, `DS1822`, `DS1825`, and `DS28EA00`.
+
 <br>
 
 **Note**
