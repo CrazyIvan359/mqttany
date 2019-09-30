@@ -182,3 +182,42 @@ mqtt:
     ### Pin Configurations
     # Refer to the GPIO Module pin configurations
     # The 'interrupt' option is not yet supported
+
+
+
+######## OneWire Module ########
+#onewire:
+
+  ### Bus Interface
+  #bus: 'w1'
+
+  ### Module Topic
+  #topic: '{module_name}'
+
+  ### Get Topic
+  # any message here will cause device state to be published
+  # default for all devices resolves to '{root_topic}/{module_name}/poll'
+  # default for single device resolves to '{root_topic}/{module_name}/{device_name}/poll'
+  #topic get: 'poll'
+
+  ### Polling Interval
+  #polling interval: 0.0 # interval in seconds to poll all pins
+
+  ### Bus Scan
+  # Scan bus for any unconfigured devices and add them
+  #bus scan: false
+
+  ### Device Configuration
+  #Friendly Name:
+
+    ### Device Address
+    # The device's address, can be 7 or 8 bytes, can use `w1` style `xx-xxxxxxxxxxxx`
+    #address: ''
+
+    ### Device Topic
+    # Additional Substitutions:
+    # - {device_name} will be replaced with the device definition section name
+    # - {device_type} will be replaced with the device type (ex. `DS18B20`)
+    # - {address} will be replaced with the device's **FULL 8 BYTE ADDRESS**
+    # - {index} will be replaced with the device's index in the list of addresses
+    #topic: '{device_name}'
