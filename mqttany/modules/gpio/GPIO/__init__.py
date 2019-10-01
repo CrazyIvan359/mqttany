@@ -25,7 +25,11 @@ GPIO Library Wrapper
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import adafruit_platformdetect
+try:
+    import adafruit_platformdetect
+except ImportError:
+    raise ImportError("MQTTany's GPIO module requires 'adafruit_platformdetect' to be installed, \
+        please see the wiki for instructions on how to install requirements")
 
 from logger import log_traceback
 

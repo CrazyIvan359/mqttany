@@ -25,15 +25,24 @@ MCP230xx Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+try:
+    import busio, microcontroller
+    from adafruit_blinka.agnostic import board_id, detector
+    from digitalio import Direction, Pull
+except ImportError:
+    raise ImportError("MQTTany's MCP230xx module requires 'adafruit_blinka' to be installed, \
+        please see the wiki for instructions on how to install requirements")
+
+try:
+    from adafruit_mcp230xx.mcp23008 import MCP23008
+    from adafruit_mcp230xx.mcp23017 import MCP23017
+except ImportError:
+    raise ImportError("MQTTany's MCP230xx module requires 'adafruit_mcp230xx' to be installed, \
+        please see the wiki for instructions on how to install requirements")
+
 import time, sys
 from threading import Timer
 from collections import OrderedDict
-
-import busio, microcontroller
-from adafruit_blinka.agnostic import board_id, detector
-from adafruit_mcp230xx.mcp23008 import MCP23008
-from adafruit_mcp230xx.mcp23017 import MCP23017
-from digitalio import Direction, Pull
 
 import logger
 from config import parse_config

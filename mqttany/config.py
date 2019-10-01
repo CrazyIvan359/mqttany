@@ -25,9 +25,20 @@ Configuration Loader
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+try:
+    import yaml
+except ImportError:
+    raise ImportError("MQTTany requires 'pyyaml' to be installed, please see \
+        the wiki for instructions on how to install requirements")
+
+try:
+    import yamlloader
+except ImportError:
+    raise ImportError("MQTTany requires 'yamlloader' to be installed, please see \
+        the wiki for instructions on how to install requirements")
+
 import os, re
 from ast import literal_eval
-import yaml, yamlloader
 
 import logger
 from logger import log_traceback

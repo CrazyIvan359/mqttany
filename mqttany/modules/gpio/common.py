@@ -25,8 +25,13 @@ GPIO Shared
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+try:
+    from mprop import mproperty
+except ImportError:
+    raise ImportError("MQTTany's GPIO module requires 'mprop' to be installed, \
+        please see the wiki for instructions on how to install requirements")
+
 from collections import OrderedDict
-from mprop import mproperty
 
 import logger
 from common import Mode

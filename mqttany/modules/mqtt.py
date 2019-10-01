@@ -25,9 +25,14 @@ MQTT Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+try:
+    import paho.mqtt.client as mqtt
+    from paho.mqtt.client import topic_matches_sub as mqtt_topic_matches_sub
+except ImportError:
+    raise ImportError("MQTTany's MQTT module requires 'paho-mqtt' to be installed, \
+        please see the wiki for instructions on how to install requirements")
+
 import socket
-import paho.mqtt.client as mqtt
-from paho.mqtt.client import topic_matches_sub as mqtt_topic_matches_sub
 
 import logger
 from logger import log_traceback

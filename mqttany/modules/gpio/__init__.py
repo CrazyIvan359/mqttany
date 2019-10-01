@@ -25,7 +25,11 @@ GPIO Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from mprop import mproperty
+try:
+    from mprop import mproperty
+except ImportError:
+    raise ImportError("MQTTany's GPIO module requires 'mprop' to be installed, \
+        please see the wiki for instructions on how to install requirements")
 
 from modules.gpio import core
 from modules.gpio.core import init, pre_loop, post_loop

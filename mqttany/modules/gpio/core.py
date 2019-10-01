@@ -25,8 +25,13 @@ GPIO Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+try:
+    import adafruit_platformdetect
+except ImportError:
+    raise ImportError("MQTTany's GPIO module requires 'adafruit_platformdetect' to be installed, \
+        please see the wiki for instructions on how to install requirements")
+
 from threading import Timer
-import adafruit_platformdetect
 
 from config import parse_config
 

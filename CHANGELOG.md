@@ -6,6 +6,9 @@
   * OneWire module, currently supports wire-1 and DS18x20.
   * GPIO module now supports pulsing a digital pin for a period of time.
 
+* **Changed**
+  * Non-standard imports now show custom ImportError messages if they are not installed.
+
 * **Fixed**
   * GPIO add missing `initial state` info to example config.
   * GPIO fix signature of `gpio.pin.base` init to remove unused `pin_config`. Fixes #29

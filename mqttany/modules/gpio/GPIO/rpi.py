@@ -25,18 +25,27 @@ GPIO Library Wrapper for WiringPi-Python
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+try:
+    import wiringpi
+except ImportError:
+    raise ImportError("MQTTany's GPIO module requires 'wiringpi' to be installed, \
+        please see the wiki for instructions on how to install requirements")
+
+try:
+    import adafruit_platformdetect
+except ImportError:
+    raise ImportError("MQTTany's GPIO module requires 'adafruit_platformdetect' to be installed, \
+        please see the wiki for instructions on how to install requirements")
+
 import threading, os
 from time import sleep
 from datetime import datetime
 now = datetime.now
-import wiringpi
 
 import logger
 from common import TEXT_PIN_PREFIX, Mode, Logic
 from modules.gpio.common import config, CONF_KEY_MODE
 from modules.gpio.GPIO.common import baseGPIO, Direction, Resistor, Interrupt
-
-import adafruit_platformdetect
 
 TEXT_NAME = ".".join([__name__.split(".")[-3], __name__.split(".")[-1]]) # gives gpio.rpi
 
