@@ -59,6 +59,11 @@ mqtt:
   # default for single pin resolves to '{root_topic}/{module_name}/{pin}/get'
   #topic get: 'poll'
 
+  ### Pulse Topic
+  # pulses a digital pin, see wiki for details
+  # default topics resolve to '{root_topic}/{module_topic}/{pin}/pulse'
+  #topic pulse: 'pulse'
+
   ### ON Payload
   #payload on: 'ON' # message for pin ON
 

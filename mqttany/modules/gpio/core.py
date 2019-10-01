@@ -171,6 +171,8 @@ def pre_loop():
         polling_timer = Timer(config[CONF_KEY_POLL_INT], poll_interval)
         polling_timer.start()
 
+    poll_all()
+
 
 def post_loop():
     """
