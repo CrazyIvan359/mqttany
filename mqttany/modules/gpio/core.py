@@ -30,6 +30,7 @@ import adafruit_platformdetect
 
 from config import parse_config
 
+from common import TEXT_PIN_PREFIX
 from modules.mqtt import subscribe, topic_matches_sub
 
 from modules.gpio.GPIO import getGPIO

@@ -36,14 +36,18 @@ from modules.gpio.common import config
 from modules.gpio.common import *
 from modules.gpio.GPIO.common import Direction, Resistor, Interrupt
 
+CONF_KEY_DEBOUNCE = "debounce"
 CONF_KEY_INTERRUPT = "interrupt"
 CONF_KEY_RESISTOR = "resistor"
+CONF_KEY_INITIAL = "initial state"
 
 CONF_OPTIONS = {
+    CONF_KEY_DEBOUNCE: {"type": int, "default": 50},
     "regex:.+": {
         CONF_KEY_DIRECTION: {"selection": {"input": Direction.INPUT, "in": Direction.INPUT, "output": Direction.OUTPUT, "out": Direction.OUTPUT}},
         CONF_KEY_INTERRUPT: {"default": Interrupt.NONE, "selection": {"rising": Interrupt.RISING, "falling": Interrupt.FALLING, "both": Interrupt.BOTH, "none": Interrupt.NONE}},
         CONF_KEY_RESISTOR: {"default": Resistor.OFF, "selection": {"pullup": Resistor.PULL_UP, "up": Resistor.PULL_UP, "pulldown": Resistor.PULL_DOWN, "down": Resistor.PULL_DOWN, "off": Resistor.OFF, "none": Resistor.OFF}},
+        CONF_KEY_INITIAL: {"default": "{payload_off}"},
     }
 }
 SUPPORTED_DIRECTIONS = [Direction.INPUT, Direction.OUTPUT]

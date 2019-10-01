@@ -40,12 +40,10 @@ CONF_KEY_TOPIC_GETTER = "topic get"
 CONF_KEY_PAYLOAD_ON = "payload on"
 CONF_KEY_PAYLOAD_OFF = "payload off"
 CONF_KEY_POLL_INT = "polling interval"
-CONF_KEY_DEBOUNCE = "debounce"
 CONF_KEY_PIN = "pin"
 CONF_KEY_FIRST_INDEX = "first index"
 CONF_KEY_DIRECTION = "direction"
 CONF_KEY_INVERT = "invert"
-CONF_KEY_INITIAL = "initial state"
 
 CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
     (CONF_KEY_MODE, {"default": Mode.SOC, "selection": {
@@ -58,7 +56,6 @@ CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTH
     (CONF_KEY_PAYLOAD_ON, {"default": "ON"}),
     (CONF_KEY_PAYLOAD_OFF, {"default": "OFF"}),
     (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
-    (CONF_KEY_DEBOUNCE, {"type": int, "default": 50}),
     ("regex:.+", {
         "type": "section",
         "required": False,
@@ -67,7 +64,6 @@ CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTH
         CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
         CONF_KEY_DIRECTION: {"default": Direction.INPUT, "selection": {}},
         CONF_KEY_INVERT: {"type": bool, "default": False},
-        CONF_KEY_INITIAL: {"default": "{payload_off}"},
     })
 ])
 
