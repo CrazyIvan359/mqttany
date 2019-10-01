@@ -44,7 +44,7 @@ class Pin(object):
     GPIO Pin base class
     """
 
-    def __init__(self, name, pin, topic, pin_config, index=None):
+    def __init__(self, name, pin, topic, index=None):
         self._setup = False
         self._name = name
         self._pin = pin

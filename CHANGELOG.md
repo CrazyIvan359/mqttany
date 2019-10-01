@@ -8,6 +8,7 @@
 
 * **Fixed**
   * GPIO add missing `initial state` info to example config.
+  * GPIO fix signature of `gpio.pin.base` init to remove unused `pin_config`. Fixes #29
 
 ## 0.7.3
 
