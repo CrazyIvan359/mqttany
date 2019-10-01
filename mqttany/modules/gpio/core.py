@@ -28,7 +28,7 @@ GPIO Module
 try:
     import adafruit_platformdetect
 except ImportError:
-    raise ImportError("MQTTany's GPIO module requires 'adafruit_platformdetect' to be installed, \
+    raise ImportError("MQTTany's GPIO module requires 'Adafruit-PlatformDetect' to be installed, \
         please see the wiki for instructions on how to install requirements")
 
 from threading import Timer

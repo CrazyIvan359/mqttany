@@ -30,14 +30,14 @@ try:
     from adafruit_blinka.agnostic import board_id, detector
     from digitalio import Direction, Pull
 except ImportError:
-    raise ImportError("MQTTany's MCP230xx module requires 'adafruit_blinka' to be installed, \
+    raise ImportError("MQTTany's MCP230xx module requires 'Adafruit-Blinka' to be installed, \
         please see the wiki for instructions on how to install requirements")
 
 try:
     from adafruit_mcp230xx.mcp23008 import MCP23008
     from adafruit_mcp230xx.mcp23017 import MCP23017
 except ImportError:
-    raise ImportError("MQTTany's MCP230xx module requires 'adafruit_mcp230xx' to be installed, \
+    raise ImportError("MQTTany's MCP230xx module requires 'adafruit-circuitpython-mcp230xx' to be installed, \
         please see the wiki for instructions on how to install requirements")
 
 import time, sys
