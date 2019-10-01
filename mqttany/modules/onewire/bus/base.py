@@ -49,7 +49,7 @@ class OneWireBus():
         if len(s) == 16:
             return s.upper()
         elif len(s) == 14:
-            return str(s + OneWireBus.crc8(bytes.fromhex(s))).upper()
+            return str(s + OneWireBus.crc8(bytes.fromhex(s)).hex()).upper()
         else:
             return None
 

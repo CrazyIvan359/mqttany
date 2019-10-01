@@ -9,6 +9,8 @@
 * **Fixed**
   * GPIO add missing `initial state` info to example config.
   * GPIO fix signature of `gpio.pin.base` init to remove unused `pin_config`. Fixes #29
+  * OneWire fix missing CRC8 bytes to hex in `validate_address` causing error when address
+    provided in config is not 8 bytes.
 
 ## 0.7.3
 
