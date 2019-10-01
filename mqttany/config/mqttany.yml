@@ -97,6 +97,10 @@ mqtt:
     # true means pin states ON=LOW, OFF=HIGH
     #invert: false # can be true or false
 
+    ### Initial State
+    # must be same as payload-on or payload-off
+    #initial state: '{payload_off}'
+
   ### Multiple Pin Configuration
   # alternatively a list of pins can be given
   # all options from a single pin configuration apply, except those shown below

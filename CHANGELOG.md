@@ -5,6 +5,9 @@
 * **Added**
   * OneWire module, currently supports wire-1 and DS18x20.
 
+* **Fixed**
+  * GPIO add missing `initial state` info to example config.
+
 ## 0.7.3
 
 * **Added**
