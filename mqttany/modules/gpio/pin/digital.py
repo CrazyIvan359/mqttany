@@ -25,8 +25,12 @@ GPIO Digital Pin
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import json
+from threading import Timer
+
 import logger
 from logger import log_traceback
+from config import resolve_type
 from common import release_gpio_lock, TEXT_PIN_PREFIX, TEXT_LOGIC_STATE
 
 from modules.mqtt import publish, topic_matches_sub
@@ -36,12 +40,14 @@ from modules.gpio.common import config
 from modules.gpio.common import *
 from modules.gpio.GPIO.common import Direction, Resistor, Interrupt
 
+CONF_KEY_TOPIC_PULSE = "topic pulse"
 CONF_KEY_DEBOUNCE = "debounce"
 CONF_KEY_INTERRUPT = "interrupt"
 CONF_KEY_RESISTOR = "resistor"
 CONF_KEY_INITIAL = "initial state"
 
 CONF_OPTIONS = {
+    CONF_KEY_TOPIC_PULSE: {"type": str, "default": "pulse"},
     CONF_KEY_DEBOUNCE: {"type": int, "default": 50},
     "regex:.+": {
         CONF_KEY_DIRECTION: {"selection": {"input": Direction.INPUT, "in": Direction.INPUT, "output": Direction.OUTPUT, "out": Direction.OUTPUT}},
@@ -64,6 +70,13 @@ class DigitalPin(Pin):
 
     def __init__(self, name, pin, topic, pin_config, index=None):
         super().__init__(name, pin, topic, index)
+        self._pulse_timer = None
+        self._state_map = { # map payload on/off to bool
+            config[CONF_KEY_PAYLOAD_OFF]: 0,
+            config[CONF_KEY_PAYLOAD_ON]: 1,
+            0: config[CONF_KEY_PAYLOAD_OFF],
+            1: config[CONF_KEY_PAYLOAD_ON]
+        }
         self._direction = pin_config[CONF_KEY_DIRECTION]
         self._interrupt = pin_config[CONF_KEY_INTERRUPT]
         self._resistor = pin_config[CONF_KEY_RESISTOR]
@@ -120,14 +133,12 @@ class DigitalPin(Pin):
                 log.trace("Setting '{name}' on {pin_prefix}{pin:02d} to initial state '{state}'".format(
                         name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
                         pin=self._pin, state=self._initial))
-                self._set(self._initial)
+                self.set(self._state_map[self._initial] ^ self._invert)
             else:
-                log.warn("Invalid initial state '{initial_state}' for '{name}' on {pin_prefix}{pin:02d}, setting pin to '{state}'".format(
+                log.warn("Unrecognized initial state '{initial_state}' for '{name}' on {pin_prefix}{pin:02d}, setting pin to '{state}'".format(
                         name=self._name, initial_state=self._initial, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
                         pin=self._pin, state=config[CONF_KEY_PAYLOAD_OFF]))
-                self._set(config[CONF_KEY_PAYLOAD_OFF])
-        else:
-            self.publish_state()
+                self.set(False ^ self._invert)
 
         return True
 
@@ -137,20 +148,15 @@ class DigitalPin(Pin):
         """
         if not self._setup: return
 
-        try:
-            state = bool(self._gpio.input(self._pin)) ^ self._invert # apply the invert flag
-        except:
-            log.error("An exception occurred while reading '{name}' on {pin_prefix}{pin:02d}".format(
-                    name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=self._pin))
-            log_traceback(log)
-        else:
+        state = self.get()
+        if state is not None:
             log.debug("Read state '{state}' logic {logic} from '{name}' on {pin_prefix}{pin:02d}".format(
                 name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                state=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF],
-                logic=TEXT_LOGIC_STATE[int(state ^ self._invert)], pin=self._pin))
+                state=self._state_map[int(state ^ self._invert)],
+                logic=TEXT_LOGIC_STATE[int(state)], pin=self._pin))
             publish(
                     self._topic,
-                    payload=config[CONF_KEY_PAYLOAD_ON] if state else config[CONF_KEY_PAYLOAD_OFF]
+                    payload=self._state_map[int(state ^ self._invert)]
                 )
 
     def handle_message(self, topic, payload):
@@ -162,7 +168,196 @@ class DigitalPin(Pin):
         super().handle_message(topic, payload)
 
         if topic_matches_sub("{}/{}".format(self._topic, config[CONF_KEY_TOPIC_SETTER]), topic):
-            self._set(payload.decode("utf-8"))
+            self.handle_set(payload.decode("utf-8"))
+        elif topic_matches_sub("{}/{}".format(self._topic, config[CONF_KEY_TOPIC_PULSE]), topic):
+            self.handle_pulse(payload.decode("utf-8"))
+
+    def get(self):
+        """
+        Reads the pin state, return ``None`` if read fails
+        """
+        if not self._setup: return None
+
+        try:
+            return bool(self._gpio.input(self._pin))
+        except:
+            log.error("An exception occurred while reading '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=self._pin))
+            log_traceback(log)
+            return None
+
+    def set(self, state):
+        """
+        Set the state of the pin
+        """
+        if not self._setup: return False
+
+        try:
+            self._gpio.output(self._pin, state)
+            return True
+        except:
+            log.error("An exception occurred while setting '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name, pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+            log_traceback(log)
+            return False
+
+    def pulse(self, time, state):
+        """
+        Sets the pin to ``state`` for ``time`` ms then to ``not state``.
+        Any calls to ``pulse`` while the timer is running will cancel the previous pulse.
+        Any changes to the pin state will cancel the timer.
+        """
+        if not self.setup: return
+
+        if self._pulse_timer is not None:
+            self._pulse_timer.cancel()
+            self._pulse_timer = None
+            log.debug("Cancelled PULSE timer for '{name}' on {pin_prefix}{pin:02d}".format(
+                name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+
+        if self.set(state):
+            self._pulse_timer = Timer(
+                float(time) / 1000,
+                self._pulse_end,
+                args=[not state]
+            )
+            self._pulse_timer.start()
+            self.publish_state()
+
+    def _pulse_end(self, state):
+        """
+        End of a pulse cycle, set pin to state and log
+        """
+        self._pulse_timer = None
+        if not self.setup: return
+
+        if self.set(state):
+            log.debug("PULSE ended for '{name}' on {pin_prefix}{pin:02d} set pin to '{state}' logic {logic}".format(
+                name=self._name, pin=self._pin,
+                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                logic=TEXT_LOGIC_STATE[int(state)],
+                state=self._state_map[int(state ^ self._invert)]))
+            self.publish_state()
+
+    def handle_set(self, payload):
+        """
+        Handle a SET message
+        """
+        if not self._setup: return
+
+        if not self._direction == Direction.OUTPUT:
+            log.warn("Received SET command for '{name}' on {pin_prefix}{pin:02d} but it is configured as an output".format(
+                name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+            return
+        elif payload == config[CONF_KEY_PAYLOAD_ON]:
+            state = True ^ self._invert
+        elif payload == config[CONF_KEY_PAYLOAD_OFF]:
+            state = False ^ self._invert
+        else:
+            log.warn("Received unrecognized SET payload '{payload}' for '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name, payload=payload, pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+            return
+
+        if self._pulse_timer is not None:
+            self._pulse_timer.cancel()
+            self._pulse_timer = None
+            log.debug("Cancelled PULSE timer for '{name}' on {pin_prefix}{pin:02d}".format(
+                name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+
+        if self.set(state):
+            log.debug("Set '{name}' on {pin_prefix}{pin:02d} to '{state}' logic {logic}".format(
+                name=self._name, pin=self._pin, state=payload, logic=TEXT_LOGIC_STATE[int(state)],
+                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], ))
+            self.publish_state()
+
+    def handle_pulse(self, payload):
+        """
+        Handle a PULSE message
+        """
+        if not self._setup: return
+
+        if not self._direction == Direction.OUTPUT:
+            log.warn("Received PULSE command for '{name}' on {pin_prefix}{pin:02d} but it is configured as an output".format(
+                name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+            return
+
+        # JSON payload
+        if "{" in payload:
+            try:
+                payload = json.loads(payload)
+            except ValueError:
+                log.error("Received malformed JSON '{payload}' for PULSE for '{name}' on {pin_prefix}{pin:02d}".format(
+                    payload=payload, name=self._name, pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                return
+            else:
+                if not "time" in payload:
+                    log.error("Received JSON PULSE command missing 'time' argument for '{name}' on {pin_prefix}{pin:02d}".format(
+                        name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                    return
+                if not "state" in payload:
+                    payload["state"] = self.get()
+                    if payload["state"] is not None:
+                        payload["state"] = not payload["state"]
+                        #log.warn("Received JSON PULSE command missing 'state' argument for '{name}' on {pin_prefix}{pin:02d}, using pin state".format(
+                        #    name=self._name, pin=self._pin, state=payload["state"],
+                        #    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                    else:
+                        log.error("PULSE failed, unable to read pin state for '{name}' on {pin_prefix}{pin:02d}".format(
+                            name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                        return
+
+        # List payload "time, state"
+        elif len(payload.split(",")) > 1:
+            if len(payload.split(",")) != 2:
+                log.error("Received unrecognized PULSE command '{payload}' for '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                return
+            payload = {
+                "time": resolve_type(payload.split(",")[0].strip()),
+                "state": payload.split(",")[1].strip()
+            }
+            if not isinstance(payload["time"], int):
+                log.error("Received invalid time '{time}' for PULSE command for '{name}' on {pin_prefix}{pin:02d}".format(
+                    time=payload["time"], name=self._name, pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                return
+
+        # Time only payload
+        else:
+            payload = {"time": resolve_type(payload)}
+            if not isinstance(payload["time"], int):
+                log.error("Received invalid time '{time}' for PULSE command for '{name}' on {pin_prefix}{pin:02d}".format(
+                    time=payload["time"], name=self._name, pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                return
+            payload["state"] = self.get()
+            if payload["state"] is not None:
+                payload["state"] = not payload["state"]
+            else:
+                log.error("PULSE failed, unable to read pin state for '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                return
+
+        if isinstance(payload["state"], str):
+            if payload["state"] == config[CONF_KEY_PAYLOAD_ON]:
+                payload["state"] = True ^ self._invert
+            elif payload["state"] == config[CONF_KEY_PAYLOAD_OFF]:
+                payload["state"] = False ^ self._invert
+            else:
+                log.error("Received unrecognized state '{state}' for PULSE command for '{name}' on {pin_prefix}{pin:02d}".format(
+                    state=payload["state"], name=self._name, pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                return
+
+        log.debug("Pulsing '{name}' on {pin_prefix}{pin:02d} to '{state}' logic {logic} for {time}ms".format(
+            name=self._name, pin=self._pin, time=payload["time"],
+            pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+            logic=TEXT_LOGIC_STATE[int(payload["state"])],
+            state=self._state_map[int(payload["state"] ^ self._invert)]))
+        self.pulse(**payload)
 
     def handle_interrupt(self, pin):
         """
@@ -171,33 +366,3 @@ class DigitalPin(Pin):
         log.debug("Interrupt fired for '{name}' on {pin_prefix}{pin:02d}".format(
             name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
         self.publish_state()
-
-    def _set(self, payload):
-        """
-        Set the state of the pin and publish
-        ``payload`` expects ``payload on`` or ``payload off``
-        """
-        if not self._setup: return
-
-        if payload == config[CONF_KEY_PAYLOAD_ON]:
-            state = True
-        elif payload == config[CONF_KEY_PAYLOAD_OFF]:
-            state = False
-        else:
-            log.warn("Received unrecognized SET payload '{payload}' for '{name}' on {pin_prefix}{pin:02d}".format(
-                    name=self._name, payload=payload, pin=self._pin,
-                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
-            return
-
-        try:
-            self._gpio.output(self._pin, state ^ self._invert)
-        except:
-            log.error("An exception occurred while setting '{name}' on {pin_prefix}{pin:02d}".format(
-                    name=self._name, pin=self._pin,
-                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
-            log_traceback(log)
-        else:
-            log.debug("Set '{name}' on {pin_prefix}{pin:02d} to '{state}' logic {logic}".format(
-                name=self._name, pin=self._pin, state=payload, logic=TEXT_LOGIC_STATE[int(state ^ self._invert)],
-                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], ))
-            self.publish_state()

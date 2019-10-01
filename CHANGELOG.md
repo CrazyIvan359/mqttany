@@ -4,6 +4,7 @@
 
 * **Added**
   * OneWire module, currently supports wire-1 and DS18x20.
+  * GPIO module now supports pulsing a digital pin for a period of time.
 
 * **Fixed**
   * GPIO add missing `initial state` info to example config.
