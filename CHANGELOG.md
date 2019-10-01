@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## Development
+## 0.8.0
 
 * **Added**
   * OneWire module, currently supports wire-1 and DS18x20.
