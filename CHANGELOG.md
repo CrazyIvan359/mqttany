@@ -9,6 +9,7 @@
 * **Fixed**
   * MCP230xx cleanup pin configured log entries.
   * OneWire cleanup logging on device configured and during bus scan.
+  * GPIO must use `SOC` pin numbering when disabling pin interrupts using `gpio` command.
 
 ## 0.8.0
 

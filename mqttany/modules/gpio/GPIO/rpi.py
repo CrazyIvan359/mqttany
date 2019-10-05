@@ -217,6 +217,7 @@ class rpiGPIO(baseGPIO):
             self._interrupts[pin] = InterruptThread(
                 pin,
                 edge,
+                self._mode,
                 callback,
                 bouncetime
             )
@@ -244,9 +245,10 @@ class InterruptThread(object):
     WiringPi ISR handler and debounce
     """
 
-    def __init__(self, pin, edge, callback, bouncetime, *args, **kwargs):
+    def __init__(self, pin, edge, mode, callback, bouncetime, *args, **kwargs):
         self._pin = pin
         self._edge = edge
+        self._mode = mode
         self._bouncetime = bouncetime
         self._thread = None
         self._callback = callback
@@ -256,14 +258,14 @@ class InterruptThread(object):
 
     def enable(self):
         os.system("$(which gpio) edge {pin} {edge}".format(
-            pin=self._pin,
+            pin=map_pin_lookup[self._mode](self._pin),
             edge=map_interrupt_gpio[self._edge]
         ))
         # re-enable interrupt trigger
 
     def disable(self):
         os.system("$(which gpio) edge {pin} none".format(
-            pin=self._pin
+            pin=map_pin_lookup[self._mode](self._pin)
         ))
         # doesn't seem to be another way to do this
         # wiringpi offers nothing to remove an interrupt
@@ -288,7 +290,7 @@ class InterruptThread(object):
             self._thread.start()
         else:
             log.debug("Debounce thread for {pin_prefix}{pin:02d} already exists".format(
-                pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+                pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[self._mode]))
 
     def _debounce(self):
         end = now().microsecond + self._bouncetime * 1000
