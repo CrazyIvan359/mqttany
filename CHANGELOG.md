@@ -1,5 +1,11 @@
 # MQTTany Change Log
 
+## Development
+
+* **Changed**
+  * GPIO now relies on `getGPIO()` to determine board compatibility. It returns `None`
+    if no library is available to access GPIO on this board.
+
 ## 0.8.0
 
 * **Added**

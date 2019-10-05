@@ -51,10 +51,8 @@ def getGPIO(**kwargs):
         if not gpio_mod:
             try:
                 from modules.gpio.GPIO.rpi import rpiGPIO
-            except RuntimeError:
-                log.error("A RuntimeError while trying to import RPi.GPIO. This is likely because you do not have the correct permissions.")
             except:
-                log.error("An error occurred while trying to import RPi.GPIO")
+                log.error("An error occurred while trying to import the GPIO library")
                 log_traceback(log)
             else:
                 gpio_mod = rpiGPIO(mode=config[CONF_KEY_MODE])

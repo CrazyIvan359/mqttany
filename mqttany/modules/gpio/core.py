@@ -83,14 +83,6 @@ def init(config_data={}):
                 pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=pin))
             return None
 
-    detector = adafruit_platformdetect.Detector()
-    if detector.board.any_raspberry_pi:
-        pass
-    else:
-        log.error("Unsupported board {board}".format(board=detector.board.id))
-        return False
-    log.debug("Board is {board}".format(board=detector.board.id))
-
     conf_options = updateConfOptions(CONF_OPTIONS)
     conf_options.move_to_end("regex:.+")
     raw_config = parse_config(config_data, conf_options, log)
@@ -98,6 +90,13 @@ def init(config_data={}):
         log.debug("Config loaded")
         config.update(raw_config)
         used_pins = {}
+
+        detector = adafruit_platformdetect.Detector()
+        if getGPIO() is None:
+            log.error("Unsupported board {board}".format(board=detector.board.id))
+            return False
+        log.debug("Board is {board}".format(board=detector.board.id))
+
         pin_valid = getGPIO().pin_valid
 
         for name in [key for key in config if isinstance(config[key], dict)]:
