@@ -2,6 +2,9 @@
 
 ## Development
 
+* **Added**
+  * GPIO module now supports Odroid boards C1, C1+, C2, XU3, XU4, and N2.
+
 * **Changed**
   * GPIO now relies on `getGPIO()` to determine board compatibility. It returns `None`
     if no library is available to access GPIO on this board.

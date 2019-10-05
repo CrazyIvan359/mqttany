@@ -86,6 +86,124 @@ _gpio_lock = { # GPIO pin locks
      25: mproc.Array(c_char_p, 16), # 25
      26: mproc.Array(c_char_p, 16), # 26
      27: mproc.Array(c_char_p, 16), # 27
+     28: mproc.Array(c_char_p, 16), # 28
+     29: mproc.Array(c_char_p, 16), # 29
+     30: mproc.Array(c_char_p, 16), # 30
+     31: mproc.Array(c_char_p, 16), # 31
+
+     33: mproc.Array(c_char_p, 16), # 33
+     34: mproc.Array(c_char_p, 16), # 34
+
+     74: mproc.Array(c_char_p, 16), # 74
+     75: mproc.Array(c_char_p, 16), # 75
+     76: mproc.Array(c_char_p, 16), # 76
+     77: mproc.Array(c_char_p, 16), # 77
+
+     83: mproc.Array(c_char_p, 16), # 83
+
+     87: mproc.Array(c_char_p, 16), # 87
+     88: mproc.Array(c_char_p, 16), # 88
+
+     97: mproc.Array(c_char_p, 16), # 97
+     98: mproc.Array(c_char_p, 16), # 98
+     99: mproc.Array(c_char_p, 16), # 99
+    100: mproc.Array(c_char_p, 16), # 100
+    101: mproc.Array(c_char_p, 16), # 101
+    102: mproc.Array(c_char_p, 16), # 102
+    103: mproc.Array(c_char_p, 16), # 103
+    104: mproc.Array(c_char_p, 16), # 104
+    105: mproc.Array(c_char_p, 16), # 105
+    106: mproc.Array(c_char_p, 16), # 106
+    107: mproc.Array(c_char_p, 16), # 107
+    108: mproc.Array(c_char_p, 16), # 108
+
+    113: mproc.Array(c_char_p, 16), # 113
+    114: mproc.Array(c_char_p, 16), # 114
+    115: mproc.Array(c_char_p, 16), # 115
+    116: mproc.Array(c_char_p, 16), # 116
+    117: mproc.Array(c_char_p, 16), # 117
+    118: mproc.Array(c_char_p, 16), # 118
+
+    128: mproc.Array(c_char_p, 16), # 128
+
+    130: mproc.Array(c_char_p, 16), # 130
+    131: mproc.Array(c_char_p, 16), # 131
+    132: mproc.Array(c_char_p, 16), # 132
+    133: mproc.Array(c_char_p, 16), # 133
+
+    171: mproc.Array(c_char_p, 16), # 171
+    172: mproc.Array(c_char_p, 16), # 172
+    173: mproc.Array(c_char_p, 16), # 173
+    174: mproc.Array(c_char_p, 16), # 174
+
+    187: mproc.Array(c_char_p, 16), # 187
+    188: mproc.Array(c_char_p, 16), # 188
+    189: mproc.Array(c_char_p, 16), # 189
+    190: mproc.Array(c_char_p, 16), # 190
+    191: mproc.Array(c_char_p, 16), # 191
+    192: mproc.Array(c_char_p, 16), # 192
+
+    205: mproc.Array(c_char_p, 16), # 205
+    206: mproc.Array(c_char_p, 16), # 206
+    207: mproc.Array(c_char_p, 16), # 207
+    208: mproc.Array(c_char_p, 16), # 208
+    209: mproc.Array(c_char_p, 16), # 209
+    210: mproc.Array(c_char_p, 16), # 210
+
+    214: mproc.Array(c_char_p, 16), # 214
+
+    218: mproc.Array(c_char_p, 16), # 218
+    219: mproc.Array(c_char_p, 16), # 219
+
+    224: mproc.Array(c_char_p, 16), # 224
+    225: mproc.Array(c_char_p, 16), # 225
+    226: mproc.Array(c_char_p, 16), # 226
+    227: mproc.Array(c_char_p, 16), # 227
+    228: mproc.Array(c_char_p, 16), # 228
+    229: mproc.Array(c_char_p, 16), # 229
+    230: mproc.Array(c_char_p, 16), # 230
+    231: mproc.Array(c_char_p, 16), # 231
+    232: mproc.Array(c_char_p, 16), # 232
+    233: mproc.Array(c_char_p, 16), # 233
+    234: mproc.Array(c_char_p, 16), # 234
+    235: mproc.Array(c_char_p, 16), # 235
+    236: mproc.Array(c_char_p, 16), # 236
+    237: mproc.Array(c_char_p, 16), # 237
+    238: mproc.Array(c_char_p, 16), # 238
+    239: mproc.Array(c_char_p, 16), # 239
+    240: mproc.Array(c_char_p, 16), # 240
+    241: mproc.Array(c_char_p, 16), # 241
+
+    247: mproc.Array(c_char_p, 16), # 247
+
+    249: mproc.Array(c_char_p, 16), # 249
+
+    464: mproc.Array(c_char_p, 16), # 464
+
+    472: mproc.Array(c_char_p, 16), # 472
+    473: mproc.Array(c_char_p, 16), # 473
+    474: mproc.Array(c_char_p, 16), # 474
+    475: mproc.Array(c_char_p, 16), # 475
+    476: mproc.Array(c_char_p, 16), # 476
+    477: mproc.Array(c_char_p, 16), # 477
+    478: mproc.Array(c_char_p, 16), # 478
+    479: mproc.Array(c_char_p, 16), # 479
+    480: mproc.Array(c_char_p, 16), # 480
+    481: mproc.Array(c_char_p, 16), # 481
+    482: mproc.Array(c_char_p, 16), # 482
+    483: mproc.Array(c_char_p, 16), # 483
+    484: mproc.Array(c_char_p, 16), # 484
+    485: mproc.Array(c_char_p, 16), # 485
+    486: mproc.Array(c_char_p, 16), # 486
+    487: mproc.Array(c_char_p, 16), # 487
+    488: mproc.Array(c_char_p, 16), # 488
+    489: mproc.Array(c_char_p, 16), # 489
+    490: mproc.Array(c_char_p, 16), # 490
+    491: mproc.Array(c_char_p, 16), # 491
+    492: mproc.Array(c_char_p, 16), # 492
+    493: mproc.Array(c_char_p, 16), # 493
+    494: mproc.Array(c_char_p, 16), # 494
+    495: mproc.Array(c_char_p, 16), # 495
 }
 
 _i2c_lock = [ # I2C bus locks

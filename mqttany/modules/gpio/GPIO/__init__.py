@@ -27,6 +27,9 @@ GPIO Library Wrapper
 
 try:
     import adafruit_platformdetect
+    import adafruit_platformdetect.board as board
+    detector = adafruit_platformdetect.Detector()
+    board_id = detector.board.id
 except ImportError:
     raise ImportError("MQTTany's GPIO module requires 'Adafruit-PlatformDetect' to be installed, \
         please see the wiki for instructions on how to install requirements")
@@ -40,22 +43,42 @@ all = [ "getGPIO" ]
 gpio_mod = None
 
 
+def is_odroid_xu():
+    """Return ``True`` if platform is Odroid XU"""
+    return "ODROID-XU3" in detector.get_cpuinfo_field("Hardware")
+
 def getGPIO(**kwargs):
     """
     Returns a class to interface with the hardware GPIO or ``None`` if one is
     not available.
     """
     global gpio_mod
-    detector = adafruit_platformdetect.Detector()
-    if detector.board.any_raspberry_pi:
-        if not gpio_mod:
+    if not gpio_mod:
+        if detector.board.any_raspberry_pi:
             try:
                 from modules.gpio.GPIO.rpi import rpiGPIO
             except:
-                log.error("An error occurred while trying to import the GPIO library")
+                log.error("An error occurred while trying to import the Raspberry Pi GPIO library")
                 log_traceback(log)
             else:
                 gpio_mod = rpiGPIO(mode=config[CONF_KEY_MODE])
+
+        elif is_odroid_xu() or board_id in [
+                            board.ODROID_C1, board.ODROID_C1_PLUS,
+                            board.ODROID_C2,
+                            board.ODROID_N2,
+                        ]:
+            if is_odroid_xu():
+                log.warn("Detected board Odroid XU3 or XU4 but cannot identify which!")
+                log.warn("Do not attempt to use pins from CON11 if you are using an XU3 board!")
+
+            try:
+                from modules.gpio.GPIO.odroid import odroidGPIO
+            except:
+                log.error("An error occurred while trying to import the Odroid GPIO library")
+                log_traceback(log)
+            else:
+                gpio_mod = odroidGPIO(mode=config[CONF_KEY_MODE])
 
     return gpio_mod
 

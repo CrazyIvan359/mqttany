@@ -1,0 +1,1 @@
+odroid-wiringpi>=2.44.5.0
