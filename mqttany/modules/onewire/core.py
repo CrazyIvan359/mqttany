@@ -71,9 +71,8 @@ def build_device(device_name, ow_bus, device_config={}, topic=None, address=None
         return False
     clazz = device.getDevice(valid_address)
     if clazz:
-        log.debug("Configuring {type} '{name}' with options: {options}".format(
-                type=device_type,
-                name=device_name, options=device_config))
+        log.debug("Configuring {type} '{name}' at address '{address}'".format(
+                type=device_type, name=device_name, address=address))
         return clazz(
             device_name,
             valid_address,
@@ -155,16 +154,22 @@ def pre_loop():
         log.info("Scanning OneWire bus for devices")
         scan_results = ow_bus.scan()
         for address in scan_results:
-            log.debug("Found device with address '{address}'".format(address=address))
             address = ow_bus.validateAddress(address)
-            if not [dev for dev in devices if dev.address == address]:
-                device_object = build_device(
-                    address,
-                    ow_bus,
-                    address=address
-                )
-                if device_object:
-                    devices.append(device_object)
+            if address is not None:
+                log.trace("Scan found device with address '{address}'".format(address=address))
+                if not [dev for dev in devices if dev.address == address]:
+                    log.debug("Scan found unconfigured device at address '{address}'".format(address=address))
+                    device_object = build_device(
+                        address,
+                        ow_bus,
+                        address=address
+                    )
+                    if device_object:
+                        devices.append(device_object)
+                        log.info("Scan added '{type}' at address '{address}'".format(
+                            type=device_object.type, address=address))
+                else:
+                    log.trace("Scan skipping already configured device at address '{address}'".format(address=address))
         if not scan_results:
             log.debug("Scan found no unconfigured devices")
 

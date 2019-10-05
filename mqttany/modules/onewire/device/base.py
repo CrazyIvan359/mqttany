@@ -56,14 +56,6 @@ class OneWireDevice():
                 "index": index if index is not None else ""
             }
         )
-        self.log.debug("Configured {type} '{name}' with options: {options}".format(
-            type=dev_type,
-            name=name,
-            options={
-                CONF_KEY_ADDRESS: address,
-                CONF_KEY_TOPIC: self._topic
-            }
-        ))
 
     def setup(self, *args, **kwargs):
         """

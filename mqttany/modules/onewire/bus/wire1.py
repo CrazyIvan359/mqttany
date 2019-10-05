@@ -72,7 +72,7 @@ class wire1(OneWireBus):
         """
         buffer = self.read_rw(address, length) or self.read_slave(address, length)
         if buffer is None:
-            log.warn("Failed to read from device at {address}".format(address=address))
+            log.warn("Failed to read from device at '{address}'".format(address=address))
         return buffer
 
     def read_rw(self, address, length):
@@ -89,7 +89,7 @@ class wire1(OneWireBus):
         if os.path.exists(os.path.join(BUS_PATH, addr, DEVICE_RAW)):
             pass # read raw
         else:
-            log.trace("Unable to read from device at address {address}, no 'rw' file".format(
+            log.trace("Unable to read from device at address '{address}', no 'rw' file".format(
                 address=address))
         return buffer
 
@@ -112,19 +112,19 @@ class wire1(OneWireBus):
                     try:
                         buffer = bytes.fromhex("".join(lines[0].split(" ")[:length+1]))
                     except:
-                        log.error("Failed to read {length} bytes from {address} 'w1_slave' file line 1 '{line}'".format(
+                        log.error("Failed to read {length} bytes from '{address}' 'w1_slave' file line 1 '{line}'".format(
                             length=length, address=address, line=lines[0]))
                     else:
                         if buffer != bytes([*buffer[:length], *self.crc8(buffer[:length])]):
-                            log.error("Read invalid data from device at address {address}".format(address=address))
+                            log.error("Read invalid data from device at address '{address}'".format(address=address))
                             buffer = None
                         else:
                             buffer = buffer[:length]
             except Exception as err:
-                log.error("Failed to read from device at address {address}, an error occurred when reading 'w1_slave' file: {error}".format(
+                log.error("Failed to read from device at address '{address}', an error occurred when reading 'w1_slave' file: {error}".format(
                     address=address, error=err))
         else:
-            log.trace("Unable to read from device at address {address}, no 'w1_slave' file".format(
+            log.trace("Unable to read from device at address '{address}', no 'w1_slave' file".format(
                 address=address))
         return buffer
 

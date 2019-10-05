@@ -60,9 +60,18 @@ class DS18x20(OneWireDevice):
     Supports DS18S20, DS1822, DS18B20, DS1825, and DS28EA00 devices.
     """
 
-    def __init__(self, name, address, type, bus, topic, device_config, index=None):
-        super().__init__(name, address, type, bus, topic, log, index)
+    def __init__(self, name, address, dev_type, bus, topic, device_config, index=None):
+        super().__init__(name, address, dev_type, bus, topic, log, index)
         self._unit = device_config.get(CONF_KEY_UNIT, "C")
+        self.log.debug("Configured {type} '{name}' at address '{address}' with options: {options}".format(
+            type=dev_type,
+            name=name,
+            address=address,
+            options={
+                CONF_KEY_TOPIC: self._topic,
+                CONF_KEY_UNIT: self._unit,
+            }
+        ))
 
     def setup(self):
         """
