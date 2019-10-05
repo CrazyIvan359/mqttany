@@ -192,12 +192,13 @@ def init(config_data={}):
                                 log.warn("Duplicate configuration for GP{pin:02d} found in '{pin_name}' for '{device_name}' will be ignored, pin already configured under '{original}'".format(
                                         pin=pin, pin_name=pin_name, device_name=device_name, original=device_pins[pin]["name"]))
                             elif pin > DEVICE_PIN_MAX[device_config[CONF_KEY_CHIP]]:
-                                log.warn("Found pin GP{pin:02d} in '{pin_name}' for '{device_name}' but highest pin for {device} is GP{max}".format(
+                                log.warn("Found pin GP{pin:02d} in '{pin_name}' for '{device_name}' but highest pin for '{device}' is GP{max}".format(
                                         pin=pin, pin_name=pin_name, device_name=device_name, device=device_config[CONF_KEY_CHIP], max=DEVICE_PIN_MAX[device_config[CONF_KEY_CHIP]]))
                             else:
                                 device_pins[pin] = build_pin(pin_name, pin_config)
-                                log.debug("Configured GP{pin:02d} on {device} at address 0x{address:02x} with options: {options}".format(
-                                        pin=pin, device=device_config[CONF_KEY_CHIP], address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
+                                log.debug("Configured '{pin_name}' on GP{pin:02d} on '{device}' '{device_name}' at address 0x{address:02x} with options: {options}".format(
+                                        pin_name=pin_name, pin=pin, device=device_config[CONF_KEY_CHIP], device_name=device_name,
+                                        address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
                         elif isinstance(pin_config[CONF_KEY_PIN], list):
                             for index in range(len(pin_config[CONF_KEY_PIN])):
                                 pin = pin_config[CONF_KEY_PIN][index]
@@ -205,12 +206,13 @@ def init(config_data={}):
                                     log.warn("Duplicate configuration for GP{pin:02d} found in '{pin_name}' for '{device_name}' will be ignored, pin already configured under '{original}'".format(
                                             pin=pin, pin_name=pin_name, device_name=device_name, original=device_pins[pin]["name"]))
                                 elif pin > DEVICE_PIN_MAX[device_config[CONF_KEY_CHIP]]:
-                                    log.warn("Found pin GP{pin:02d} in '{pin_name}' for '{device_name}' but highest pin for {device} is GP{max}".format(
+                                    log.warn("Found pin GP{pin:02d} in '{pin_name}' for '{device_name}' but highest pin for '{device}' is GP{max}".format(
                                             pin=pin, pin_name=pin_name, device_name=device_name, device=device_config[CONF_KEY_CHIP], max=DEVICE_PIN_MAX[device_config[CONF_KEY_CHIP]]))
                                 else:
                                     device_pins[pin] = build_pin(pin_name, pin_config, index=index)
-                                    log.debug("Configured GP{pin:02d} on '{device}' at address 0x{address:02x} with options: {options}".format(
-                                            pin=pin, device=device_config[CONF_KEY_CHIP], address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
+                                    log.debug("Configured '{pin_name}' on GP{pin:02d} on '{device}' '{device_name}' at address 0x{address:02x} with options: {options}".format(
+                                            pin_name=pin_name, pin=pin, device=device_config[CONF_KEY_CHIP], device_name=device_name,
+                                            address=device_config[CONF_KEY_ADDRESS], options=device_pins[pin]))
                     device_config["bus"] = buses[device_config[CONF_KEY_BUS_ID]]
                     device_config["pins"] = device_pins
                     devices.append(device_config)
