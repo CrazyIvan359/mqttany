@@ -79,10 +79,13 @@ def load(config_file):
 
             if not _call_func(module, ATTR_INIT, config_data=config[module_name]): # call module init
                 log.warn("Module '{name}' not initialized".format(name=module_name))
-                continue
+            else:
+                log.debug("Module '{name}' loaded successfully".format(name=module_name))
+                modules_loaded.append(module)
 
-            log.debug("Module '{name}' loaded successfully".format(name=module_name))
-            modules_loaded.append(module)
+        finally:
+            del module
+    del config
 
     for i in range(len(modules_loaded)):
         module = modules_loaded[i]

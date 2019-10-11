@@ -89,6 +89,7 @@ def init(config_data={}):
     Initializes the module
     """
     raw_config = parse_config(config_data, CONF_OPTIONS, log)
+    del config_data
     if raw_config:
         log.debug("Config loaded")
 
@@ -99,7 +100,7 @@ def init(config_data={}):
                 hostname=hostname, client_id=raw_config[CONF_KEY_CLIENTID])
 
         config.update(raw_config)
-
+        del raw_config
         return True
     else:
         log.error("Error loading config")

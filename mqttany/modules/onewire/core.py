@@ -102,9 +102,11 @@ def init(config_data={}):
     CONF_OPTIONS.move_to_end("regex:.+")
 
     raw_config = parse_config(config_data, CONF_OPTIONS, log)
+    del config_data
     if raw_config:
         log.debug("Config loaded")
         config.update(raw_config)
+        del raw_config
 
         global ow_bus
         ow_bus = bus.getBus(config[CONF_KEY_BUS])

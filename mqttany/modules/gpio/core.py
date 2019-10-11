@@ -86,9 +86,11 @@ def init(config_data={}):
     conf_options = updateConfOptions(CONF_OPTIONS)
     conf_options.move_to_end("regex:.+")
     raw_config = parse_config(config_data, conf_options, log)
+    del config_data
     if raw_config:
         log.debug("Config loaded")
         config.update(raw_config)
+        del raw_config
         used_pins = {}
 
         detector = adafruit_platformdetect.Detector()

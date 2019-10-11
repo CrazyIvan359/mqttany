@@ -83,9 +83,11 @@ def init(config_data={}):
     in ``pre_loop()`` so that they are run in the module's subprocess.
     """
     raw_config = parse_config(config_data, CONF_OPTIONS, log)
+    del config_data
     if raw_config:
         log.debug("Config loaded")
         config.update(raw_config)
+        del raw_config
         return True
     else:
         log.error("Error loading config")

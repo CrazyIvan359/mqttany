@@ -8,6 +8,7 @@
 * **Changed**
   * GPIO now relies on `getGPIO()` to determine board compatibility. It returns `None`
     if no library is available to access GPIO on this board.
+  * Clear configuration from memory once loaded, saves some overhead in subprocesses.
 
 * **Fixed**
   * MCP230xx cleanup pin configured log entries.

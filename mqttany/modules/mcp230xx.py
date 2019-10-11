@@ -165,6 +165,7 @@ def init(config_data={}):
     log.debug("Board is {board}".format(board=board_id))
 
     raw_config = parse_config(config_data, CONF_OPTIONS, log)
+    del config_data
     if raw_config:
         log.debug("Config loaded")
 
@@ -221,6 +222,7 @@ def init(config_data={}):
                         bus_id=device_config[CONF_KEY_BUS_ID], name=device_name))
 
         config.update(raw_config)
+        del raw_config
         return True
     else:
         log.error("Error loading config")
