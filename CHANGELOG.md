@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## Development
+## 0.8.1
 
 * **Added**
   * GPIO module now supports Odroid boards C1, C1+, C2, XU3, XU4, and N2.
