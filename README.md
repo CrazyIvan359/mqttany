@@ -34,6 +34,16 @@ support is planned.
 Supported devices:
 - Temperature sensors - `DS18B20`, `DS18S20`, `DS1822`, `DS1825`, and `DS28EA00`.
 
+### LED
+
+Provides control of WS281x and similar LEDs through animation scripts.
+
+Supported Interfaces:
+- Raspberry Pi via SPI, PWM, or PCM depending on board
+
+Supported LEDs:
+- WS2811, WS2812, WS2812B, SK6812, SK6812W
+
 <br>
 
 **Note**
