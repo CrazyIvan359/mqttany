@@ -1,5 +1,11 @@
 # MQTTany Change Log
 
+## Development
+
+* **Fixed**
+  * Removed `.lower()` from key check in *selection* type config value validation.
+    This was leftover from an early draft and should have been removed.
+
 ## 0.8.1
 
 * **Added**
