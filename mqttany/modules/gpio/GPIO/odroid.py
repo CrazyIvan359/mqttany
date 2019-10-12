@@ -39,7 +39,7 @@ except ImportError:
     raise ImportError("MQTTany's GPIO module requires 'adafruit_platformdetect' to be installed, \
         please see the wiki for instructions on how to install requirements")
 
-import threading, os
+import threading, subprocess
 from time import sleep
 from datetime import datetime
 now = datetime.now
@@ -292,6 +292,10 @@ class odroidGPIO(baseGPIO):
                 callback,
                 bouncetime
             )
+            if not self._interrupts[pin].is_ok:
+                log.error("Failed to setup interrupt for {pin_prefix}{pin:02d}".format(
+                    pin=pin, pin_prefix=TEXT_PIN_PREFIX[self._mode]))
+                self._interrupts.pop(pin)
 
     def remove_event_detect(self, pin):
         """
@@ -317,27 +321,51 @@ class InterruptThread(object):
     """
 
     def __init__(self, pin, edge, mode, callback, bouncetime, *args, **kwargs):
-        self._pin = pin
-        self._edge = edge
-        self._mode = mode
-        self._bouncetime = bouncetime
-        self._thread = None
-        self._callback = callback
-        self._cbargs = args
-        self._cbkwargs = kwargs
-        wiringpi.wiringPiISR(pin, map_interrupt[edge], self._isr) # spawns a thread that loops forever
+        self._gpio = subprocess.run(["which", "gpio"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout.decode("utf-8").strip("\n")
+        if self._gpio:
+            self._ok = True
+            self._pin = pin
+            self._edge = edge
+            self._mode = mode
+            self._bouncetime = bouncetime
+            self._thread = None
+            self._callback = callback
+            self._cbargs = args
+            self._cbkwargs = kwargs
+            wiringpi.wiringPiISR(pin, map_interrupt[edge], self._isr) # spawns a thread that loops forever
+        else:
+            self._ok = False
+            log.error("Could not find 'gpio' command on this system. Please make sure you have installed 'wiringpi'")
+
+    @property
+    def is_ok(self): return self._ok
 
     def enable(self):
-        os.system("$(which gpio) edge {pin} {edge}".format(
-            pin=map_pin_lookup[self._mode](self._pin),
-            edge=map_interrupt_gpio[self._edge]
-        ))
+        result = subprocess.run(
+            [self._gpio, "edge", str(map_pin_lookup[self._mode](self._pin)), map_interrupt_gpio[self._edge]],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE
+        )
+        stderr = result.stderr.decode("utf-8").strip("\n")
+        if result.returncode:
+            self._ok = False
+            log.error("An error occurred while enabling the hardware interrupt for {pin_prefix}{pin:02d}{gpio_pin}: {error}".format(
+                pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[self._mode], error=stderr,
+                gpio_pin="" if self._mode == Mode.SOC else " (GPIO{:02d})".format(rpiGPIO.getPinFromMode(self._pin, self._mode))))
         # re-enable interrupt trigger
 
     def disable(self):
-        os.system("$(which gpio) edge {pin} none".format(
-            pin=map_pin_lookup[self._mode](self._pin)
-        ))
+        result = subprocess.run(
+            [self._gpio, "edge", str(map_pin_lookup[self._mode](self._pin)), "none"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
+        stderr = result.stderr.decode("utf-8").strip("\n")
+        if result.returncode:
+            self._ok = False
+            log.error("An error occurred while disabling the hardware interrupt for {pin_prefix}{pin:02d}{gpio_pin}: {error}".format(
+                pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[self._mode], error=stderr,
+                gpio_pin="" if self._mode == Mode.SOC else " (GPIO{:02d})".format(rpiGPIO.getPinFromMode(self._pin, self._mode))))
         # doesn't seem to be another way to do this
         # wiringpi offers nothing to remove an interrupt
 

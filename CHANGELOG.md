@@ -13,6 +13,7 @@
 * **Fixed**
   * Removed `.lower()` from key check in *selection* type config value validation.
     This was leftover from an early draft and should have been removed.
+  * GPIO now catches errors from system calls to _wiringpi_ command `gpio`.
 
 ## 0.8.1
 
