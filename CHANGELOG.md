@@ -8,6 +8,7 @@
 * **Changed**
   * Signal handler now used in all subprocesses. This should help stop orphaned
     processes remaining after a crash.
+  * MQTT moved log entry for unknown message to `TRACE`.
 
 * **Fixed**
   * Removed `.lower()` from key check in *selection* type config value validation.
