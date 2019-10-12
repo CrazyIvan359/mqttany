@@ -29,7 +29,7 @@ import os, sys, errno, inspect, traceback
 from types import MethodType
 import logging
 from logging import handlers
-from logging import DEBUG, INFO, WARN, ERROR
+from logging import DEBUG, INFO, WARNING as WARN, ERROR
 
 all = [ "get_logger", "set_level", "log_traceback", "uninit" ]
 
@@ -48,16 +48,26 @@ def trace_log(self, msg, *args, **kwargs):
         self._log(TRACE, msg, args, **kwargs)
 
 
+def warn_log(self, msg, *args, **kwargs):
+    """
+    Warn method that will be injected into ``logging.Logger``.
+    Needed because ``log.warn`` is depreciated in Python 3.7
+    """
+    if self.isEnabledFor(TRACE):
+        self._log(WARN, msg, args, **kwargs)
+
+
 def _init_logger():
     """
     Creates the root logger for MQTTany
     """
-    logging.addLevelName(logging.WARN, "WARN")
+    logging.addLevelName(WARN, "WARN")
     logging.addLevelName(TRACE, "TRACE")
 
     log = logging.getLogger("mqttany")
     log.trace = MethodType(trace_log, log)
-    log.setLevel(logging.INFO)
+    log.warn = MethodType(warn_log, log)
+    log.setLevel(INFO)
 
     if not os.path.exists(os.path.dirname(_log_file)):
         try:
@@ -83,6 +93,7 @@ def get_logger(name="mqttany", level=None):
     """
     logger = logging.getLogger(name)
     logger.trace = MethodType(trace_log, logger)
+    logger.warn = MethodType(warn_log, logger)
     logger.setLevel(level or logging.getLogger("mqttany").level)
     return logger
 

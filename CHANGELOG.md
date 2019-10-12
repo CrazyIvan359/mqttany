@@ -2,6 +2,9 @@
 
 ## Development
 
+* **Added**
+  * Logging ``warn`` method as the built-in one is depreciated in Python 3.7.
+
 * **Fixed**
   * Removed `.lower()` from key check in *selection* type config value validation.
     This was leftover from an early draft and should have been removed.
