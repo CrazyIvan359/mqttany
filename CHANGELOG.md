@@ -1,13 +1,13 @@
 # MQTTany Change Log
 
-## Development
+## 0.8.2
 
 * **Added**
   * Logging ``warn`` method as the built-in one is depreciated in Python 3.7.
 
 * **Changed**
   * Signal handler now used in all subprocesses. This should help stop orphaned
-    processes remaining after a crash.
+    processes remaining after a crash. They will respond to `SIGTERM`.
   * MQTT moved log entry for unknown message to `TRACE`.
 
 * **Fixed**
