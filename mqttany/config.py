@@ -131,13 +131,13 @@ def parse_config(data, options, log=log):
                             return False
 
                     elif "selection" in option:
-                        if str(value).lower() in option["selection"]:
+                        if str(value) in option["selection"]:
                             log.trace("Got selection '{value}' for config option '{option}'".format(
                                     value=value, option=name))
                             if isinstance(option["selection"], dict):
-                                config[name] = option["selection"][str(value).lower()]
+                                config[name] = option["selection"][str(value)]
                         else:
-                            log.error("Value '{value}' for config option '{option}' is not one of [{selections}]".format(
+                            log.error("Value '{value}' for config option '{option}' is not one of {selections}".format(
                                     value=value, option=name, selections=[key for key in option["selection"]]))
                             return False
 

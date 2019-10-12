@@ -1,5 +1,11 @@
 # MQTTany Change Log
 
+## Development
+
+* **Fixed**
+  * Actually remove `.lower()` from key check in *selection* type config
+    values. It was mistakenly not removed in [`08d66f4`](https://github.com/CrazyIvan359/mqttany/commit/08d66f46316755a361c1f6f817b22010a24470a8).
+
 ## 0.8.2
 
 * **Added**
