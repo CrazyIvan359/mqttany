@@ -159,7 +159,7 @@ def _proc_loop(module):
     _call_func(module, ATTR_PRE_LOOP)
 
     poison_pill = False
-    while not poison_pill and not signal.exit:
+    while not poison_pill and signal.signal != signal.SIGTERM:
         try:
             message = module.queue.get_nowait()
         except QueueEmptyError:
@@ -180,7 +180,7 @@ def _proc_loop(module):
                 else:
                     module.log.warn("Unrecognized function '{func}'".format(func=message["func"]))
 
-    if signal.exit:
+    if signal.signal == signal.SIGTERM:
         log.trace("Received {signal}".format(signal=signal.signal.name))
 
     _call_func(module, ATTR_POST_LOOP)
