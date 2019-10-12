@@ -28,24 +28,15 @@ MQTTany
 import version as mqttanyversion
 __version__ = mqttanyversion.__version__
 
-import signal, time, argparse
+import time, argparse
 import multiprocessing as mproc
 from queue import Empty as QueueEmptyError
 
 import logger, modules
+from common import SignalHook
+
 log = logger.get_logger()
-
 queue = mproc.Queue()
-
-class GracefulKiller:
-    """ handles SIGINT and SIGTERM """
-    kill_now = False
-    def __init__(self):
-        signal.signal(signal.SIGINT, self.exit_gracefully)
-        signal.signal(signal.SIGTERM, self.exit_gracefully)
-
-    def exit_gracefully(self, signum, frame):
-        self.kill_now = True
 
 
 def get_args():
@@ -60,6 +51,7 @@ def get_args():
 
 
 if __name__ == '__main__':
+    signal = SignalHook()
     args = get_args()
     if args.verbose > 1:
         logger.set_level(logger.TRACE)
@@ -67,7 +59,6 @@ if __name__ == '__main__':
         logger.set_level(logger.DEBUG)
 
     mproc.current_process().name = "mqttany"
-    killer = GracefulKiller()
     poison_pill = False
 
     log.info("MQTTany {version} starting".format(version=__version__))
@@ -84,7 +75,7 @@ if __name__ == '__main__':
 
     try:
         if modules.load(args.config_file):
-            while not killer.kill_now:
+            while not signal.exit:
                 try: # to get an item from the queue
                     message = queue.get_nowait()
                 except QueueEmptyError:
@@ -100,7 +91,7 @@ if __name__ == '__main__':
         poison_pill = True
 
     else:
-        if killer.kill_now: print() # newline after '^C'
+        if signal.signal == signal.SIGINT: print() # newline after '^C'
         modules.unload()
 
         if poison_pill:

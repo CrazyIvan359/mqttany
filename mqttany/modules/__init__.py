@@ -33,7 +33,7 @@ from queue import Empty as QueueEmptyError
 import logger
 from logger import log_traceback
 from config import load_config
-from common import POISON_PILL
+from common import POISON_PILL, SignalHook
 
 all = [ "load", "unload" ]
 
@@ -155,11 +155,11 @@ def _start_proc(module):
 
 
 def _proc_loop(module):
-
+    signal = SignalHook()
     _call_func(module, ATTR_PRE_LOOP)
 
     poison_pill = False
-    while not poison_pill:
+    while not poison_pill and not signal.exit:
         try:
             message = module.queue.get_nowait()
         except QueueEmptyError:
@@ -179,6 +179,9 @@ def _proc_loop(module):
                         log_traceback(module.log)
                 else:
                     module.log.warn("Unrecognized function '{func}'".format(func=message["func"]))
+
+    if signal.exit:
+        log.trace("Received {signal}".format(signal=signal.signal.name))
 
     _call_func(module, ATTR_POST_LOOP)
 

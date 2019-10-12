@@ -25,7 +25,7 @@ Common
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time, collections
+import time, collections, signal
 from ctypes import c_char_p, c_int
 import multiprocessing as mproc
 from enum import Enum
@@ -34,7 +34,7 @@ import logger
 log = logger.get_logger()
 
 all = [
-    "POISON_PILL",
+    "POISON_PILL", "SignalHook",
     "Mode", "Logic", "TEXT_LOGIC_STATE", "TEXT_PIN_PREFIX",
     "acquire_gpio_lock", "release_gpio_lock",
 ]
@@ -212,6 +212,36 @@ _i2c_lock = [ # I2C bus locks
     {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(c_int, 0), "sda": mproc.Value(c_int, 0)}, # Bus 2
     {"lock": mproc.Lock(), "module": mproc.Array(c_char_p, 16), "scl": mproc.Value(c_int, 0), "sda": mproc.Value(c_int, 0)}, # Bus 3
 ]
+
+
+class SignalHook:
+    """
+    Hooks to SIGINT, SIGTERM, SIGKILL
+    """
+    SIGINT = signal.SIGINT
+    SIGTERM = signal.SIGTERM
+    SIGKILL = signal.SIGKILL
+
+    def __init__(self):
+        self._last_signal = None
+        try: signal.signal(signal.SIGINT, self._signal_received)
+        except OSError: pass
+        try: signal.signal(signal.SIGTERM, self._signal_received)
+        except OSError: pass
+        try: signal.signal(signal.SIGKILL, self._signal_received)
+        except OSError: pass
+
+    def _signal_received(self, signum, frame):
+        self._last_signal = signal.Signals(signum)
+
+    @property
+    def signal(self): return self._last_signal
+
+    @property
+    def exit(self):
+        return self._last_signal in [
+            self.SIGINT, self.SIGTERM, self.SIGKILL
+        ]
 
 
 def acquire_gpio_lock(pin, gpio_pin, module, timeout=0, mode=Mode.SOC):
