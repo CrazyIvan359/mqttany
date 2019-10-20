@@ -1,6 +1,9 @@
 # MQTTany Change Log
 
-## Development
+## 0.9.0
+
+* **Added**
+  * LED module for controlling WS281x and similar LED arrays.
 
 * **Fixed**
   * Actually remove `.lower()` from key check in *selection* type config
