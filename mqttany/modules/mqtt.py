@@ -33,8 +33,9 @@ except ImportError:
         please see the wiki for instructions on how to install requirements")
 
 import socket
+from threading import Timer
 
-import logger
+import logger, version
 from logger import log_traceback
 from mqttany import queue as main_queue
 from config import parse_config
@@ -57,6 +58,7 @@ CONF_KEY_RETAIN = "retain"
 CONF_KEY_TOPIC_ROOT = "root topic"
 CONF_KEY_TOPIC_STATUS = "status topic"
 CONF_KEY_TOPIC_LWT = "lwt topic"
+CONF_KEY_HEARTBEAT_INT = "heartbeat interval"
 
 CONF_OPTIONS = {
     CONF_KEY_HOST: {},
@@ -68,6 +70,7 @@ CONF_OPTIONS = {
     CONF_KEY_RETAIN: {"type": bool, "default": False},
     CONF_KEY_TOPIC_ROOT: {"default": "{client_id}"},
     CONF_KEY_TOPIC_LWT: {"default": "lwt"},
+    CONF_KEY_HEARTBEAT_INT: {"type": int, "default": 300}
 }
 
 MQTT_MAX_RETRIES = 10
@@ -78,6 +81,7 @@ config = {}
 hostname = socket.gethostname()
 client = None
 retries = MQTT_MAX_RETRIES
+heartbeat_timer = None
 subscriptions = []
 on_message_callbacks = []
 on_connect_callbacks = []
@@ -388,11 +392,7 @@ def _on_connect(client, userdata, flags, rc):
                 host=config[CONF_KEY_HOST], port=config[CONF_KEY_PORT]))
         retries = MQTT_MAX_RETRIES # reset max retries counter
         log.debug("Resuming previous session" if flags["session present"] else "Starting new session")
-        client.publish(
-            topic=resolve_topic(config[CONF_KEY_TOPIC_LWT]),
-            payload="Online",
-            retain=True
-        )
+        publish_heartbeat()
         for sub in subscriptions:
             subscribe(**sub)
         for callback in on_connect_callbacks:
@@ -441,6 +441,9 @@ def on_disconnect(client, userdata, rc):
     """
     Gets called when the client disconnects from the broker
     """
+    if heartbeat_timer:
+        heartbeat_timer.cancel()
+
     for callback in on_disconnect_callbacks:
         try:
             callback["func"](*callback.get("args", []), **callback.get("kwargs", {}))
@@ -455,3 +458,17 @@ def on_message(client, userdata, message):
     """
     log.trace("Received message without specific listener: [topic: '{topic}', message: '{message}']".format(
             topic=message.topic, message=message.payload))
+
+def publish_heartbeat():
+    """
+    Publishes the heartbeat messages and restarts the timer
+    """
+    log.debug("Heartbeat")
+
+    publish(config[CONF_KEY_TOPIC_LWT], payload="Online", retain=True)
+    publish("version", payload=version.__version__)
+
+    if config[CONF_KEY_HEARTBEAT_INT] > 0:
+        global heartbeat_timer
+        heartbeat_timer = Timer(config[CONF_KEY_HEARTBEAT_INT], publish_heartbeat)
+        heartbeat_timer.start()
