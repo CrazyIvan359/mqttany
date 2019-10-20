@@ -4,6 +4,12 @@
 [![Gitter](https://img.shields.io/gitter/room/mqttany/community)](https://gitter.im/mqttany/community)
 [![License](https://img.shields.io/github/license/CrazyIvan359/mqttany)](https://github.com/CrazyIvan359/mqttany/blob/master/LICENSE)
 
+| **NOTICE** |
+|:---:|
+| MQTTany is now using the git-flow workflow. As such, the default branch is now `dev` and any code on that branch may not be stable. If you are looking for stable code then check out [Releases](https://github.com/CrazyIvan359/mqttany/releases) or the `master` branch. If you are making a pull request, make sure you branch from `dev` not `master`. |
+
+<br>
+
 MQTTany aims to make it easier to connect things to an MQTT broker. It is a
 collection of modules that each provide support for connecting something.
 

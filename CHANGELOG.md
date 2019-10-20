@@ -2,6 +2,9 @@
 
 ## Development
 
+* **Changed**
+  * Move to git-flow workflow, add notice to readme about this.
+
 ## 0.9.0
 
 * **Added**
