@@ -222,3 +222,68 @@ mqtt:
     # - {address} = will be replaced with the device's **FULL 8 BYTE ADDRESS**
     # - {index} = will be replaced with the device's index in the list of addresses
     #topic: '{device_name}'
+
+
+
+######## LED Module ########
+#led:
+
+  ### Module Topic
+  #topic: '{module_name}'
+
+  ### Animation Directory
+  # A directory or list of directories to look for additional animations in
+  #anim dir: []
+
+  ### Startup Animation
+  # Animation to play when MQTTany loads
+  #anim startup: 'test.array'
+
+  ### Minimum Animation Frame Length
+  # Minimum frame length for animations, you may need to increase this for
+  # longer arrays. Default 0.01667 is 60fps, 0.0333 is 30fps.
+  #anim frame min: 0.01667 # in seconds
+
+  ### Array Configuration
+  #array_name:
+
+    ### GPIO pin
+    # The BCM/SOC pin number that the array is connected to
+    #gpio:
+
+    ### Array Topic
+    # Additional Substitutions:
+    # - {array_name} = will be replaced with the array definition section name
+    #topic: '{array_name}'
+
+    ### LED Type
+    # Can be one of WS2811, WS2812, WS2812B, SK6812, SK6812W
+    #type: 'WS2812B'
+
+    ### Pixel Count
+    # The number of pixels in your array (not necessarily LEDs, see next option)
+    #count:
+
+    ### LEDs per Pixel
+    # Allows you to have more than one LED handled as a single pixel.
+    # Ex. A bulb with 3 LEDs in it can be treated as a single pixel in the array.
+    # Total number of LEDs in the array should be 'count' x 'leds per pixel'
+    #leds per pixel: 1
+
+    ### Initial Brightness
+    # The initial brightness of the array, can be 0-255
+    #brightness: 255
+
+    ### Color Order
+    # The byte order for the color data sent to the LEDs.
+    # See the 'test.order' animation for how to determine this
+    #color order: '{chip_default}'
+
+    ### Frequency
+    # *** DO NOT CHANGE THIS UNLESS YOU KNOW WHAT YOU ARE DOING ***
+    # The clock frequency in kHz for transmitting data
+    #frequency: 800
+
+    ### Invert
+    # Invert the data signal to the LEDs, useful if you have an inverting buffer
+    #invert: false
