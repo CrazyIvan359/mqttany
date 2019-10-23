@@ -2,6 +2,9 @@
 
 ## Development
 
+* **Added**
+  * MQTT heartbeat messages, currently status and version only.
+
 * **Changed**
   * Move to git-flow workflow, add notice to readme about this.
 

@@ -38,6 +38,10 @@ mqtt:
   #root topic: '{client_id}' # Root topic
   #lwt topic: 'lwt' # Last Will topic
 
+  ### Heartbeat
+  # Interval in seconds to publish status messages
+  #heartbeat interval: 300
+
 
 ######## GPIO Module ########
 #gpio:
