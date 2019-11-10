@@ -2,8 +2,14 @@
 
 ## Development
 
+* ***BREAKING CHANGE***
+  * MCP230xx module has been removed as its functionality has been replaced
+    by the MCP230xx device profiles in the new I2C module.
+
 * **Added**
   * MQTT heartbeat messages, currently status and version only.
+  * I2C module for I2C communication.
+  * I2C support for MCP230xx devices including output pulsing.
 
 * **Changed**
   * Move to git-flow workflow, add notice to readme about this.
