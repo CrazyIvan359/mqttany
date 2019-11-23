@@ -31,7 +31,7 @@ from config import parse_config
 
 from modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
 
-all = [  ]
+__all__ = [  ]
 
 # Configuration keys, best to define them once so they can be changed easily
 CONF_KEY_TOPIC = "topic"

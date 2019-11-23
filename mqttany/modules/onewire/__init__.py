@@ -36,7 +36,7 @@ from modules.onewire.core import init, pre_loop, post_loop
 from modules.onewire.core import _device_message, poll_all
 from modules.onewire.common import log
 
-all = [ "init", "pre_loop", "post_loop", "queue" ]
+__all__ = [ "init", "pre_loop", "post_loop", "queue" ]
 
 _queue = None
 

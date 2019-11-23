@@ -38,7 +38,7 @@ from logger import log_traceback
 
 from modules.gpio.common import log, config, CONF_KEY_MODE
 
-all = [ "getGPIO" ]
+__all__ = [ "getGPIO" ]
 
 gpio_mod = None
 

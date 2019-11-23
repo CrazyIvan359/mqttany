@@ -31,6 +31,8 @@ from modules.onewire.bus import getBus, OneWireBus
 from modules.onewire.common import config
 from modules.onewire.common import *
 
+__all__ = [ "OneWireDevice" ]
+
 
 class OneWireDevice():
     """
@@ -63,11 +65,13 @@ class OneWireDevice():
         Returns ``True`` if device is available, ``False`` otherwise.
         """
         if not self._bus:
-            self.log.error("Bus not available for '{name}'")
+            self.log.error("Bus not available for '{name}'".format(
+                name=self._name))
             return False
 
         if not self._address:
-            self.log.error("Address for '{name}' is invalid")
+            self.log.error("Address for '{name}' is invalid".format(
+                name=self._name))
             return False
 
         return True

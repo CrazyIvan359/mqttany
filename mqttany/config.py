@@ -43,7 +43,7 @@ from ast import literal_eval
 import logger
 from logger import log_traceback
 
-all = [ "load_config", "parse_config" ]
+__all__ = [ "load_config", "parse_config" ]
 
 log = logger.get_logger()
 

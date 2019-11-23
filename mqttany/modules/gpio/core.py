@@ -43,7 +43,7 @@ from modules.gpio.pin import getPin, updateConfOptions
 from modules.gpio.common import config
 from modules.gpio.common import *
 
-all = [  ]
+__all__ = [  ]
 
 TEXT_NAME = TEXT_PACKAGE_NAME
 

@@ -37,7 +37,7 @@ from modules.onewire import device
 from modules.onewire.common import config
 from modules.onewire.common import *
 
-all = [  ]
+__all__ = [  ]
 
 CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
     (CONF_KEY_BUS, {"default": "w1", "selection": []}),

@@ -46,7 +46,7 @@ TEXT_PACKAGE_NAME = __name__.split(".")[-2] # gives onewire
 log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}
 
-all = [
+__all__ = [
     "CONF_KEY_TOPIC", "CONF_KEY_TOPIC_SETTER", "CONF_KEY_TOPIC_GETTER",
     "CONF_KEY_POLL_INT", "CONF_KEY_BUS", "CONF_KEY_BUS_SCAN",
     "CONF_KEY_ADDRESS", "CONF_KEY_FIRST_INDEX",

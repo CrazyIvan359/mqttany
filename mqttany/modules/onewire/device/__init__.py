@@ -28,7 +28,7 @@ OneWire Device
 from modules.onewire.device.base import OneWireDevice
 from modules.onewire.device import ds18x20
 
-all = [
+__all__ = [
     "getDevice", "getConfDeviceOptions",
     "getConfDeviceTypes", "getDeviceTypeByFamily"
 ]

@@ -33,7 +33,7 @@ from logger import log_traceback
 
 from modules.led.common import log, config, CONF_KEY_ANIM_DIR, CONF_KEY_ANIM_FRAME_MIN
 
-all = [ "load_animations" ]
+__all__ = [ "load_animations" ]
 
 DEFAULT_PATH = "/etc/mqttany/led-anim"
 

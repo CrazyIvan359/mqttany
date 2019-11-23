@@ -86,7 +86,7 @@ TEXT_PACKAGE_NAME = __name__.split(".")[-2] # gives led
 log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}
 
-all = [
+__all__ = [
     "CONF_KEY_TOPIC", "CONF_KEY_ANIM_DIR", "CONF_KEY_ANIM_STARTUP",
     "CONF_KEY_ANIM_FRAME_MIN", "CONF_KEY_GPIO", "CONF_KEY_TYPE",
     "CONF_KEY_COUNT", "CONF_KEY_PER_PIXEL", "CONF_KEY_BRIGHTNESS",

@@ -29,7 +29,7 @@ from common import update_dict
 
 from modules.gpio.pin import digital
 
-all = [ "getPin", "updateConfOptions" ]
+__all__ = [ "getPin", "updateConfOptions" ]
 
 
 def getPin(direction):

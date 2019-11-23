@@ -33,7 +33,7 @@ from enum import Enum
 import logger
 log = logger.get_logger()
 
-all = [
+__all__ = [
     "POISON_PILL", "SignalHook",
     "Mode", "Logic", "TEXT_LOGIC_STATE", "TEXT_PIN_PREFIX",
     "acquire_gpio_lock", "release_gpio_lock",

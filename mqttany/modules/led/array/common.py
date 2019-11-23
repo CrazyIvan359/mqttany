@@ -39,7 +39,7 @@ TEXT_NAME = ".".join(__name__.split(".")[-3:3]) # gives led.array
 
 log = logger.get_module_logger(module=TEXT_NAME)
 
-all = [ "baseArray" ]
+__all__ = [ "baseArray" ]
 
 
 class baseArray():

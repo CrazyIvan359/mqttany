@@ -41,7 +41,7 @@ from mqttany import queue as main_queue
 from config import parse_config
 from common import POISON_PILL
 
-all = [
+__all__ = [
     "resolve_topic", "topic_matches_sub",
     "publish", "subscribe", "unsubscribe",
     "add_message_callback", "remove_message_callback"

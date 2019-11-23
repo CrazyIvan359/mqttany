@@ -32,7 +32,7 @@ from modules.mqtt import publish
 from modules.onewire.device.base import OneWireDevice
 from modules.onewire.common import *
 
-all = [ "DS18x20" ]
+__all__ = [ "DS18x20" ]
 
 CONF_KEY_UNIT = "ds18x20 unit"
 

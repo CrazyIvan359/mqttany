@@ -77,7 +77,7 @@ TEXT_PACKAGE_NAME = __name__.split(".")[-2] # gives gpio
 log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}
 
-all = [
+__all__ = [
     "CONF_KEY_TOPIC", "CONF_KEY_TOPIC_SETTER" "CONF_KEY_TOPIC_GETTER",
     "CONF_KEY_PAYLOAD_ON", "CONF_KEY_PAYLOAD_OFF", "CONF_KEY_POLL_INT",
     "CONF_KEY_DEBOUNCE", "CONF_KEY_PIN", "CONF_KEY_FIRST_INDEX",

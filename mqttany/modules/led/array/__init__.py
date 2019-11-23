@@ -39,7 +39,7 @@ from logger import log_traceback
 from modules.led.common import config
 from modules.led.common import *
 
-all = [ "getArray" ]
+__all__ = [ "getArray" ]
 
 
 def getArray(array_config):

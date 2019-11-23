@@ -29,6 +29,8 @@ import re
 
 re_hex_chars = re.compile("[^a-fA-F0-9]")
 
+__all__ = [ "OneWireBus" ]
+
 
 class OneWireBus():
     """

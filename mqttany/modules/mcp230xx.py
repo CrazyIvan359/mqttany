@@ -49,7 +49,7 @@ from config import parse_config
 from common import acquire_i2c_lock, release_i2c_lock
 from modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
 
-all = [  ]
+__all__ = [  ]
 
 CONF_KEY_TOPIC = "topic"
 CONF_KEY_TOPIC_SETTER = "topic set"

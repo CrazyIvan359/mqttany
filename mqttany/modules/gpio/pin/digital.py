@@ -62,6 +62,8 @@ TEXT_NAME = ".".join([__name__.split(".")[-3], __name__.split(".")[-1]]) # gives
 
 log = logger.get_module_logger(module=TEXT_NAME)
 
+__all__ = [ "DigitalPin" ]
+
 
 class DigitalPin(Pin):
     """

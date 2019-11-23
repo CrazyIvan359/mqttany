@@ -36,7 +36,7 @@ from modules.led import core
 from modules.led.core import init, pre_loop, post_loop, _anim_message
 from modules.led.common import log
 
-all = [ "init", "pre_loop", "post_loop", "queue" ]
+__all__ = [ "init", "pre_loop", "post_loop", "queue" ]
 
 _queue = None
 

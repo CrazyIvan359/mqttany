@@ -35,7 +35,7 @@ from logger import log_traceback
 from config import load_config
 from common import POISON_PILL, SignalHook
 
-all = [ "load", "unload" ]
+__all__ = [ "load", "unload" ]
 
 ATTR_INIT = "init"
 ATTR_UNINIT = "uninit"

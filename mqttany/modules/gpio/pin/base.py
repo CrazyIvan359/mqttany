@@ -38,6 +38,8 @@ TEXT_NAME = ".".join(__name__.split(".")[-3:3]) # gives gpio.pin
 
 log = logger.get_module_logger(module=TEXT_NAME)
 
+__all__ = [ "Pin" ]
+
 
 class Pin(object):
     """

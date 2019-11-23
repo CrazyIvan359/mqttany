@@ -37,7 +37,7 @@ from modules.led.anim import load_animations
 from modules.led.common import config
 from modules.led.common import *
 
-all = [  ]
+__all__ = [  ]
 
 TEXT_NAME = TEXT_PACKAGE_NAME
 

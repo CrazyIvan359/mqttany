@@ -31,7 +31,7 @@ import logging
 from logging import handlers
 from logging import DEBUG, INFO, WARNING as WARN, ERROR
 
-all = [ "get_logger", "set_level", "log_traceback", "uninit" ]
+__all__ = [ "get_logger", "set_level", "log_traceback", "uninit" ]
 
 TRACE = 5   # trace level logging
 

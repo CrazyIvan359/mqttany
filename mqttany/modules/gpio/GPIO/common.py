@@ -27,7 +27,7 @@ GPIO Library Wrapper Common
 
 from enum import Enum
 
-all = [ "baseGPIO", "Direction", "Resistor", "Interrupt" ]
+__all__ = [ "baseGPIO", "Direction", "Resistor", "Interrupt" ]
 
 class Direction(Enum):
     INPUT = 10
