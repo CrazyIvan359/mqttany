@@ -32,13 +32,13 @@ import logger
 from logger import log_traceback
 from config import resolve_type
 from common import release_gpio_lock, TEXT_PIN_PREFIX, TEXT_LOGIC_STATE
+from common import Direction, Resistor, Interrupt
 
 from modules.mqtt import publish, topic_matches_sub
 
 from modules.gpio.pin.base import Pin
 from modules.gpio.common import config
 from modules.gpio.common import *
-from modules.gpio.GPIO.common import Direction, Resistor, Interrupt
 
 CONF_KEY_TOPIC_PULSE = "topic pulse"
 CONF_KEY_DEBOUNCE = "debounce"

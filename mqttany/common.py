@@ -35,7 +35,8 @@ log = logger.get_logger()
 
 __all__ = [
     "POISON_PILL", "SignalHook",
-    "Mode", "Logic", "TEXT_LOGIC_STATE", "TEXT_PIN_PREFIX",
+    "Mode", "Logic", "Direction", "Resistor", "Interrupt",
+    "TEXT_LOGIC_STATE", "TEXT_PIN_PREFIX",
     "acquire_gpio_lock", "release_gpio_lock",
 ]
 
@@ -49,6 +50,21 @@ class Mode(Enum):
 class Logic():
     LOW = 0
     HIGH = 1
+
+class Direction(Enum):
+    INPUT = 10
+    OUTPUT = 11
+
+class Resistor(Enum):
+    OFF = 20
+    PULL_UP = 21
+    PULL_DOWN = 22
+
+class Interrupt(Enum):
+    NONE = 0
+    RISING = 30
+    FALLING = 31
+    BOTH = 32
 
 TEXT_LOGIC_STATE = ["LOW", "HIGH"]
 TEXT_PIN_PREFIX = {

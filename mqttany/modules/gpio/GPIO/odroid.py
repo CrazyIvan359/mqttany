@@ -45,8 +45,8 @@ from datetime import datetime
 now = datetime.now
 
 import logger
-from common import TEXT_PIN_PREFIX, Mode, Logic
-from modules.gpio.GPIO.common import baseGPIO, Direction, Resistor, Interrupt
+from common import TEXT_PIN_PREFIX, Mode, Logic, Direction, Resistor, Interrupt
+from modules.gpio.GPIO.common import baseGPIO
 
 TEXT_NAME = ".".join([__name__.split(".")[-3], __name__.split(".")[-1]]) # gives gpio.odroid
 

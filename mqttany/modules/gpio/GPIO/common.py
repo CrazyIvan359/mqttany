@@ -25,24 +25,7 @@ GPIO Library Wrapper Common
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from enum import Enum
-
-__all__ = [ "baseGPIO", "Direction", "Resistor", "Interrupt" ]
-
-class Direction(Enum):
-    INPUT = 10
-    OUTPUT = 11
-
-class Resistor(Enum):
-    OFF = 20
-    PULL_UP = 21
-    PULL_DOWN = 22
-
-class Interrupt(Enum):
-    NONE = 0
-    RISING = 30
-    FALLING = 31
-    BOTH = 32
+__all__ = [ "baseGPIO" ]
 
 class baseGPIO():
     """
