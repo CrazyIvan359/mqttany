@@ -546,16 +546,20 @@ def anim_fade_pixel(array, cancel, **kwargs):
 
 def anim_testorder(array, cancel, **kwargs):
     """
-    Set color order to RGB and run this animation.
+    Set color order to RGB(W) and run this animation.
     If you see 1 red, 2 green, and 3 blue is RGB, otherwise the number of LEDs
     of a particular color are the position of that colour in the order.
     """
-    array.setPixelColorRGB(0, 255, 0, 0)
-    array.setPixelColorRGB(1, 0, 255, 0)
-    array.setPixelColorRGB(2, 0, 255, 0)
-    array.setPixelColorRGB(3, 0, 0, 255)
-    array.setPixelColorRGB(4, 0, 0, 255)
-    array.setPixelColorRGB(5, 0, 0, 255)
+    array.setPixelColorRGB(0, 255, 0, 0, 0)
+    array.setPixelColorRGB(1, 0, 255, 0, 0)
+    array.setPixelColorRGB(2, 0, 255, 0, 0)
+    array.setPixelColorRGB(3, 0, 0, 255, 0)
+    array.setPixelColorRGB(4, 0, 0, 255, 0)
+    array.setPixelColorRGB(5, 0, 0, 255, 0)
+    array.setPixelColorRGB(6, 0, 0, 0, 255)
+    array.setPixelColorRGB(7, 0, 0, 0, 255)
+    array.setPixelColorRGB(8, 0, 0, 0, 255)
+    array.setPixelColorRGB(9, 0, 0, 0, 255)
     array.show()
 
 
