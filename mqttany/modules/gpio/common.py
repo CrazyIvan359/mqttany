@@ -34,9 +34,7 @@ except ImportError:
 from collections import OrderedDict
 
 import logger
-from common import Mode
-
-from modules.gpio.GPIO.common import Direction
+from common import Mode, Direction
 
 CONF_KEY_MODE = "mode"
 CONF_KEY_TOPIC = "topic"
@@ -78,15 +76,14 @@ log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}
 
 __all__ = [
-    "CONF_KEY_TOPIC", "CONF_KEY_TOPIC_SETTER" "CONF_KEY_TOPIC_GETTER",
+    "CONF_KEY_TOPIC", "CONF_KEY_TOPIC_SETTER", "CONF_KEY_TOPIC_GETTER",
     "CONF_KEY_PAYLOAD_ON", "CONF_KEY_PAYLOAD_OFF", "CONF_KEY_POLL_INT",
-    "CONF_KEY_DEBOUNCE", "CONF_KEY_PIN", "CONF_KEY_FIRST_INDEX",
-    "CONF_KEY_DIRECTION", "CONF_KEY_INTERRUPT", "CONF_KEY_RESISTOR",
-    "CONF_KEY_INVERT", "CONF_KEY_INITIAL",
+    "CONF_KEY_PIN", "CONF_KEY_FIRST_INDEX", "CONF_KEY_DIRECTION",
+    "CONF_KEY_INVERT",
 
     "CONF_OPTIONS",
 
-    "TEXT_PACKAGE_NAME", "TEXT_LOGIC_STATE",
+    "TEXT_PACKAGE_NAME",
 
     "log"
 ]

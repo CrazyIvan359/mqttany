@@ -8,6 +8,9 @@
 * **Changed**
   * Move to git-flow workflow, add notice to readme about this.
 
+* **Fixed**
+  * GPIO incorrect imports and exports in `common`.
+
 ## 0.9.0
 
 * **Added**
