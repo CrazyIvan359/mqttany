@@ -32,7 +32,7 @@ from logger import log_traceback
 from common import POISON_PILL
 
 from modules.mqtt import resolve_topic
-from modules.led.common import config, TEXT_PACKAGE_NAME, DEFAULT_COLOR_ORDER, CONF_KEY_TOPIC
+from modules.led.common import config, TEXT_PACKAGE_NAME, CONF_KEY_TOPIC
 from modules.led.common import ANIM_KEY_NAME, ANIM_KEY_REPEAT, ANIM_KEY_PRIORITY
 
 TEXT_NAME = ".".join(__name__.split(".")[-3:3]) # gives led.array
@@ -44,7 +44,7 @@ __all__ = [ "baseArray" ]
 
 class baseArray():
 
-    def __init__(self, name, topic, led_type, count, leds_per_pixel, brightness, color_order, frequency, invert):
+    def __init__(self, name, topic, count, leds_per_pixel, color_order):
         """
         **SUBCLASSES MUST SUPER() THIS METHOD**
         """
@@ -60,13 +60,9 @@ class baseArray():
                 "array_name": name,
             }
         )
-        self._type = led_type
         self._count = count
         self._per_pixel = leds_per_pixel
-        self._init_brightness = brightness
-        self._order = color_order.format(chip_default=DEFAULT_COLOR_ORDER[led_type])
-        self._frequency = frequency
-        self._invert = invert
+        self._order = color_order
         self.anims = {}
         self._anim_thread = None
         self._anim_cancel = None
@@ -134,16 +130,13 @@ class baseArray():
 
     def numColors(self):
         """Return the number of color channels (3 or 4)"""
-        return len(DEFAULT_COLOR_ORDER[self._type])
+        return len(self._order)
 
     @property
     def name(self): return self._name
 
     @property
     def topic(self): return self._topic
-
-    @property
-    def type(self): return self._type
 
     @property
     def count(self): return self._count

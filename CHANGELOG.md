@@ -10,6 +10,8 @@
   * MQTT heartbeat messages, currently status and version only.
   * I2C module for I2C communication.
   * I2C support for MCP230xx devices including output pulsing.
+  * LED configuration refactored to better allow different outputs.
+  * LED interface for DMX output using the sACN protocol.
 
 * **Changed**
   * Move to git-flow workflow, add notice to readme about this.

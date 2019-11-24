@@ -244,18 +244,15 @@ mqtt:
   ### Array Configuration
   #array_name:
 
-    ### GPIO pin
-    # The BCM/SOC pin number that the array is connected to
-    #gpio:
+    ### Output
+    # The interface to use for outputting data
+    # Available options are 'rpi' or 'sacn'
+    #output: ''
 
     ### Array Topic
     # Additional Substitutions:
     # - {array_name} = will be replaced with the array definition section name
     #topic: '{array_name}'
-
-    ### LED Type
-    # Can be one of WS2811, WS2812, WS2812B, SK6812, SK6812W
-    #type: 'WS2812B'
 
     ### Pixel Count
     # The number of pixels in your array (not necessarily LEDs, see next option)
@@ -274,13 +271,8 @@ mqtt:
     ### Color Order
     # The byte order for the color data sent to the LEDs.
     # See the 'test.order' animation for how to determine this
-    #color order: '{chip_default}'
+    #color order: '{default}'
 
-    ### Frequency
-    # *** DO NOT CHANGE THIS UNLESS YOU KNOW WHAT YOU ARE DOING ***
-    # The clock frequency in kHz for transmitting data
-    #frequency: 800
-
-    ### Invert
-    # Invert the data signal to the LEDs, useful if you have an inverting buffer
-    #invert: false
+    ### Interface Specific Options
+    # Each interface may have some options specific to it
+    # consult the wiki page for the interface for details.

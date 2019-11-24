@@ -25,26 +25,44 @@ LED RPi Array Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-try:
-    import rpi_ws281x
-except ImportError:
-    raise ImportError("MQTTany's LED module requires 'rpi-ws281x' to be installed, \
-        please see the wiki for instructions on how to install requirements")
-
 import os
 
 import logger
 from logger import log_traceback
 
-from common import acquire_gpio_lock, release_gpio_lock, TEXT_PIN_PREFIX
-from modules.gpio.common import Mode
-from modules.led.common import config, TEXT_PACKAGE_NAME
+from common import Mode, acquire_gpio_lock, release_gpio_lock, TEXT_PIN_PREFIX
+from modules.led.common import config, TEXT_PACKAGE_NAME, CONF_KEY_OUTPUT, CONF_KEY_BRIGHTNESS
 from modules.led.array.common import baseArray
+
+
+__all__ = [ "SUPPORTED_TYPES", "CONF_OPTIONS" ]
+
+CONF_KEY_GPIO = "rpi gpio"
+CONF_KEY_CHIP = "rpi chip"
+CONF_KEY_FREQUENCY = "rpi frequency"
+CONF_KEY_INVERT = "rpi invert"
+
+CONF_OPTIONS = {
+    "regex:.+": {
+        CONF_KEY_OUTPUT: {"selection": {"rpi": "rpi", "RPi": "rpi"}},
+        CONF_KEY_GPIO: {"type": int, "default": None},
+        CONF_KEY_CHIP: {"default": "WS2812B", "selection": ["WS2811", "WS2812", "WS2812B", "SK6812", "SK6812W"]},
+        CONF_KEY_FREQUENCY: {"default": 800, "selection": range(400, 801)}, # in kHz
+        CONF_KEY_INVERT: {"type": bool, "default": False},
+    }
+}
 
 LED_TYPES = {"WS2811":0x0, "WS2812":0x0, "WS2812B":0x0, "SK6812":0x0, "SK6812W":0x18000000}
 LED_COLOR_ORDERS = {"RGB":0x100800, "RBG":0x100008, "GRB":0x081000, "GBR":0x080010, "BRG":0x001008,
                     "BGR":0x000810, "RGBW":0x100800, "RBGW":0x100008, "GRBW":0x081000, "GBRW":0x080010,
                     "BRGW":0x001008, "BGRW":0x000810}
+DEFAULT_COLOR_ORDER = {
+    "WS2811": "RGB",
+    "WS2812": "GRB",
+    "WS2812B": "GRB",
+    "SK6812": "GRB",
+    "SK6812B": "GRBW",
+}
 DMA_CHANNEL = { # DMA channel map
     10: 10, # SPI does not use DMA
     12: 10, # PWM0 DMA10
@@ -64,26 +82,35 @@ TEXT_NAME = ".".join([__name__.split(".")[-3], __name__.split(".")[-1]]) # gives
 
 log = logger.get_module_logger(module=TEXT_NAME)
 
-__all__ = [ "rpiArray" ]
-
 
 class rpiArray(baseArray):
 
-    def __init__(self, name, topic, pin, led_type, count, leds_per_pixel, brightness, color_order, frequency, invert):
+    def __init__(self, name, topic, count, leds_per_pixel, color_order, array_config):
         """
         Returns an LED object wrapping ``rpi_ws281x.PixelStrip``
         """
-        super().__init__(name, topic, led_type, count, leds_per_pixel, brightness, color_order, frequency, invert)
-        self._pin = pin
+        super().__init__(name, topic, count, leds_per_pixel, color_order)
+        self._pin = array_config[CONF_KEY_GPIO]
+        self._chip = array_config[CONF_KEY_CHIP]
+        self._init_brightness = array_config[CONF_KEY_BRIGHTNESS]
+        self._frequency = array_config[CONF_KEY_FREQUENCY]
+        self._invert = array_config[CONF_KEY_INVERT]
+        self._order = self._order.format(default=DEFAULT_COLOR_ORDER[self._chip])
         log.debug("Configured '{name}' on GPIO{pin:02d} with {count} {type} LEDs {leds_per_pixel}".format(
-            name=self._name, pin=self._pin, count=self._count, type=self._type,
+            name=self._name, pin=self._pin, count=self._count, type=self._chip,
             leds_per_pixel="{}".format("with {num} LEDs per pixel".format(num=self._per_pixel) if self._per_pixel > 1 else "")))
 
     def begin(self):
         """Setup the LED array"""
         log.info("Setting up '{name}' on GPIO{pin:02d} with {count} {type} LEDS {leds_per_pixel}".format(
-            name=self._name, pin=self._pin, count=self._count, type=self._type,
+            name=self._name, pin=self._pin, count=self._count, type=self._chip,
             leds_per_pixel="{}".format("with {num} LEDs per pixel".format(num=self._per_pixel) if self._per_pixel > 1 else "")))
+
+        try:
+            import rpi_ws281x
+        except ImportError:
+            raise ImportError("MQTTany's LED module requires 'rpi-ws281x' to be installed, \
+                please see the wiki for instructions on how to install requirements")
 
         if not acquire_gpio_lock(self._pin, self._pin, TEXT_PACKAGE_NAME, timeout=2000):
             log.error("Failed to acquire a lock for '{name}' on {pin_prefix}{pin:02d}".format(
@@ -104,7 +131,7 @@ class rpiArray(baseArray):
                 invert=self._invert,
                 brightness=255 if self._init_brightness > 255 else 0 if self._init_brightness < 0 else self._init_brightness,
                 channel=PWM_CHANNEL[self._pin],
-                strip_type=LED_COLOR_ORDERS[self._order] + LED_TYPES[self._type],
+                strip_type=LED_COLOR_ORDERS[self._order] + LED_TYPES[self._chip],
             )
             self._array.begin()
         except:
@@ -114,7 +141,7 @@ class rpiArray(baseArray):
         else:
             super().begin()
             del self._init_brightness
-            del self._order
+            del self._chip
             del self._frequency
             del self._invert
             self._setup = True
@@ -171,3 +198,60 @@ class rpiArray(baseArray):
         if not self._setup: return
         value = int(value)
         self._array.setBrightness(255 if value > 255 else 0 if value < 0 else value)
+
+
+def validateGPIO(name, topic, count, leds_per_pixel, color_order, array_config):
+    """
+    Validate GPIO pin and return array instance if valid.
+    """
+    try:
+        import adafruit_platformdetect
+        import adafruit_platformdetect.board as board
+        detector = adafruit_platformdetect.Detector()
+        board_id = detector.board.id
+    except ImportError:
+        raise ImportError("MQTTany's LED module requires 'Adafruit-PlatformDetect' to be installed, \
+            please see the wiki for instructions on how to install requirements")
+
+    if detector.board.any_raspberry_pi:
+        pin_ok = False
+
+        if array_config[CONF_KEY_GPIO] in [12, 18] and board_id in [
+                            board.RASPBERRY_PI_B_PLUS,
+                            board.RASPBERRY_PI_2B,
+                            board.RASPBERRY_PI_3B,
+                            board.RASPBERRY_PI_3B_PLUS,
+                        ]:
+            pin_ok = True # PWM0
+
+        elif array_config[CONF_KEY_GPIO] in [13] and board_id in [
+                            board.RASPBERRY_PI_B_PLUS,
+                            board.RASPBERRY_PI_2B,
+                            board.RASPBERRY_PI_3B,
+                            board.RASPBERRY_PI_3B_PLUS,
+                            board.RASPBERRY_PI_ZERO,
+                            board.RASPBERRY_PI_ZERO_W,
+                        ]:
+            pin_ok = True # PWM1
+
+        elif array_config[CONF_KEY_GPIO] in [21] and board_id in [
+                            board.RASPBERRY_PI_B_PLUS,
+                            board.RASPBERRY_PI_2B,
+                            board.RASPBERRY_PI_3B,
+                            board.RASPBERRY_PI_3B_PLUS,
+                            board.RASPBERRY_PI_ZERO,
+                            board.RASPBERRY_PI_ZERO_W,
+                        ]:
+            pin_ok = True # PCM_DOUT
+
+        elif array_config[CONF_KEY_GPIO] in [10]:
+            pin_ok = True # SPI0-MOSI
+
+        if not pin_ok:
+            log.error("GPIO{pin:02d} cannot be used for LED control on {board}".format(
+                pin=array_config[CONF_KEY_GPIO], board=board_id))
+            return None
+        else:
+            return rpiArray(name, topic, count, leds_per_pixel, color_order, array_config)
+
+SUPPORTED_TYPES = {"rpi": validateGPIO}

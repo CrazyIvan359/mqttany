@@ -39,14 +39,11 @@ CONF_KEY_TOPIC = "topic"
 CONF_KEY_ANIM_DIR = "anim dir"
 CONF_KEY_ANIM_STARTUP = "anim startup"
 CONF_KEY_ANIM_FRAME_MIN = "anim frame min"
-CONF_KEY_GPIO = "gpio"
-CONF_KEY_TYPE = "type"
+CONF_KEY_OUTPUT = "output"
 CONF_KEY_COUNT = "count"
 CONF_KEY_PER_PIXEL = "leds per pixel"
 CONF_KEY_BRIGHTNESS = "brightness"
 CONF_KEY_COLOR_ORDER = "color order"
-CONF_KEY_FREQUENCY = "frequency"
-CONF_KEY_INVERT = "invert"
 
 CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
     (CONF_KEY_TOPIC, {"default": "{module_name}"}),
@@ -56,25 +53,14 @@ CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTH
     ("regex:.+", {
         "type": "section",
         "required": False,
-        CONF_KEY_GPIO: {"type": int, "default": None},
+        CONF_KEY_OUTPUT: {"selection": {}},
         CONF_KEY_TOPIC: {"type": str, "default": "{array_name}"},
-        CONF_KEY_TYPE: {"default": "WS2812B", "selection": ["WS2811", "WS2812", "WS2812B", "SK6812", "SK6812W"]},
         CONF_KEY_COUNT: {"type": int},
         CONF_KEY_PER_PIXEL: {"type": int, "default": 1},
         CONF_KEY_BRIGHTNESS: {"type": int, "default": 255},
-        CONF_KEY_COLOR_ORDER: {"default": "{chip_default}", "selection": ["RGB", "RBG", "GRB", "GBR", "BRG", "BGR", "RGBW", "RBGW", "GRBW", "GBRW", "BRGW", "BGRW"]},
-        CONF_KEY_FREQUENCY: {"default": 800, "selection": range(400, 801)}, # in kHz
-        CONF_KEY_INVERT: {"type": bool, "default": False},
+        CONF_KEY_COLOR_ORDER: {"default": "{default}", "selection": ["RGB", "RBG", "GRB", "GBR", "BRG", "BGR", "RGBW", "RBGW", "GRBW", "GBRW", "BRGW", "BGRW"]},
     })
 ])
-
-DEFAULT_COLOR_ORDER = {
-    "WS2811": "RGB",
-    "WS2812": "GRB",
-    "WS2812B": "GRB",
-    "SK6812": "GRB",
-    "SK6812B": "GRBW",
-}
 
 ANIM_KEY_ARRAY = "array"
 ANIM_KEY_NAME = "anim"
@@ -88,15 +74,12 @@ _config = {}
 
 __all__ = [
     "CONF_KEY_TOPIC", "CONF_KEY_ANIM_DIR", "CONF_KEY_ANIM_STARTUP",
-    "CONF_KEY_ANIM_FRAME_MIN", "CONF_KEY_GPIO", "CONF_KEY_TYPE",
-    "CONF_KEY_COUNT", "CONF_KEY_PER_PIXEL", "CONF_KEY_BRIGHTNESS",
-    "CONF_KEY_COLOR_ORDER", "CONF_KEY_FREQUENCY", "CONF_KEY_INVERT",
+    "CONF_KEY_ANIM_FRAME_MIN", "CONF_KEY_OUTPUT", "CONF_KEY_COUNT",
+    "CONF_KEY_PER_PIXEL", "CONF_KEY_BRIGHTNESS", "CONF_KEY_COLOR_ORDER",
 
     "CONF_OPTIONS",
 
-    "DEFAULT_COLOR_ORDER",
-
-    "ANIM_KEY_ARRAY", "ANIM_KEY_NAME", "ANIM_KEY_REPEAT", "ANIM_KEY_PRIORITY"
+    "ANIM_KEY_ARRAY", "ANIM_KEY_NAME", "ANIM_KEY_REPEAT", "ANIM_KEY_PRIORITY",
 
     "TEXT_PACKAGE_NAME",
 

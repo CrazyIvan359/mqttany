@@ -25,89 +25,42 @@ LED Array Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-try:
-    import adafruit_platformdetect
-    import adafruit_platformdetect.board as board
-    detector = adafruit_platformdetect.Detector()
-    board_id = detector.board.id
-except ImportError:
-    raise ImportError("MQTTany's LED module requires 'Adafruit-PlatformDetect' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+from common import update_dict
 
-from logger import log_traceback
+from modules.led.common import CONF_KEY_OUTPUT, CONF_KEY_TOPIC, CONF_KEY_COUNT, CONF_KEY_PER_PIXEL, CONF_KEY_COLOR_ORDER
+from modules.led.array import rpi, sacn
 
-from modules.led.common import config
-from modules.led.common import *
-
-__all__ = [ "getArray" ]
+__all__ = [ "getArray", "getConfOptions" ]
 
 
-def getArray(array_config):
+def getArray(array_config, log):
     """
     Returns an LED Object or ``None`` if one is not available for the specified hardware.
     """
-    led_obj = None
+    array_classes = {}
+    array_classes.update(rpi.SUPPORTED_TYPES)
+    array_classes.update(sacn.SUPPORTED_TYPES)
+    clazz = array_classes[array_config[CONF_KEY_OUTPUT]]
 
-    if array_config[CONF_KEY_GPIO] is not None:
-
-        if detector.board.any_raspberry_pi:
-            pin_ok = False
-
-            if array_config[CONF_KEY_GPIO] in [12, 18] and board_id in [
-                                board.RASPBERRY_PI_B_PLUS,
-                                board.RASPBERRY_PI_2B,
-                                board.RASPBERRY_PI_3B,
-                                board.RASPBERRY_PI_3B_PLUS,
-                            ]:
-                pin_ok = True # PWM0
-
-            if array_config[CONF_KEY_GPIO] in [13] and board_id in [
-                                board.RASPBERRY_PI_B_PLUS,
-                                board.RASPBERRY_PI_2B,
-                                board.RASPBERRY_PI_3B,
-                                board.RASPBERRY_PI_3B_PLUS,
-                                board.RASPBERRY_PI_ZERO,
-                                board.RASPBERRY_PI_ZERO_W,
-                            ]:
-                pin_ok = True # PWM1
-
-            if array_config[CONF_KEY_GPIO] in [21] and board_id in [
-                                board.RASPBERRY_PI_B_PLUS,
-                                board.RASPBERRY_PI_2B,
-                                board.RASPBERRY_PI_3B,
-                                board.RASPBERRY_PI_3B_PLUS,
-                                board.RASPBERRY_PI_ZERO,
-                                board.RASPBERRY_PI_ZERO_W,
-                            ]:
-                pin_ok = True # PCM_DOUT
-
-            if array_config[CONF_KEY_GPIO] in [10]:
-                pin_ok = True # SPI0-MOSI
-
-            if not pin_ok:
-                log.error("GPIO{pin:02d} cannot be used for LED control on {board}".format(
-                    pin=array_config[CONF_KEY_GPIO], board=board_id))
-            else:
-                try:
-                    from modules.led.array.rpi import rpiArray
-                except:
-                    log.error("An error occurred while trying to import the Raspberry Pi WS281x library")
-                    log_traceback(log)
-                else:
-                    led_obj = rpiArray(
-                        name=array_config["name"],
-                        topic=array_config[CONF_KEY_TOPIC],
-                        pin=array_config[CONF_KEY_GPIO],
-                        led_type=array_config[CONF_KEY_TYPE],
-                        count=array_config[CONF_KEY_COUNT],
-                        leds_per_pixel=array_config[CONF_KEY_PER_PIXEL],
-                        brightness=array_config[CONF_KEY_BRIGHTNESS],
-                        color_order=array_config[CONF_KEY_COLOR_ORDER],
-                        frequency=array_config[CONF_KEY_FREQUENCY],
-                        invert=array_config[CONF_KEY_INVERT],
-                    )
-
-    else:
+    if not clazz:
         log.error("No library is available for '{name}' configuration".format(name=array_config["name"]))
+        return None
 
-    return led_obj
+    return clazz(
+        name=array_config["name"],
+        topic=array_config[CONF_KEY_TOPIC],
+        count=array_config[CONF_KEY_COUNT],
+        leds_per_pixel=array_config[CONF_KEY_PER_PIXEL],
+        color_order=array_config[CONF_KEY_COLOR_ORDER],
+        array_config=array_config
+    )
+
+
+def getConfOptions():
+    """
+    Return Conf Options from all array types
+    """
+    conf = {}
+    conf = update_dict(conf, rpi.CONF_OPTIONS)
+    conf = update_dict(conf, sacn.CONF_OPTIONS)
+    return conf

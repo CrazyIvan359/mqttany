@@ -29,10 +29,10 @@ import json
 
 from config import parse_config
 
-from common import TEXT_PIN_PREFIX
+from common import TEXT_PIN_PREFIX, update_dict
 from modules.mqtt import subscribe, topic_matches_sub
 
-from modules.led.array import getArray
+from modules.led.array import getArray, getConfOptions
 from modules.led.anim import load_animations
 from modules.led.common import config
 from modules.led.common import *
@@ -50,15 +50,20 @@ def init(config_data={}):
     """
     Initializes the module
     """
+    CONF_OPTIONS.update(update_dict(CONF_OPTIONS, getConfOptions()))
+    CONF_OPTIONS.move_to_end("regex:.+")
+
     raw_config = parse_config(config_data, CONF_OPTIONS, log)
+    del config_data
     if raw_config:
         log.debug("Config loaded")
         config.update(raw_config)
+        del raw_config
 
         for name in [key for key in config if isinstance(config[key], dict)]:
             array_config = config.pop(name)
             array_config["name"] = name
-            array_object = getArray(array_config)
+            array_object = getArray(array_config, log)
             if array_object:
                 arrays.append(array_object)
             else:
@@ -89,7 +94,7 @@ def pre_loop():
 
     # subscribe to module topic
     subscribe(
-        topic="{}/#".format(config[CONF_KEY_TOPIC]),
+        topic=config[CONF_KEY_TOPIC],
         callback=callback_anim_message,
         substitutions={
             "module_name": TEXT_NAME,
