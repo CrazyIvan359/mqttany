@@ -91,9 +91,7 @@ def pre_loop():
     subscribe(
         topic="{}/#".format(config[CONF_KEY_TOPIC]),
         callback=callback_anim_message,
-        subtopics=["{module_topic}"],
         substitutions={
-            "module_topic": config[CONF_KEY_TOPIC],
             "module_name": TEXT_NAME,
         }
     )
