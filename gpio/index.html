@@ -1,0 +1,543 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>GPIO &mdash; MQTTany 0.10.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Raspberry Pi" href="raspi.html" />
+    <link rel="prev" title="MQTT" href="../mqtt/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: navy" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MQTTany
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.10.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">MQTTany</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../launch.html">Launching</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/releases">Releases</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/dev/CHANGELOG.md">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mqtt/index.html">MQTT Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mqtt/index.html#topics">Topics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../mqtt/index.html#relative">Relative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mqtt/index.html#absolute">Absolute</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../mqtt/index.html#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mqtt/index.html#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">GPIO Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#supported-boards">Supported Boards</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="odroid.html">Odroid</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-settings">Module Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-pin-definition">Single Pin Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-pin-definition">Multiple Pin Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../i2c/index.html">I2C Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../i2c/index.html#devices">Devices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../i2c/devices/mcp230xx.html">MCP230xx</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../i2c/index.html#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../i2c/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../i2c/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../i2c/index.html#device-definition">Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../onewire/index.html">OneWire Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../onewire/index.html#devices">Devices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../onewire/devices/ds18x20.html">DS18x20</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../onewire/index.html#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../onewire/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../onewire/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../onewire/index.html#single-device-definition">Single Device Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../led/index.html">LED Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../led/animations.html">Animations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../led/animations/built-in.html">Built-in</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../led/animations/custom.html">Custom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../led/animations.html#triggering">Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../led/index.html#supported-interfaces">Supported Interfaces</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../led/interfaces/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../led/interfaces/sacn.html">Streaming ACN</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../led/index.html#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../led/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../led/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../led/index.html#array-definition">Array Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MQTTany</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>GPIO</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gpio/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="gpio">
+<h1>GPIO<a class="headerlink" href="#gpio" title="Permalink to this headline">¶</a></h1>
+<p>The GPIO module provides access to the GPIO pins of single board computers.
+See below for a list of supported boards that this module can be used with.</p>
+<div class="admonition-don-t-forget-to-install-the-requirements admonition">
+<p class="admonition-title">Don’t forget to install the requirements</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip3 install -r requirements/gpio.txt
+</pre></div>
+</div>
+<p>You will also need to install requirements for the board you are using.</p>
+</div>
+<div class="section" id="supported-boards">
+<h2>Supported Boards<a class="headerlink" href="#supported-boards" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<p class="rubric"><a class="reference internal" href="raspi.html"><span class="doc">Raspberry Pi</span></a></p>
+<ul class="simple">
+<li><p>All up to 3B+ should work, but not all have been tested.</p></li>
+</ul>
+<p class="rubric"><a class="reference internal" href="odroid.html"><span class="doc">Odroid</span></a></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="odroid.html#odroid-c1-c1"><span class="std std-ref">Odroid C1</span></a> <em>(untested)</em></p></li>
+<li><p><a class="reference internal" href="odroid.html#odroid-c1-c1"><span class="std std-ref">Odroid C1+</span></a> <em>(untested)</em></p></li>
+<li><p><a class="reference internal" href="odroid.html#odroid-c2"><span class="std std-ref">Odroid C2</span></a></p></li>
+<li><p><a class="reference internal" href="odroid.html#odroid-xu3-xu4"><span class="std std-ref">Odroid XU3</span></a> <em>(untested)</em></p></li>
+<li><p><a class="reference internal" href="odroid.html#odroid-xu3-xu4"><span class="std std-ref">Odroid XU4</span></a> <em>(untested)</em></p></li>
+<li><p><a class="reference internal" href="odroid.html#odroid-n2"><span class="std std-ref">Odroid N2</span></a> <em>(untested)</em></p></li>
+</ul>
+</div>
+<div class="section" id="substitutions">
+<h2>Substitutions<a class="headerlink" href="#substitutions" title="Permalink to this headline">¶</a></h2>
+<p>The following additional substitutions are available for pin topics:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">{pin}</span></code></p></td>
+<td><p>will be replaced with the pin number</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">{pin:02d}</span></code></p></td>
+<td><p>same as above, but will left pad the pin number with 0’s</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">{pin_name}</span></code></p></td>
+<td><p>will be replaced with the pin definition section name.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">{index}</span></code></p></td>
+<td><p>will be replaced with the pin’s index in the list of pin
+numbers, plus <em>first index</em>. For single pin definitions
+this will be blank.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>Optional settings are commented out, default values are shown.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">gpio</span><span class="p">:</span>
+
+  <span class="c1">#mode: &#39;SOC&#39;</span>
+  <span class="c1">#topic: &#39;{module_name}&#39;</span>
+  <span class="c1">#topic set: &#39;set&#39;</span>
+  <span class="c1">#topic get: &#39;poll&#39;</span>
+  <span class="c1">#topic pulse: &#39;pulse&#39;</span>
+  <span class="c1">#payload on: &#39;ON&#39;</span>
+  <span class="c1">#payload off: &#39;OFF&#39;</span>
+  <span class="c1">#polling interval: 0.0</span>
+  <span class="c1">#debounce: 50</span>
+
+  <span class="nt">single_pin</span><span class="p">:</span>
+    <span class="nt">pin</span><span class="p">:</span>
+    <span class="c1">#topic: &#39;{pin}&#39;</span>
+    <span class="c1">#direction: &#39;input&#39;</span>
+    <span class="c1">#interrupt: &#39;none&#39;</span>
+    <span class="c1">#resistor: &#39;off&#39;</span>
+    <span class="c1">#invert: false</span>
+    <span class="c1">#initial state: &#39;{payload_off}&#39;</span>
+
+  <span class="nt">multiple_pins</span><span class="p">:</span>
+    <span class="nt">pin</span><span class="p">:</span> <span class="p p-Indicator">[</span>  <span class="p p-Indicator">]</span>
+    <span class="c1">#topic: &#39;{pin}&#39;</span>
+    <span class="c1">#topic: [  ]    # can also provide a matching list of topics</span>
+    <span class="c1">#first index: 0</span>
+    <span class="c1">#direction: &#39;input&#39;</span>
+    <span class="c1">#interrupt: &#39;none&#39;</span>
+    <span class="c1">#resistor: &#39;off&#39;</span>
+    <span class="c1">#invert: false</span>
+    <span class="c1">#initial state: &#39;{payload_off}&#39;</span>
+</pre></div>
+</div>
+<div class="section" id="module-settings">
+<h3>Module Settings<a class="headerlink" href="#module-settings" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mode</span></code></p></td>
+<td><p>GPIO numbering scheme, can be <code class="docutils literal notranslate"><span class="pre">SOC</span></code> (BCM),
+<code class="docutils literal notranslate"><span class="pre">BOARD</span></code>, or <code class="docutils literal notranslate"><span class="pre">WIRINGPI</span></code>. See the
+<a class="reference internal" href="#supported-boards"><span class="std std-ref">Supported Boards</span></a> pages above for
+available pins and their number in each mode.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">SOC</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">topic</span></code></p></td>
+<td><p>Module topic to use for relative topics.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">{module_name}</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">topic</span> <span class="pre">set</span></code></p></td>
+<td><p>Commands to set pins configured as outputs should be
+sent to the pin topic plus this topic. Default
+topics result in
+<code class="docutils literal notranslate"><span class="pre">{root_topic}/{module_topic}/{pin}/set</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">set</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">topic</span> <span class="pre">get</span></code></p></td>
+<td><p>Any message received on a pin topic plus this topic
+will result in the immediate publishing of the pin’s
+state. Default topics result in
+<code class="docutils literal notranslate"><span class="pre">{root_topic}/{module_topic}/poll</span></code> for all pins and
+<code class="docutils literal notranslate"><span class="pre">{root_topic}/{module_topic}/{pin}/poll</span></code> for
+individual pins.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">poll</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">topic</span> <span class="pre">pulse</span></code></p></td>
+<td><p>Messages received on a pin topic plus this topic
+allow you to <em>pulse</em> a pin for a specified period of
+time. Any messages to <em>pulse</em> or <em>set</em> for the pin
+will cancel a running pulse timer.</p>
+<p>Message payload must be one of the following:</p>
+<ul class="simple">
+<li><p>An integer representing the time in milliseconds to
+pulse the pin. The pin will be set to the opposite
+of it’s current state for the delay, then back to
+it’s original state.</p></li>
+<li><p>A comma separated time and state, to allow
+specifying the state. State should be either
+<em>payload on</em> or <em>payload off</em>. <em>Ex.</em> <code class="docutils literal notranslate"><span class="pre">500,</span> <span class="pre">ON</span></code></p></li>
+<li><p>A JSON string with the time and optionally the
+state. State should be either <em>payload on</em> or
+<em>payload off</em>.
+<em>Ex.</em> <code class="docutils literal notranslate"><span class="pre">{&quot;time&quot;:</span> <span class="pre">500,</span> <span class="pre">&quot;state&quot;:</span> <span class="pre">&quot;ON&quot;}</span></code>.</p></li>
+</ul>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">pulse</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">payload</span> <span class="pre">on</span></code></p></td>
+<td><p>Message content to consider as <em>On</em> (case sensitive).</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">ON</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">payload</span> <span class="pre">off</span></code></p></td>
+<td><p>Message content to consider as <em>Off</em> (case
+sensitive).</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">OFF</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">polling</span> <span class="pre">interval</span></code></p></td>
+<td><p>Interval in seconds to publish all pin states.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">0.0</span></code> <em>(off)</em>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">debounce</span></code></p></td>
+<td><p>Pin change interrupt debounce time in milliseconds.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">50</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="single-pin-definition">
+<h3>Single Pin Definition<a class="headerlink" href="#single-pin-definition" title="Permalink to this headline">¶</a></h3>
+<p>Pin configuration section names must be unique and are used only in logging and
+for the <code class="docutils literal notranslate"><span class="pre">{pin_name}</span></code> substitution in topics. The following settings are for
+single GPIO pin definitions:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pin</span></code></p></td>
+<td><p>GPIO pin number.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">topic</span></code></p></td>
+<td><p>Topic for the pin.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">{pin}</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">direction</span></code></p></td>
+<td><p>Pin direction, can be <code class="docutils literal notranslate"><span class="pre">input</span></code> or <code class="docutils literal notranslate"><span class="pre">output</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">input</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">interrupt</span></code></p></td>
+<td><p>Pin change interrupt, can be <code class="docutils literal notranslate"><span class="pre">rising</span></code>, <code class="docutils literal notranslate"><span class="pre">falling</span></code>,
+<code class="docutils literal notranslate"><span class="pre">both</span></code>, or <code class="docutils literal notranslate"><span class="pre">none</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">none</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">resistor</span></code></p></td>
+<td><p>Pin pull resistor for inputs, can be <code class="docutils literal notranslate"><span class="pre">pullup</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pulldown</span></code> (if supported), or <code class="docutils literal notranslate"><span class="pre">off</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">off</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">invert</span></code></p></td>
+<td><p>Logic invert flag, can be <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">false</span></code>.
+Setting to <code class="docutils literal notranslate"><span class="pre">true</span></code> means that logic <em>LOW = ON</em>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">initial</span> <span class="pre">state</span></code></p></td>
+<td><p>Initial state to set the pin to, must be one of
+<em>payload on</em> or <em>payload off</em>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">{payload_off}</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="multiple-pin-definition">
+<h3>Multiple Pin Definition<a class="headerlink" href="#multiple-pin-definition" title="Permalink to this headline">¶</a></h3>
+<p>It is also possible to define settings for several GPIO pins at the same time.
+Settings from single pin definitions apply here also, except those shown below.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pin</span></code></p></td>
+<td><p>Instead of a single GPIO pin number you can specify
+a list of pins.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">topic</span></code></p></td>
+<td><p>For multiple pin definitions, topic can be a single
+topic or a list of topics the same length as the
+list of pins. An additional substitution <code class="docutils literal notranslate"><span class="pre">{index}</span></code>
+is available when a list of pin numbers is given. It
+corresponds to the pin’s index in the list plus
+<em>first index</em>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">{pin}</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">first</span> <span class="pre">index</span></code></p></td>
+<td><p>Will be added to pin number’s index in the list of
+pins when subsituting <code class="docutils literal notranslate"><span class="pre">{index}</span></code> in topics. <em>Ex.</em>
+to start numbering at 1, set this to 1.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="raspi.html" class="btn btn-neutral float-right" title="Raspberry Pi" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../mqtt/index.html" class="btn btn-neutral float-left" title="MQTT" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, MQTTany Contributors
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

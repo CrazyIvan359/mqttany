@@ -1,0 +1,406 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Raspberry Pi &mdash; MQTTany 0.10.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Streaming ACN" href="sacn.html" />
+    <link rel="prev" title="Custom" href="../animations/custom.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: navy" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MQTTany
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.10.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">MQTTany</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../launch.html">Launching</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/releases">Releases</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/dev/CHANGELOG.md">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mqtt/index.html">MQTT Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../mqtt/index.html#topics">Topics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../mqtt/index.html#relative">Relative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../mqtt/index.html#absolute">Absolute</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../mqtt/index.html#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mqtt/index.html#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../gpio/index.html">GPIO Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../gpio/index.html#supported-boards">Supported Boards</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/odroid.html">Odroid</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../gpio/index.html#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../gpio/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#single-pin-definition">Single Pin Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#multiple-pin-definition">Multiple Pin Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../i2c/index.html">I2C Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../i2c/index.html#devices">Devices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/devices/mcp230xx.html">MCP230xx</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../i2c/index.html#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../i2c/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#device-definition">Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../onewire/index.html">OneWire Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../onewire/index.html#devices">Devices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/devices/ds18x20.html">DS18x20</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../onewire/index.html#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../onewire/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#single-device-definition">Single Device Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">LED Module</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../animations.html">Animations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../animations/built-in.html">Built-in</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../animations/custom.html">Custom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../animations.html#triggering">Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#supported-interfaces">Supported Interfaces</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Raspberry Pi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sacn.html">Streaming ACN</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#substitutions">Substitutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#array-definition">Array Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MQTTany</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">LED</a> &raquo;</li>
+        
+      <li>Raspberry Pi</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/led/interfaces/raspi.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="raspberry-pi">
+<h1>Raspberry Pi<a class="headerlink" href="#raspberry-pi" title="Permalink to this headline">¶</a></h1>
+<p>You can connect an array to a limited selection of pins on most Raspberry Pi
+boards. This support is provided by the <code class="docutils literal notranslate"><span class="pre">rpi_ws281x</span></code> library, see it on
+<a class="reference external" href="https://github.com/jgarff/rpi_ws281x">GitHub</a> for details.</p>
+<p>The LEDs supported by this interface usually run at 5V, but the Pi only
+outputs a maximum of 3.3V. While this may be enough to drive a small number of
+LEDs, it is highly recommended that you use some kind of buffer or level
+shifter when connecting them to GPIO pins.</p>
+<div class="admonition-don-t-forget-to-install-the-requirements admonition">
+<p class="admonition-title">Don’t forget to install the requirements</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip3 install -r requirements/led-rpi.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">led</span><span class="p">:</span>
+
+  <span class="nt">array_name</span><span class="p">:</span>
+    <span class="nt">rpi gpio</span><span class="p">:</span>
+    <span class="c1">#rpi chip: &#39;WS2812B&#39;</span>
+    <span class="c1">#rpi frequency: 800</span>
+    <span class="c1">#rpi invert: false</span>
+</pre></div>
+</div>
+<div class="section" id="array-definition">
+<h3>Array Definition<a class="headerlink" href="#array-definition" title="Permalink to this headline">¶</a></h3>
+<p>The following additional options are added to array definitions when using
+this interface.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rpi</span> <span class="pre">gpio</span></code></p></td>
+<td><p>GPIO pin number.</p>
+<p><strong>ONLY BCM/SOC NUMBERING IS SUPPORTED</strong></p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">rpi</span> <span class="pre">chip</span></code></p></td>
+<td><p>LED type, can be <code class="docutils literal notranslate"><span class="pre">WS2811</span></code>, <code class="docutils literal notranslate"><span class="pre">WS2812</span></code>, <code class="docutils literal notranslate"><span class="pre">WS2812B</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SK6812</span></code>, or <code class="docutils literal notranslate"><span class="pre">SK6812W</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">WS2812B</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rpi</span> <span class="pre">frequency</span></code></p></td>
+<td><p><strong>DO NOT CHANGE THIS UNLESS YOU KNOW WHAT YOU ARE
+DOING</strong></p>
+<p>The clock frequency in kHz for transmitting data to
+the LEDs.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">800</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">rpi</span> <span class="pre">invert</span></code></p></td>
+<td><p>Invert the data signal to the LEDs, this is useful
+if you are using an inverting buffer.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="output-selection">
+<h2>Output Selection<a class="headerlink" href="#output-selection" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The documentation for <code class="docutils literal notranslate"><span class="pre">rpi_ws281x</span></code> is not clear on this and I have not
+tested it, but it may be possible to use multiple interfaces at once</p>
+</div>
+<div class="section" id="spi">
+<h3>SPI<a class="headerlink" href="#spi" title="Permalink to this headline">¶</a></h3>
+<p>The SPI interface is the safest way to control your LEDs using a Pi and the
+only one available on all models. Connect them to <code class="docutils literal notranslate"><span class="pre">SPI0-MOSI</span></code> (GPIO10) using
+a level shifter. When using the SPI interface to control your LEDs you cannot
+use it for anything else. Using SPI leaves the digital audio (I2S/PCM) and
+analog/PWM audio available.</p>
+<p>To use SPI, the user running MQTTany needs to be a member of the <code class="docutils literal notranslate"><span class="pre">gpio</span></code>
+group.</p>
+<p>You also need to increase the size of the SPI buffer and change the GPU
+core frequency. Add the following lines to <code class="docutils literal notranslate"><span class="pre">/boot/config.txt</span></code> and restart to
+make those changes:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>spidev.bufsiz=32768
+core_freq=250
+</pre></div>
+</div>
+</div>
+<div class="section" id="pwm">
+<h3>PWM<a class="headerlink" href="#pwm" title="Permalink to this headline">¶</a></h3>
+<p>The hardware PWM on the Pi is the only interface with 2 outputs. In order to
+achieve the required timing it uses DMA and requires root privileges.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PWM0</span></code> is available on GPIO12 or GPIO18 and MQTTany uses DMA channel 10.
+It is present on the B+, 2B, 3B, and 3B+.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PWM1</span></code> is available on GPIO13 and MQTTany uses DMA channel 11.
+It is present on the B+, 2B, 3B, 3B+, and Zero.</p></li>
+</ul>
+<p>The on board/analog audio also uses the PWM hardware, so you need to blacklist
+it by adding the following to <code class="docutils literal notranslate"><span class="pre">/etc/modprobe.d/snd-blacklist.conf</span></code>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>blacklist snd_bcm2835
+</pre></div>
+</div>
+<p>On headless systems you may need to force the audio device to be the HDMI out.
+Add the following to <code class="docutils literal notranslate"><span class="pre">/boot/config.txt</span></code> and restart:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>hdmi_force_hotplug=1
+hdmi_force_edid_audio=1
+</pre></div>
+</div>
+</div>
+<div class="section" id="pcm">
+<h3>PCM<a class="headerlink" href="#pcm" title="Permalink to this headline">¶</a></h3>
+<p>The hardware PCM can also be used to control a single array of LEDs. It also
+uses DMA and requires root privileges.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PCM_DOUT</span></code> is on GPIO21 and MQTTany uses DMA channel 13.
+It is present on the B+, 2B, 3B, 3B+, and Zero.</p></li>
+</ul>
+<p>When using PCM you will not be able to use any digital/I2S audio devices,
+analog/PWM audio and the SPI interface are free for use though.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="sacn.html" class="btn btn-neutral float-right" title="Streaming ACN" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../animations/custom.html" class="btn btn-neutral float-left" title="Custom" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, MQTTany Contributors
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
