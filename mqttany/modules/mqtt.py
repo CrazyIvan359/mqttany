@@ -137,7 +137,7 @@ def pre_loop():
         )
 
     log.debug("Attaching callbacks")
-    client._on_connect = _on_connect
+    client.on_connect = _on_connect
     client.on_disconnect = on_disconnect
     client.on_message = on_message # called for messages without a specfic subscriber
     client.enable_logger(logger=logger.get_logger("{}.client".format(log.name)))

@@ -16,6 +16,7 @@
 
 * **Fixed**
   * GPIO incorrect imports and exports in `common`.
+  * MQTT typo in assignment of `on_connect` callback causing it to never be called.
 
 ## 0.9.0
 
