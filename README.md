@@ -2,14 +2,14 @@
 
 [![Latest Version](https://img.shields.io/github/v/tag/CrazyIvan359/mqttany?label=release)](https://github.com/CrazyIvan359/mqttany/releases)
 [![Gitter](https://img.shields.io/gitter/room/mqttany/community)](https://gitter.im/mqttany/community)
-[![License](https://img.shields.io/github/license/CrazyIvan359/mqttany)](https://github.com/CrazyIvan359/mqttany/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/CrazyIvan359/mqttany/blob/master/LICENSE)
 
 <br>
 
 MQTTany aims to make it easier to connect things to an MQTT broker. It is a
 collection of modules that each provide support for connecting something.
 
-Checkout the [Docs](https://github.com/CrazyIvan359/mqttany/wiki) to get
+Checkout the [Docs](https://crazyivan359.github.io/mqttany/index.html) to get
 started using MQTTany or download the latest version from the
 [Releases](https://github.com/CrazyIvan359/mqttany/releases) page.
 
