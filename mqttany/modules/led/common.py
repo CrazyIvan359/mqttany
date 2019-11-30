@@ -38,7 +38,7 @@ import logger
 CONF_KEY_TOPIC = "topic"
 CONF_KEY_ANIM_DIR = "anim dir"
 CONF_KEY_ANIM_STARTUP = "anim startup"
-CONF_KEY_ANIM_FRAME_MIN = "anim frame min"
+CONF_KEY_ANIM_FPS = "anim fps"
 CONF_KEY_OUTPUT = "output"
 CONF_KEY_COUNT = "count"
 CONF_KEY_PER_PIXEL = "leds per pixel"
@@ -49,7 +49,7 @@ CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTH
     (CONF_KEY_TOPIC, {"default": "{module_name}"}),
     (CONF_KEY_ANIM_DIR, {"type": (str, list), "default": []}),
     (CONF_KEY_ANIM_STARTUP, {"type": str, "default": "test.array"}),
-    (CONF_KEY_ANIM_FRAME_MIN, {"type": float, "default": 0.01667}),
+    (CONF_KEY_ANIM_FPS, {"type": int, "default": 60}),
     ("regex:.+", {
         "type": "section",
         "required": False,
@@ -74,7 +74,7 @@ _config = {}
 
 __all__ = [
     "CONF_KEY_TOPIC", "CONF_KEY_ANIM_DIR", "CONF_KEY_ANIM_STARTUP",
-    "CONF_KEY_ANIM_FRAME_MIN", "CONF_KEY_OUTPUT", "CONF_KEY_COUNT",
+    "CONF_KEY_ANIM_FPS", "CONF_KEY_OUTPUT", "CONF_KEY_COUNT",
     "CONF_KEY_PER_PIXEL", "CONF_KEY_BRIGHTNESS", "CONF_KEY_COLOR_ORDER",
 
     "CONF_OPTIONS",

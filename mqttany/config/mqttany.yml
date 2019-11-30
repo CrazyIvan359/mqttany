@@ -236,10 +236,10 @@ mqtt:
   # Animation to play when MQTTany loads
   #anim startup: 'test.array'
 
-  ### Minimum Animation Frame Length
-  # Minimum frame length for animations, you may need to increase this for
-  # longer arrays. Default 0.01667 is 60fps, 0.0333 is 30fps.
-  #anim frame min: 0.01667 # in seconds
+  ### Animation Frame Rate
+  # Frame rate for animations, you may need to decrease this for
+  # longer arrays or certain interface types.
+  #anim fps: 60
 
   ### Array Configuration
   #array_name:

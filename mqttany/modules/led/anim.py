@@ -31,7 +31,7 @@ import importlib.util
 import logger
 from logger import log_traceback
 
-from modules.led.common import log, config, CONF_KEY_ANIM_DIR, CONF_KEY_ANIM_FRAME_MIN
+from modules.led.common import log, config, CONF_KEY_ANIM_DIR, CONF_KEY_ANIM_FPS
 
 __all__ = [ "load_animations" ]
 
@@ -121,7 +121,7 @@ def load_animations():
 
     # add utils to anims
     for func in anims:
-        anims[func].__globals__["FRAME_MIN"] = config[CONF_KEY_ANIM_FRAME_MIN]
+        anims[func].__globals__["FRAME_MIN"] = round(1. / config[CONF_KEY_ANIM_FPS], 5)
         anims[func].__globals__["log"] = log
         for util in utils:
             anims[func].__globals__[util.__name__] = util

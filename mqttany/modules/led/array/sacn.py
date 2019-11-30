@@ -27,7 +27,7 @@ LED sACN Array Module
 
 import logger
 
-from modules.led.common import config, TEXT_PACKAGE_NAME, CONF_KEY_OUTPUT, CONF_KEY_BRIGHTNESS, CONF_KEY_ANIM_FRAME_MIN
+from modules.led.common import config, TEXT_PACKAGE_NAME, CONF_KEY_OUTPUT, CONF_KEY_BRIGHTNESS, CONF_KEY_ANIM_FPS
 from modules.led.array.common import baseArray
 
 __all__ = [ "SUPPORTED_TYPES", "CONF_OPTIONS" ]
@@ -107,7 +107,7 @@ class sacnArray(baseArray):
             else:
                 sender = libsacn.sACNsender(
                     source_name="MQTTany",
-                    fps=round(1. / config[CONF_KEY_ANIM_FRAME_MIN]),
+                    fps=config[CONF_KEY_ANIM_FPS],
                     sync_universe=self._sync if self._sync is not None else 63999,
                 )
                 log.trace("Loaded sACNsender")
