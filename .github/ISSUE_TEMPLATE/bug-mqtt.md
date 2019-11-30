@@ -1,8 +1,8 @@
 ---
-name: Bug
-about: Report a bug or problem
+name: MQTT Bug
+about: Report a bug or problem with the MQTT module
 title: Bug Report
-labels: bug
+labels: bug, MQTT
 assignees: ''
 
 ---
@@ -15,7 +15,12 @@ assignees: ''
 
 ### Environment
 - MQTTany version: *version is printed on first line of the log*
-- Modules: *list all modules you have loaded*
+
+### Configuration
+```yaml
+# Insert the 'mqtt' section of your config file here
+# DO NOT INCLUDE PASSWORDS OR BROKER ADDRESSES
+```
 
 ### Logs
 ```text

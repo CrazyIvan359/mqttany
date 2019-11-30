@@ -1,8 +1,8 @@
 ---
-name: Bug
-about: Report a bug or problem
+name: I2C Module Bug
+about: Report a bug or problem with the I2C module
 title: Bug Report
-labels: bug
+labels: bug, I2C
 assignees: ''
 
 ---
@@ -15,7 +15,12 @@ assignees: ''
 
 ### Environment
 - MQTTany version: *version is printed on first line of the log*
-- Modules: *list all modules you have loaded*
+- Platform: *what board are you using? ex Raspberry Pi 3B+*
+
+### Configuration
+```yaml
+# Insert the 'i2c' section of your config file here
+```
 
 ### Logs
 ```text
