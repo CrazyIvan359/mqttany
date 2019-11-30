@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## Development
+## 0.10.0
 
 * ***BREAKING CHANGE***
   * MCP230xx module has been removed as its functionality has been replaced
@@ -11,15 +11,19 @@
 
 * **Added**
   * MQTT heartbeat messages, currently status and version only.
+  * LED add white channel to `test.order` animation.
   * I2C module for I2C communication.
   * I2C support for MCP230xx devices including output pulsing.
   * LED interface for DMX output using the sACN protocol.
 
 * **Changed**
   * Move to git-flow workflow, add notice to readme about this.
+  * Moved `Direction`, `Resistor`, and `Interrupt` enums to global common.
 
 * **Fixed**
+  * Incorrect naming of keyword `__all__`.
   * GPIO incorrect imports and exports in `common`.
+  * LED array topic getting root and module topics added twice.
   * MQTT typo in assignment of `on_connect` callback causing it to never be called.
 
 ## 0.9.0
