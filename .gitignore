@@ -1,0 +1,22 @@
+# MQTTany instance files
+mqttany/log
+
+# MQTTany config files
+*.yml
+!mqttany/config/mqttany.yml
+
+# VSCode settings
+.vscode
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sphinx Docs
+build/
+_build/
+copydocs
+
+# Environments
+.venv

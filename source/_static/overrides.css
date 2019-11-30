@@ -1,0 +1,19 @@
+
+/* override body width */
+/*
+.wy-nav-content {
+    max-width: 1050px
+ }
+*/
+
+
+/* override table width restrictions */
+.wy-table-responsive table td {
+    /* !important prevents the common CSS stylesheets from overriding
+    this as on RTD they are loaded after this stylesheet */
+    white-space: normal !important;
+}
+
+.wy-table-responsive {
+    overflow: visible !important;
+}
