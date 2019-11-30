@@ -45,17 +45,17 @@ Installing Odroid WiringPi requires cloning and building manually:
 Odroid C1/C1+
 =============
 
-.. image:: /_static/gpio/odroid-c1-40.png
+.. image:: images/odroid-c1-40.png
     :alt: Odroid C1/C1+ 40-pin Header
 
-.. image:: /_static/gpio/odroid-c1p-j7.png
+.. image:: images/odroid-c1p-j7.png
     :alt: Odroid C1+ J7 Header
 
 
 Odroid C2
 =========
 
-.. image:: /_static/gpio/odroid-c2-40.png
+.. image:: images/odroid-c2-40.png
     :alt: Odroid C2 40-pin Header
 
 
@@ -71,18 +71,18 @@ Odroid XU3/XU4
     The ``BOARD`` pin numbering for the XU3 and XU4 is based on the Shifter
     Shield 40-pin connector and not the CON10 and CON11 headers.
 
-.. image:: /_static/gpio/odroid-xu-40.png
+.. image:: images/odroid-xu-40.png
     :alt: Odroid XU3/XU4 Shifter Shield 40-pin Header
 
-.. image:: /_static/gpio/odroid-xu-c10.png
+.. image:: images/odroid-xu-c10.png
     :alt: Odroid XU3/XU4 CON10 Header
 
-.. image:: /_static/gpio/odroid-xu4-c11.png
+.. image:: images/odroid-xu4-c11.png
     :alt: Odroid XU4 CON11 Header
 
 
 Odroid N2
 =========
 
-.. image:: /_static/gpio/odroid-n2-40.png
+.. image:: images/odroid-n2-40.png
     :alt: Odroid N2 40-pin Header

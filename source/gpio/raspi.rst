@@ -19,17 +19,17 @@ Pin Numbering
 40-pin
 ------
 
-.. image:: /_static/gpio/rpi40.png
+.. image:: images/rpi40.png
     :alt: Raspberry Pi 40-pin Header
 
 26-pin Rev2
 -----------
 
-.. image:: /_static/gpio/rpi26-r2.png
+.. image:: images/rpi26-r2.png
     :alt: Raspberry Pi 26-pin Revision 2 Header
 
 26-pin Rev1
 -----------
 
-.. image:: /_static/gpio/rpi26-r1.png
+.. image:: images/rpi26-r1.png
     :alt: Raspberry Pi 26-pin Revision 1 Header
