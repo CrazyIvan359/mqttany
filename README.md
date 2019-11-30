@@ -26,12 +26,9 @@ Supported boards:
 - Raspberry Pi - all up to 3B+ should work, but not all have been tested.
 - Odroid C1, C1+, C2, XU3, XU4, and N2. Not all have been tested.
 
-### MCP230xx
+### I2C
 
-Provides access to MCP23017 and MCP23008 devices over I2C.
-Supported boards:
-- Raspberry Pi - any up to 3B+ with the 40-pin header should work, but not all
-  have been tested.
+Provides access to I2C/SMBus devices using the I2C Kernel module.
 
 ### OneWire
 
@@ -45,14 +42,12 @@ Supported devices:
 Provides control of WS281x and similar LEDs through animation scripts.
 
 Supported Interfaces:
-- Raspberry Pi via SPI, PWM, or PCM depending on board
-
-Supported LEDs:
-- WS2811, WS2812, WS2812B, SK6812, SK6812W
+- Raspberry Pi via SPI, PWM, or PCM depending on board.
+- Streaming ACN / ESTA 1.31 unicast and multicast.
 
 <br>
 
-**Note**
+## Note
 
 If you are using a Python version older than `3.5.4` you may see errors like
 the one shown below. This is a Python bug that can be fixed by upgrading to

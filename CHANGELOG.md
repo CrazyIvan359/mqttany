@@ -5,12 +5,14 @@
 * ***BREAKING CHANGE***
   * MCP230xx module has been removed as its functionality has been replaced
     by the MCP230xx device profiles in the new I2C module.
+  * LED configuration refactored to better allow different outputs.
+  * LED ``anim frame min`` setting replaced with ``anim fps`` which is used to
+    calculate frame duration. This setting is more user friendly.
 
 * **Added**
   * MQTT heartbeat messages, currently status and version only.
   * I2C module for I2C communication.
   * I2C support for MCP230xx devices including output pulsing.
-  * LED configuration refactored to better allow different outputs.
   * LED interface for DMX output using the sACN protocol.
 
 * **Changed**
