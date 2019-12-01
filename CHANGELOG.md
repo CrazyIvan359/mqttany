@@ -17,7 +17,7 @@
   * LED interface for DMX output using the sACN protocol.
 
 * **Changed**
-  * Move to git-flow workflow, add notice to readme about this.
+  * Move active development to `dev` branch, master branch is stable release only.
   * Moved `Direction`, `Resistor`, and `Interrupt` enums to global common.
 
 * **Fixed**
