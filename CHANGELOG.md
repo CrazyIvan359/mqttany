@@ -1,5 +1,10 @@
 # MQTTany Change Log
 
+## 0.10.0 Hotfix
+
+* **Fixed**
+  * I2C device MCP230xx highest pin index out of range error.
+
 ## 0.10.0
 
 * ***BREAKING CHANGE***
