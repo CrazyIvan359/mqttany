@@ -4,6 +4,7 @@
 
 * **Fixed**
   * I2C device MCP230xx highest pin index out of range error.
+  * OneWire module error `object has no attribute 'CONF_KEY_TOPIC_SETTER'`
 
 ## 0.10.0
 
