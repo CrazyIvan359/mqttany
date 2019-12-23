@@ -276,3 +276,22 @@ mqtt:
     ### Interface Specific Options
     # Each interface may have some options specific to it
     # consult the wiki page for the interface for details.
+
+
+
+######## XSET Module ########
+#xset:
+
+  ### Module Topic
+  #topic: '{module_name}'
+
+  ### Default Display
+  # Display option to use when commands do not specify a display.
+  # Omitting this option will omit the '-display' option from the call to xset
+  #default display: None
+
+  ### Startup Commands
+  # A list of commands to run when the module loads.
+  # See the documentation on sending commands for formatting.
+  # If none are desired, use an empty list as shown below.
+  #startup commands: []

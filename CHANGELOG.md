@@ -5,6 +5,10 @@
 * **Fixed**
   * MQTT not handling absolute topics correctly.
 
+* **Added**
+  * XSET module to allow sending `xset` commands to control screensaver,
+    screen power options, etc.
+
 ## 0.10.1
 
 * **Fixed**
