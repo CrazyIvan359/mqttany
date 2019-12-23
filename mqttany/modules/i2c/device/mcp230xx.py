@@ -460,7 +460,7 @@ class MCP23008(MCP230xx):
     _OLAT    = 0x0A # Output Latch
 
     def __init__(self, name, address, device, bus_path, bus, topic, device_config):
-        self._pins = [None] * self._pin_max
+        self._pins = [None] * self._pin_max + 1
         self._gpio = 0x0000
         self._iodir = 0xFFFF
         self._gppu = 0x0000
@@ -536,7 +536,7 @@ class MCP23017(MCP230xx):
     _OLATB    = 0x15
 
     def __init__(self, name, address, device, bus_path, bus, topic, device_config):
-        self._pins = [None] * self._pin_max
+        self._pins = [None] * self._pin_max + 1
         self._gpio = 0x0000
         self._iodir = 0xFFFF
         self._gppu = 0x0000
