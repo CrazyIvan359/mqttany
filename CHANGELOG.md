@@ -1,5 +1,10 @@
 # MQTTany Change Log
 
+## Development
+
+* **Fixed**
+  * MQTT not handling absolute topics correctly.
+
 ## 0.10.1
 
 * **Fixed**

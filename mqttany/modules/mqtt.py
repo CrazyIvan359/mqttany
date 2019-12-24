@@ -44,7 +44,7 @@ from common import POISON_PILL
 __all__ = [
     "resolve_topic", "topic_matches_sub",
     "publish", "subscribe", "unsubscribe",
-    "add_message_callback", "remove_message_callback"
+    "add_message_callback", "remove_message_callback",
     "register_on_connect_callback", "register_on_disconnect_callback"
 ]
 
@@ -250,12 +250,13 @@ def subscribe(topic, qos=0, callback=None, subtopics=[], substitutions={}):
         })
 
 def _subscribe(topic, qos=0, callback=None, subtopics=[], substitutions={}):
-    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions).strip("/")
+    raw_topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
+    topic = raw_topic.strip("/")
     log.debug("Subscribing to topic '{topic}'".format(topic=topic))
     if not [sub for sub in subscriptions if sub["topic"] == topic]:
         subscriptions.append({"topic": topic, "qos": qos})
     client.subscribe(topic, qos=qos)
-    if callback: _add_message_callback(topic, callback)
+    if callback: _add_message_callback(raw_topic, callback)
 
 
 def unsubscribe(topic, callback=None, subtopics=[], substitutions={}):
@@ -275,12 +276,14 @@ def unsubscribe(topic, callback=None, subtopics=[], substitutions={}):
         })
 
 def _unsubscribe(topic, callback=None, subtopics=[], substitutions={}):
-    topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions).strip("/")
+    raw_topic = resolve_topic(topic, subtopics=subtopics, substitutions=substitutions)
+    topic = raw_topic.strip("/")
     log.debug("Removing subscription to topic '{topic}'".format(topic=topic))
     subs = [sub for sub in subscriptions if sub["topic"] == topic]
-    for sub in subs: subscriptions.remove(sub)
+    for sub in subs:
+        subscriptions.remove(sub)
     client.unsubscribe(topic)
-    if callback: _remove_message_callback(topic)
+    if callback: _remove_message_callback(raw_topic)
 
 
 def add_message_callback(topic, callback, subtopics=[], substitutions={}):
