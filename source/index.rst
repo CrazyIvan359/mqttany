@@ -18,6 +18,7 @@ MQTTany Documentation
     I2C Module <i2c/index>
     OneWire Module <onewire/index>
     LED Module <led/index>
+    XSET Module <xset/index>
 
 
 MQTTany aims to make it easier to connect things to an MQTT broker. It is a
@@ -43,6 +44,9 @@ Modules
 +----------------------+------------------------------------------------------+
 | :doc:`led/index`     | Provides control of WS281x and similar LEDs through  |
 |                      | animation scripts.                                   |
++----------------------+------------------------------------------------------+
+| :doc:`xset/index`    | Allows ``xset`` commands to be executed to set       |
+|                      | screensaver and display power options.               |
 +----------------------+------------------------------------------------------+
 
 .. note::
