@@ -123,7 +123,7 @@ def _command(payload):
         if len(payload.split(",")) != 2:
             log.error("Received unrecognized payload '{payload}'".format(payload=payload))
             return
-        display, command = payload.split(",")
+        display, command = payload.split(",", 2)
 
     # Command only payload
     else:
@@ -131,6 +131,8 @@ def _command(payload):
         command = payload
 
     if command:
+        # strip out commands that follow for security
+        command = command.split(";")[0].split("&")[0].split("|")[0].strip()
         command = "xset{display} {command}" \
                   .format(display="" if display is None else " -display {}".format(display),
                           command=command)
@@ -138,7 +140,9 @@ def _command(payload):
         result = subprocess.run(command.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        log.trace("Result: {}".format(result.stdout))
+        log.trace("Command '{command}' result: {result}"
+                  .format(command=command,
+                          result=result.stdout))
         publish("{}/result".format(config[CONF_KEY_TOPIC]),
                 result.stdout,
                 subtopics=["{module_topic}"],
