@@ -41,6 +41,12 @@ Supported Interfaces:
 - Raspberry Pi via SPI, PWM, or PCM depending on board.
 - Streaming ACN / ESTA 1.31 unicast and multicast.
 
+### XSET
+
+Allows `xset` commands to be executed to set screensaver and display power
+options. This can, for example, be used to wake the display when motion is
+detected.
+
 <br>
 
 ## Note
