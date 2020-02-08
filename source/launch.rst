@@ -37,13 +37,13 @@ Linux (including Raspbian).
         User=
         Group=
 
-#.  Next week need to tell ``system.d`` about our new file:
+#.  Next we need to tell ``systemd`` about our new file:
 
     .. code-block:: shell
 
         sudo systemctl daemon-reload
 
-#.  And lastly we enabled our service to start on boot, and start it:
+#.  And lastly we enable our service to start on boot, and start it:
 
     .. code-block:: shell
 
