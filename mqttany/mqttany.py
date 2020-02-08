@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     log.info("MQTTany {version} starting".format(version=__version__))
 
-    if "dev" in __version__:
+    if len(__version__.split("-")) > 1:
         log.warn("")
         log.warn("########  DEVELOPMENT VERSION  ########")
         log.warn("#                                     #")
