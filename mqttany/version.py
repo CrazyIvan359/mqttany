@@ -1,1 +1,1 @@
-__version__ = "0.10.1-patch"
+__version__ = "0.10.2"

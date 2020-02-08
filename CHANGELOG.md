@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## 0.10.1 Patch
+## 0.10.2
 
 * **Fixed**
   * Dependency issue with Adafruit Platform Detect reaching version 2.x. [(#41)](https://github.com/CrazyIvan359/mqttany/issues/41)
