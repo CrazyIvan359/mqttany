@@ -257,12 +257,12 @@ sudo cp mqttany.service /etc/systemd/system/mqttany.service
 </pre></div>
 </div>
 </li>
-<li><p>Next week need to tell <code class="docutils literal notranslate"><span class="pre">system.d</span></code> about our new file:</p>
+<li><p>Next we need to tell <code class="docutils literal notranslate"><span class="pre">systemd</span></code> about our new file:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo systemctl daemon-reload
 </pre></div>
 </div>
 </li>
-<li><p>And lastly we enabled our service to start on boot, and start it:</p>
+<li><p>And lastly we enable our service to start on boot, and start it:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo systemctl <span class="nb">enable</span> mqttany
 sudo systemctl start mqttany
 </pre></div>
