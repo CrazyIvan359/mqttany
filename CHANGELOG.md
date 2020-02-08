@@ -9,6 +9,12 @@
   * XSET module to allow sending `xset` commands to control screensaver,
     screen power options, etc.
 
+## 0.10.2
+
+* **Fixed**
+  * Dependency issue with Adafruit Platform Detect reaching version 2.x. [(#41)](https://github.com/CrazyIvan359/mqttany/issues/41)
+  * All requirements files updated to prevent similar issues.
+
 ## 0.10.1
 
 * **Fixed**
