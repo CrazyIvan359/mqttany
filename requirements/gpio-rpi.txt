@@ -1,1 +1,1 @@
-wiringpi>=2.46.0
+wiringpi>=2.46.0,<3.0
