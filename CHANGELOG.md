@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## 0.10.2 Hotfix
+## 0.10.3
 
 * **Fixed**
   * I2C device MCP230xx throwing `TypeError: can only concatenate list (not "int") to list`
