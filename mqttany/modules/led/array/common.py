@@ -5,7 +5,7 @@ LED Array Common
 
 :Author: Michael Murton
 """
-# Copyright (c) 2019 MQTTany contributors
+# Copyright (c) 2019-2020 MQTTany contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

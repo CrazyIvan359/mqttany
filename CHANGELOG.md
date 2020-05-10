@@ -9,6 +9,12 @@
   * XSET module to allow sending `xset` commands to control screensaver,
     screen power options, etc.
 
+## 0.10.3
+
+* **Fixed**
+  * I2C device MCP230xx throwing `TypeError: can only concatenate list (not "int") to list`
+    when initializing devices. [(#43)](https://github.com/CrazyIvan359/mqttany/issues/43)
+
 ## 0.10.2
 
 * **Fixed**
