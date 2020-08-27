@@ -353,7 +353,7 @@ class InterruptThread(object):
             self._ok = False
             log.error("An error occurred while enabling the hardware interrupt for {pin_prefix}{pin:02d}{gpio_pin}: {error}".format(
                 pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[self._mode], error=stderr,
-                gpio_pin="" if self._mode == Mode.SOC else " (GPIO{:02d})".format(rpiGPIO.getPinFromMode(self._pin, self._mode))))
+                gpio_pin="" if self._mode == Mode.SOC else " (GPIO{:02d})".format(odroidGPIO.getPinFromMode(self._pin, self._mode))))
         # re-enable interrupt trigger
 
     def disable(self):
@@ -367,7 +367,7 @@ class InterruptThread(object):
             self._ok = False
             log.error("An error occurred while disabling the hardware interrupt for {pin_prefix}{pin:02d}{gpio_pin}: {error}".format(
                 pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[self._mode], error=stderr,
-                gpio_pin="" if self._mode == Mode.SOC else " (GPIO{:02d})".format(rpiGPIO.getPinFromMode(self._pin, self._mode))))
+                gpio_pin="" if self._mode == Mode.SOC else " (GPIO{:02d})".format(odroidGPIO.getPinFromMode(self._pin, self._mode))))
         # doesn't seem to be another way to do this
         # wiringpi offers nothing to remove an interrupt
 

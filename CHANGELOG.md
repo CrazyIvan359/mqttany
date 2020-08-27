@@ -4,6 +4,7 @@
 
 * **Fixed**
   * MQTT not handling absolute topics correctly.
+  * Incorrect reference to `rpiGPIO` in ODroid GPIO interface.
 
 * **Added**
   * XSET module to allow sending `xset` commands to control screensaver,
