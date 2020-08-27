@@ -16,7 +16,6 @@ __pycache__/
 # Sphinx Docs
 build/
 _build/
-copydocs
 
 # Environments
 .venv
