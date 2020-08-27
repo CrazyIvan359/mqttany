@@ -1,10 +1,6 @@
 # MQTTany Change Log
 
-## Development
-
-* **Fixed**
-  * MQTT not handling absolute topics correctly.
-  * Incorrect reference to `rpiGPIO` in ODroid GPIO interface.
+## 0.11.0
 
 * **Added**
   * XSET module to allow sending `xset` commands to control screensaver,
@@ -14,6 +10,10 @@
   * Begin using Python Black code formatter. This has resulted in a massive commit as
     there are changes to most files. All changes made by Black have been reviewed and
     no errors were found.
+
+* **Fixed**
+  * MQTT not handling absolute topics correctly.
+  * Incorrect reference to `rpiGPIO` in ODroid GPIO interface.
 
 ## 0.10.3
 
