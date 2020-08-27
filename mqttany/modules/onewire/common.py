@@ -28,8 +28,10 @@ Dallas OneWire Shared
 try:
     from mprop import mproperty
 except ImportError:
-    raise ImportError("MQTTany's OneWire module requires 'mprop' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's OneWire module requires 'mprop' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 import logger
 
@@ -41,20 +43,24 @@ CONF_KEY_BUS_SCAN = "bus scan"
 CONF_KEY_ADDRESS = "address"
 CONF_KEY_FIRST_INDEX = "first index"
 
-TEXT_PACKAGE_NAME = __name__.split(".")[-2] # gives onewire
+TEXT_PACKAGE_NAME = __name__.split(".")[-2]  # gives onewire
 
 log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}
 
 __all__ = [
-    "CONF_KEY_TOPIC", "CONF_KEY_TOPIC_GETTER", "CONF_KEY_POLL_INT",
-    "CONF_KEY_BUS", "CONF_KEY_BUS_SCAN", "CONF_KEY_ADDRESS",
+    "CONF_KEY_TOPIC",
+    "CONF_KEY_TOPIC_GETTER",
+    "CONF_KEY_POLL_INT",
+    "CONF_KEY_BUS",
+    "CONF_KEY_BUS_SCAN",
+    "CONF_KEY_ADDRESS",
     "CONF_KEY_FIRST_INDEX",
-
     "TEXT_PACKAGE_NAME",
-
-    "log", "config",
+    "log",
+    "config",
 ]
+
 
 @mproperty
 def config(module):

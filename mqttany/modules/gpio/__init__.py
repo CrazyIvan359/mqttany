@@ -28,21 +28,25 @@ GPIO Module
 try:
     from mprop import mproperty
 except ImportError:
-    raise ImportError("MQTTany's GPIO module requires 'mprop' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's GPIO module requires 'mprop' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 from modules.gpio import core
 from modules.gpio.core import init, pre_loop, post_loop
 from modules.gpio.core import _pin_message, poll_all
 from modules.gpio.common import log
 
-__all__ = [ "init", "pre_loop", "post_loop", "queue" ]
+__all__ = ["init", "pre_loop", "post_loop", "queue"]
 
 _queue = None
+
 
 @mproperty
 def queue(module):
     return _queue
+
 
 @queue.setter
 def queue(module, value):

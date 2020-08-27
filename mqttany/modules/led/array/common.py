@@ -35,15 +35,14 @@ from modules.mqtt import resolve_topic
 from modules.led.common import config, TEXT_PACKAGE_NAME, CONF_KEY_TOPIC
 from modules.led.common import ANIM_KEY_NAME, ANIM_KEY_REPEAT, ANIM_KEY_PRIORITY
 
-TEXT_NAME = ".".join(__name__.split(".")[-3:3]) # gives led.array
+TEXT_NAME = ".".join(__name__.split(".")[-3:3])  # gives led.array
 
 log = logger.get_module_logger(module=TEXT_NAME)
 
-__all__ = [ "baseArray" ]
+__all__ = ["baseArray"]
 
 
-class baseArray():
-
+class baseArray:
     def __init__(self, name, topic, count, leds_per_pixel, color_order):
         """
         **SUBCLASSES MUST SUPER() THIS METHOD**
@@ -58,7 +57,7 @@ class baseArray():
                 "module_topic": config[CONF_KEY_TOPIC],
                 "module_name": TEXT_PACKAGE_NAME,
                 "array_name": name,
-            }
+            },
         )
         self._count = count
         self._per_pixel = leds_per_pixel
@@ -81,7 +80,7 @@ class baseArray():
         self._anim_manager = threading.Thread(
             name="manager_{}".format(self._name),
             target=self._anim_queue_manager,
-            daemon=False
+            daemon=False,
         )
         self._anim_manager.start()
 
@@ -133,22 +132,28 @@ class baseArray():
         return len(self._order)
 
     @property
-    def name(self): return self._name
+    def name(self):
+        return self._name
 
     @property
-    def topic(self): return self._topic
+    def topic(self):
+        return self._topic
 
     @property
-    def count(self): return self._count
+    def count(self):
+        return self._count
 
     @property
-    def colors(self): return self.numColors()
+    def colors(self):
+        return self.numColors()
 
     @property
-    def brightness(self): return self.getBrightness()
+    def brightness(self):
+        return self.getBrightness()
 
     @brightness.setter
-    def brightness(self, value): self.setBrightness(value)
+    def brightness(self, value):
+        self.setBrightness(value)
 
     def runAnimation(self, anim, repeat=1, priority=1, anim_args={}):
         """
@@ -156,24 +161,31 @@ class baseArray():
         Run animation function in a separate thread.
         Will block while aborting a running animation.
         """
-        if not self._setup: return
+        if not self._setup:
+            return
 
-        log.trace("Array '{array}' received animation '{anim}' with arguments {args}".format(
-            anim=anim, array=self._name, args=anim_args))
-        self._anim_queue.put_nowait({
-            ANIM_KEY_NAME: anim,
-            ANIM_KEY_REPEAT: repeat,
-            ANIM_KEY_PRIORITY: priority,
-            "args": anim_args
-        })
+        log.trace(
+            "Array '{array}' received animation '{anim}' with arguments {args}".format(
+                anim=anim, array=self._name, args=anim_args
+            )
+        )
+        self._anim_queue.put_nowait(
+            {
+                ANIM_KEY_NAME: anim,
+                ANIM_KEY_REPEAT: repeat,
+                ANIM_KEY_PRIORITY: priority,
+                "args": anim_args,
+            }
+        )
 
     def _anim_queue_manager(self):
         """
         **DO NOT OVERRIDE THIS METHOD**
         Internal animation queue manager
         """
-        log.trace("Animation Queue Manager for '{array}' started".format(
-            array=self._name))
+        log.trace(
+            "Animation Queue Manager for '{array}' started".format(array=self._name)
+        )
         anim_queue = []
         while True:
             try:
@@ -182,33 +194,62 @@ class baseArray():
                 pass
             else:
                 if message == POISON_PILL:
-                    log.trace("Animation Queue Manager for '{array}' received poison pill".format(
-                        array=self._name))
+                    log.trace(
+                        "Animation Queue Manager for '{array}' received poison pill".format(
+                            array=self._name
+                        )
+                    )
                     if self._anim_thread is not None and self._anim_thread.is_alive():
-                            log.trace("Cancelling running animation for array '{array}'".format(
-                                array=self._name))
-                            self._anim_cancel.set()
-                            self._anim_thread.join()
+                        log.trace(
+                            "Cancelling running animation for array '{array}'".format(
+                                array=self._name
+                            )
+                        )
+                        self._anim_cancel.set()
+                        self._anim_thread.join()
                     break
                 else:
-                    if message[ANIM_KEY_PRIORITY] == 2: # cancels all running and queued anims
-                        log.trace("Queue Manager for array '{array}' received animation '{anim}' with priority {priority}, running it now".format(
-                            array=self._name, anim=message[ANIM_KEY_NAME], priority=message[ANIM_KEY_PRIORITY]))
-                        anim_queue = [message] # dump any queued anims
-                        if self._anim_thread is not None and self._anim_thread.is_alive():
-                            log.trace("Cancelling running animation for array '{array}'".format(
-                                array=self._name))
+                    if (
+                        message[ANIM_KEY_PRIORITY] == 2
+                    ):  # cancels all running and queued anims
+                        log.trace(
+                            "Queue Manager for array '{array}' received animation '{anim}' with priority {priority}, running it now".format(
+                                array=self._name,
+                                anim=message[ANIM_KEY_NAME],
+                                priority=message[ANIM_KEY_PRIORITY],
+                            )
+                        )
+                        anim_queue = [message]  # dump any queued anims
+                        if (
+                            self._anim_thread is not None
+                            and self._anim_thread.is_alive()
+                        ):
+                            log.trace(
+                                "Cancelling running animation for array '{array}'".format(
+                                    array=self._name
+                                )
+                            )
                             self._anim_cancel.set()
                             self._anim_thread.join()
                     else:
-                        log.trace("Queue Manager for array '{array}' received animation '{anim}' with priority {priority}, adding it to the queue".format(
-                            array=self._name, anim=message[ANIM_KEY_NAME], priority=message[ANIM_KEY_PRIORITY]))
+                        log.trace(
+                            "Queue Manager for array '{array}' received animation '{anim}' with priority {priority}, adding it to the queue".format(
+                                array=self._name,
+                                anim=message[ANIM_KEY_NAME],
+                                priority=message[ANIM_KEY_PRIORITY],
+                            )
+                        )
                         anim_queue.append(message)
 
             if anim_queue:
                 if self._anim_thread is None or not self._anim_thread.is_alive():
-                    log.debug("Starting animation '{anim}' for array '{array}' with arguments {args}".format(
-                        anim=anim_queue[0][ANIM_KEY_NAME], array=self._name, args=anim_queue[0]["args"]))
+                    log.debug(
+                        "Starting animation '{anim}' for array '{array}' with arguments {args}".format(
+                            anim=anim_queue[0][ANIM_KEY_NAME],
+                            array=self._name,
+                            args=anim_queue[0]["args"],
+                        )
+                    )
                     self._anim_cancel.clear()
                     self._anim_soft_cancel.clear()
                     self._anim_thread = threading.Thread(
@@ -217,20 +258,29 @@ class baseArray():
                         args=[
                             anim_queue[0][ANIM_KEY_NAME],
                             anim_queue[0][ANIM_KEY_REPEAT],
-                            anim_queue[0]["args"]
+                            anim_queue[0]["args"],
                         ],
-                        daemon=False
+                        daemon=False,
                     )
                     anim_queue.pop(0)
                     self._anim_thread.start()
 
-                elif anim_queue[0][ANIM_KEY_PRIORITY] == 1: # waits for running anim to finish or for current step of infinite to finish
-                    if self._anim_thread is not None and self._anim_thread.is_alive() and not self._anim_soft_cancel.is_set():
-                        log.trace("Waiting for running animation to finish for array '{array}'".format(
-                            array=self._name))
+                elif (
+                    anim_queue[0][ANIM_KEY_PRIORITY] == 1
+                ):  # waits for running anim to finish or for current step of infinite to finish
+                    if (
+                        self._anim_thread is not None
+                        and self._anim_thread.is_alive()
+                        and not self._anim_soft_cancel.is_set()
+                    ):
+                        log.trace(
+                            "Waiting for running animation to finish for array '{array}'".format(
+                                array=self._name
+                            )
+                        )
                         self._anim_soft_cancel.set()
 
-            time.sleep(0.025) # 25ms
+            time.sleep(0.025)  # 25ms
 
     def _anim_loop(self, anim, repeat, anim_args):
         """
@@ -246,20 +296,34 @@ class baseArray():
             try:
                 self.anims[anim](self, self._anim_cancel, **anim_args)
             except:
-                log.debug("An error occurred while running animation '{anim}' for array '{array}'".format(
-                    anim=anim, array=self._name))
+                log.debug(
+                    "An error occurred while running animation '{anim}' for array '{array}'".format(
+                        anim=anim, array=self._name
+                    )
+                )
                 error_count += 1
                 if error_count > 2:
-                    log.error("Animation '{anim}' for '{array}' errored 3 times, aborting".format(
-                        anim=anim, array=self._name))
+                    log.error(
+                        "Animation '{anim}' for '{array}' errored 3 times, aborting".format(
+                            anim=anim, array=self._name
+                        )
+                    )
                     log_traceback(log)
                     break
             else:
                 remain -= 1 if repeat else 0
 
-        if self._anim_cancel.is_set() or (not repeat and self._anim_soft_cancel.is_set()):
-            log.debug("Cancelled animation '{anim}' for array '{array}'".format(
-                anim=anim, array=self._name))
+        if self._anim_cancel.is_set() or (
+            not repeat and self._anim_soft_cancel.is_set()
+        ):
+            log.debug(
+                "Cancelled animation '{anim}' for array '{array}'".format(
+                    anim=anim, array=self._name
+                )
+            )
         else:
-            log.debug("Finished animation '{anim}' for array '{array}'".format(
-                anim=anim, array=self._name))
+            log.debug(
+                "Finished animation '{anim}' for array '{array}'".format(
+                    anim=anim, array=self._name
+                )
+            )

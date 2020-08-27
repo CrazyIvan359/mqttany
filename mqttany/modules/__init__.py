@@ -35,7 +35,7 @@ from logger import log_traceback
 from config import load_config
 from common import POISON_PILL, SignalHook
 
-__all__ = [ "load", "unload" ]
+__all__ = ["load", "unload"]
 
 ATTR_INIT = "init"
 ATTR_UNINIT = "uninit"
@@ -54,7 +54,8 @@ def load(config_file):
     """
     config = load_config(config_file)
 
-    if not config: return False
+    if not config:
+        return False
 
     for module_name in [key for key in config if isinstance(config[key], dict)]:
         module = None
@@ -69,7 +70,11 @@ def load(config_file):
             log.error("Module '{name}' was not loaded".format(name=module_name))
 
         except ImportWarning as err:
-            log.warn("Warnings occured when importing module '{name}'".format(name=module_name))
+            log.warn(
+                "Warnings occured when importing module '{name}'".format(
+                    name=module_name
+                )
+            )
             log.warn("  {error}".format(error=err))
             log_traceback(log)
             log.error("Module '{name}' was not loaded".format(name=module_name))
@@ -78,10 +83,14 @@ def load(config_file):
             module_queues[module_name] = mproc.Queue()
             sys.modules[module.__name__].queue = module_queues[module_name]
 
-            if not _call_func(module, ATTR_INIT, config_data=config[module_name]): # call module init
+            if not _call_func(
+                module, ATTR_INIT, config_data=config[module_name]
+            ):  # call module init
                 log.warn("Module '{name}' not initialized".format(name=module_name))
             else:
-                log.debug("Module '{name}' loaded successfully".format(name=module_name))
+                log.debug(
+                    "Module '{name}' loaded successfully".format(name=module_name)
+                )
                 modules_loaded.append(module)
 
         finally:
@@ -91,8 +100,10 @@ def load(config_file):
     for i in range(len(modules_loaded)):
         module = modules_loaded[i]
         module_name = module.__name__.split(".")[-1]
-        if not _start_proc(module): # start subprocess
-            log.error("Failed to start process for module '{name}'".format(name=module_name))
+        if not _start_proc(module):  # start subprocess
+            log.error(
+                "Failed to start process for module '{name}'".format(name=module_name)
+            )
             continue
 
     return modules_loaded
@@ -102,7 +113,9 @@ def unload():
     """
     Unloads each module in ``modules_loaded`` and terminates processes
     """
-    for i in range(len(modules_loaded)-1, -1, -1): # reverse order in case of dependecies
+    for i in range(
+        len(modules_loaded) - 1, -1, -1
+    ):  # reverse order in case of dependecies
         module = modules_loaded[i]
         module_name = module.__name__.split(".")[-1]
         if module:
@@ -123,7 +136,11 @@ def _call_func(module, name, **kwargs):
             try:
                 retval = func(**kwargs)
             except:
-                log.error("An exception occurred while running function '{func}'".format(func=getattr(func, "__name__", func)))
+                log.error(
+                    "An exception occurred while running function '{func}'".format(
+                        func=getattr(func, "__name__", func)
+                    )
+                )
                 log_traceback(log)
             finally:
                 return retval
@@ -136,22 +153,34 @@ def _start_proc(module):
     module_name = module.__name__.split(".")[-1]
     try:
         log.trace("Creating process for '{name}'".format(name=module_name))
-        module.process = mproc.Process(name=module_name, target=_proc_loop, args=(module,), daemon=False)
+        module.process = mproc.Process(
+            name=module_name, target=_proc_loop, args=(module,), daemon=False
+        )
     except Exception as err:
-        log.error("Failed to create process for module '{name}'".format(name=module_name))
+        log.error(
+            "Failed to create process for module '{name}'".format(name=module_name)
+        )
         log.error("  {}".format(err))
         return False
     else:
-        log.trace("Process created successfully for module '{name}'".format(name=module_name))
+        log.trace(
+            "Process created successfully for module '{name}'".format(name=module_name)
+        )
         try:
             log.trace("Starting process for '{name}'".format(name=module_name))
             module.process.start()
         except Exception as err:
-            log.error("Failed to start process for module '{name}'".format(name=module_name))
+            log.error(
+                "Failed to start process for module '{name}'".format(name=module_name)
+            )
             log.error("  {}".format(err))
             return False
         else:
-            log.info("Process started successfully for module '{name}'".format(name=module_name))
+            log.info(
+                "Process started successfully for module '{name}'".format(
+                    name=module_name
+                )
+            )
             return True
 
 
@@ -164,10 +193,10 @@ def _proc_loop(module):
         try:
             message = module.queue.get_nowait()
         except QueueEmptyError:
-            time.sleep(0.025) # 25ms
+            time.sleep(0.025)  # 25ms
         else:
             if message == POISON_PILL:
-                poison_pill = True # terminate signal
+                poison_pill = True  # terminate signal
                 module.log.trace("Received poison pill")
             else:
                 module.log.trace("Received message [{message}]".format(message=message))
@@ -176,10 +205,16 @@ def _proc_loop(module):
                     try:
                         func(*message.get("args", []), **message.get("kwargs", {}))
                     except:
-                        log.error("An exception occurred while running function '{func}'".format(func=message.get("func", None)))
+                        log.error(
+                            "An exception occurred while running function '{func}'".format(
+                                func=message.get("func", None)
+                            )
+                        )
                         log_traceback(module.log)
                 else:
-                    module.log.warn("Unrecognized function '{func}'".format(func=message["func"]))
+                    module.log.warn(
+                        "Unrecognized function '{func}'".format(func=message["func"])
+                    )
 
     if signal.signal == signal.SIGTERM:
         log.trace("Received {signal}".format(signal=signal.signal.name))
@@ -194,18 +229,38 @@ def _stop_proc(module):
     module_name = module.__name__.split(".")[-1]
     if hasattr(module, "process"):
         if module.process.is_alive():
-            log.trace("Stopping subprocess for '{name}' with 10s timeout".format(name=module_name))
+            log.trace(
+                "Stopping subprocess for '{name}' with 10s timeout".format(
+                    name=module_name
+                )
+            )
             module.queue.put_nowait(POISON_PILL)
             module.process.join(10)
             if module.process.is_alive():
-                log.warn("Subprocess for module '{name}' did not stop when requested, terminating forcefully".format(name=module_name))
+                log.warn(
+                    "Subprocess for module '{name}' did not stop when requested, terminating forcefully".format(
+                        name=module_name
+                    )
+                )
                 module.process.terminate()
-                module.process.join(10) # make sure cleanup is done
-                log.debug("Subprocess terminated forcefully for module '{name}'".format(name=module_name))
+                module.process.join(10)  # make sure cleanup is done
+                log.debug(
+                    "Subprocess terminated forcefully for module '{name}'".format(
+                        name=module_name
+                    )
+                )
             else:
-                log.debug("Subproccess for module '{name}' stopped cleanly".format(name=module_name))
+                log.debug(
+                    "Subproccess for module '{name}' stopped cleanly".format(
+                        name=module_name
+                    )
+                )
         else:
             module.process.join(10)
-            log.warn("Subprocess for module '{name}' was not running".format(name=module_name))
+            log.warn(
+                "Subprocess for module '{name}' was not running".format(
+                    name=module_name
+                )
+            )
     else:
         log.debug("Module '{name}' does not have a subprocess".format(name=module_name))

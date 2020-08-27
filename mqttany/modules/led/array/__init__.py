@@ -27,10 +27,16 @@ LED Array Module
 
 from common import update_dict
 
-from modules.led.common import CONF_KEY_OUTPUT, CONF_KEY_TOPIC, CONF_KEY_COUNT, CONF_KEY_PER_PIXEL, CONF_KEY_COLOR_ORDER
+from modules.led.common import (
+    CONF_KEY_OUTPUT,
+    CONF_KEY_TOPIC,
+    CONF_KEY_COUNT,
+    CONF_KEY_PER_PIXEL,
+    CONF_KEY_COLOR_ORDER,
+)
 from modules.led.array import rpi, sacn
 
-__all__ = [ "getArray", "getConfOptions" ]
+__all__ = ["getArray", "getConfOptions"]
 
 
 def getArray(array_config, log):
@@ -43,7 +49,11 @@ def getArray(array_config, log):
     clazz = array_classes[array_config[CONF_KEY_OUTPUT]]
 
     if not clazz:
-        log.error("No library is available for '{name}' configuration".format(name=array_config["name"]))
+        log.error(
+            "No library is available for '{name}' configuration".format(
+                name=array_config["name"]
+            )
+        )
         return None
 
     return clazz(
@@ -52,7 +62,7 @@ def getArray(array_config, log):
         count=array_config[CONF_KEY_COUNT],
         leds_per_pixel=array_config[CONF_KEY_PER_PIXEL],
         color_order=array_config[CONF_KEY_COLOR_ORDER],
-        array_config=array_config
+        array_config=array_config,
     )
 
 

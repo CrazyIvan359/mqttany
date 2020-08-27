@@ -37,22 +37,27 @@ from modules.onewire import device
 from modules.onewire.common import config
 from modules.onewire.common import *
 
-__all__ = [  ]
+__all__ = []
 
-CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
-    (CONF_KEY_BUS, {"default": "w1", "selection": []}),
-    (CONF_KEY_TOPIC, {"default": "{module_name}"}),
-    (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
-    (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
-    (CONF_KEY_BUS_SCAN, {"type": bool, "default": False}),
-    ("regex:.+", {
-        "type": "section",
-        "required": False,
-        CONF_KEY_ADDRESS: {"type": (str, list)},
-        CONF_KEY_TOPIC: {"type": (str, list), "default": "{device_name}"},
-        CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
-    })
-])
+CONF_OPTIONS = OrderedDict(
+    [  # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
+        (CONF_KEY_BUS, {"default": "w1", "selection": []}),
+        (CONF_KEY_TOPIC, {"default": "{module_name}"}),
+        (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
+        (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
+        (CONF_KEY_BUS_SCAN, {"type": bool, "default": False}),
+        (
+            "regex:.+",
+            {
+                "type": "section",
+                "required": False,
+                CONF_KEY_ADDRESS: {"type": (str, list)},
+                CONF_KEY_TOPIC: {"type": (str, list), "default": "{device_name}"},
+                CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
+            },
+        ),
+    ]
+)
 
 TEXT_NAME = TEXT_PACKAGE_NAME
 
@@ -62,29 +67,45 @@ queue = None
 polling_timer = None
 
 
-def build_device(device_name, ow_bus, device_config={}, topic=None, address=None, index=None):
-    valid_address = ow_bus.validateAddress(address or device_config.get(CONF_KEY_ADDRESS, None))
+def build_device(
+    device_name, ow_bus, device_config={}, topic=None, address=None, index=None
+):
+    valid_address = ow_bus.validateAddress(
+        address or device_config.get(CONF_KEY_ADDRESS, None)
+    )
     device_type = device.getDeviceTypeByFamily(address)
     if not valid_address:
-        log.warn("Device '{name}' has an invalid address '{address}'".format(
-            name=device_name, address=address or device_config.get(CONF_KEY_ADDRESS, "")))
+        log.warn(
+            "Device '{name}' has an invalid address '{address}'".format(
+                name=device_name,
+                address=address or device_config.get(CONF_KEY_ADDRESS, ""),
+            )
+        )
         return False
     clazz = device.getDevice(valid_address)
     if clazz:
-        log.debug("Configuring {type} '{name}' at address '{address}'".format(
-                type=device_type, name=device_name, address=address))
+        log.debug(
+            "Configuring {type} '{name}' at address '{address}'".format(
+                type=device_type, name=device_name, address=address
+            )
+        )
         return clazz(
             device_name,
             valid_address,
             device_type,
             ow_bus,
-            topic or device_config.get(CONF_KEY_TOPIC, None) or CONF_OPTIONS["regex:.+"][CONF_KEY_TOPIC]["default"],
+            topic
+            or device_config.get(CONF_KEY_TOPIC, None)
+            or CONF_OPTIONS["regex:.+"][CONF_KEY_TOPIC]["default"],
             device_config,
-            index=index
+            index=index,
         )
     else:
-        log.warn("{type} '{name}' is not a supported device".format(
-                type=device_type or "Device", name=device_name))
+        log.warn(
+            "{type} '{name}' is not a supported device".format(
+                type=device_type or "Device", name=device_name
+            )
+        )
         return None
 
 
@@ -129,16 +150,12 @@ def init(config_data={}):
                         device_config,
                         topic=topic,
                         address=device_config[CONF_KEY_ADDRESS][index],
-                        index=index + device_config[CONF_KEY_FIRST_INDEX]
+                        index=index + device_config[CONF_KEY_FIRST_INDEX],
                     )
                     if device_object:
                         devices.append(device_object)
             else:
-                device_object = build_device(
-                    device_name,
-                    ow_bus,
-                    device_config
-                )
+                device_object = build_device(device_name, ow_bus, device_config)
                 if device_object:
                     devices.append(device_object)
 
@@ -158,51 +175,67 @@ def pre_loop():
         for address in scan_results:
             address = ow_bus.validateAddress(address)
             if address is not None:
-                log.trace("Scan found device with address '{address}'".format(address=address))
+                log.trace(
+                    "Scan found device with address '{address}'".format(address=address)
+                )
                 if not [dev for dev in devices if dev.address == address]:
-                    log.debug("Scan found unconfigured device at address '{address}'".format(address=address))
-                    device_object = build_device(
-                        address,
-                        ow_bus,
-                        address=address
+                    log.debug(
+                        "Scan found unconfigured device at address '{address}'".format(
+                            address=address
+                        )
                     )
+                    device_object = build_device(address, ow_bus, address=address)
                     if device_object:
                         devices.append(device_object)
-                        log.info("Scan added '{type}' at address '{address}'".format(
-                            type=device_object.type, address=address))
+                        log.info(
+                            "Scan added '{type}' at address '{address}'".format(
+                                type=device_object.type, address=address
+                            )
+                        )
                 else:
-                    log.trace("Scan skipping already configured device at address '{address}'".format(address=address))
+                    log.trace(
+                        "Scan skipping already configured device at address '{address}'".format(
+                            address=address
+                        )
+                    )
         if not scan_results:
             log.debug("Scan found no unconfigured devices")
 
     log.info("Setting up devices")
     for index, dev in enumerate(devices):
         if dev.setup():
-            log.debug("Successfully setup {type} '{name}'".format(
-                    type=dev.type, name=dev.name))
+            log.debug(
+                "Successfully setup {type} '{name}'".format(
+                    type=dev.type, name=dev.name
+                )
+            )
 
             subscribe(
-                    "{}/+/#".format(dev.topic),
-                    callback=callback_device_message,
-                )
+                "{}/+/#".format(dev.topic), callback=callback_device_message,
+            )
         else:
-            log.warn("Failed to setup '{name}', it will be ignored".format(name=dev.name))
+            log.warn(
+                "Failed to setup '{name}', it will be ignored".format(name=dev.name)
+            )
             del devices[index]
 
     log.debug("Adding MQTT subscription to poll all devices topic")
     subscribe(
-            config[CONF_KEY_TOPIC_GETTER],
-            callback=callback_poll_all,
-            subtopics=["{module_topic}"],
-            substitutions={
-                "module_topic": config[CONF_KEY_TOPIC],
-                "module_name": TEXT_NAME,
-            }
-        )
+        config[CONF_KEY_TOPIC_GETTER],
+        callback=callback_poll_all,
+        subtopics=["{module_topic}"],
+        substitutions={
+            "module_topic": config[CONF_KEY_TOPIC],
+            "module_name": TEXT_NAME,
+        },
+    )
 
     if config[CONF_KEY_POLL_INT] > 0:
-        log.debug("Starting polling timer with interval of {interval}s".format(
-                interval=config[CONF_KEY_POLL_INT]))
+        log.debug(
+            "Starting polling timer with interval of {interval}s".format(
+                interval=config[CONF_KEY_POLL_INT]
+            )
+        )
         global polling_timer
         polling_timer = Timer(config[CONF_KEY_POLL_INT], poll_interval)
         polling_timer.start()
@@ -223,10 +256,9 @@ def callback_device_message(client, userdata, message):
     """
     Callback for message on device topic
     """
-    queue.put_nowait({
-        "func": "_device_message",
-        "args": [message.topic, message.payload]
-    })
+    queue.put_nowait(
+        {"func": "_device_message", "args": [message.topic, message.payload]}
+    )
 
 
 def _device_message(topic, payload):
@@ -239,9 +271,7 @@ def callback_poll_all(client, userdata, message):
     """
     Callback for poll all
     """
-    queue.put_nowait({
-        "func": "poll_all"
-    })
+    queue.put_nowait({"func": "poll_all"})
 
 
 def poll_all():

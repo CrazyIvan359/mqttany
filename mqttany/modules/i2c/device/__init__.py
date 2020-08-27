@@ -24,7 +24,7 @@ I2C Device
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = [ "getDeviceClass", "getConfOptions", "getDeviceOptions" ]
+__all__ = ["getDeviceClass", "getConfOptions", "getDeviceOptions"]
 
 from modules.i2c.device import mcp230xx
 

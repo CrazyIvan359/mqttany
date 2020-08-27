@@ -28,14 +28,18 @@ Configuration Loader
 try:
     import yaml
 except ImportError:
-    raise ImportError("MQTTany requires 'pyyaml' to be installed, please see \
-        the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany requires 'pyyaml' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 try:
     import yamlloader
 except ImportError:
-    raise ImportError("MQTTany requires 'yamlloader' to be installed, please see \
-        the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany requires 'yamlloader' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 import os, re
 from ast import literal_eval
@@ -43,7 +47,7 @@ from ast import literal_eval
 import logger
 from logger import log_traceback
 
-__all__ = [ "load_config", "parse_config" ]
+__all__ = ["load_config", "parse_config"]
 
 log = logger.get_logger()
 
@@ -84,22 +88,31 @@ def parse_config(data, options, log=log):
     """
     Parse and validate config and values
     """
+
     def parse_dict(data, options):
         def process_option(name, value, option, config):
             if value == "**NO DATA**" and option.get("type", None) == "section":
                 if option.get("required", True):
-                    log.error("No section in config named '{section}'".format(section=name))
+                    log.error(
+                        "No section in config named '{section}'".format(section=name)
+                    )
                     return False
-                #else:
+                # else:
                 #    log.debug("No section in config named '{section}'".format(section=name))
 
             elif isinstance(value, dict):
                 section_valid, section_config = parse_dict(value, option)
                 if not section_valid and option.get("required", True):
-                    log.error("Required section '{section}' is not valid".format(section=name))
+                    log.error(
+                        "Required section '{section}' is not valid".format(section=name)
+                    )
                     return False
                 elif not section_valid:
-                    log.warn("Optional section '{section}' is not valid, it will be ignored".format(section=name))
+                    log.warn(
+                        "Optional section '{section}' is not valid, it will be ignored".format(
+                            section=name
+                        )
+                    )
                 else:
                     config[name] = section_config
 
@@ -109,8 +122,11 @@ def parse_config(data, options, log=log):
                     return False
                 elif value == "**NO DATA**":
                     value = option["default"]
-                    log.trace("Using default value '{value}' for config option '{option}'".format(
-                            value=value, option=name))
+                    log.trace(
+                        "Using default value '{value}' for config option '{option}'".format(
+                            value=value, option=name
+                        )
+                    )
                     config[name] = value
                 else:
                     if "type" in option:
@@ -119,33 +135,57 @@ def parse_config(data, options, log=log):
                         if not isinstance(value, option["type"]):
                             try:
                                 value = option["type"](value)
-                            except: pass
+                            except:
+                                pass
 
                         if isinstance(value, option.get("type", type(value))):
-                            log.trace("Got value '{value}' for config option '{option}'".format(
-                                    value="*"*len(value) if "pass" in name.lower() else value, option=name))
+                            log.trace(
+                                "Got value '{value}' for config option '{option}'".format(
+                                    value="*" * len(value)
+                                    if "pass" in name.lower()
+                                    else value,
+                                    option=name,
+                                )
+                            )
                             config[name] = value
                         else:
-                            log.error("Value '{value}' for config option '{option}' is not type '{type}'".format(
-                                    value=value, option=name, type=option["type"]))
+                            log.error(
+                                "Value '{value}' for config option '{option}' is not type '{type}'".format(
+                                    value=value, option=name, type=option["type"]
+                                )
+                            )
                             return False
 
                     elif "selection" in option:
                         if str(value) in option["selection"]:
-                            log.trace("Got selection '{value}' for config option '{option}'".format(
-                                    value=value, option=name))
+                            log.trace(
+                                "Got selection '{value}' for config option '{option}'".format(
+                                    value=value, option=name
+                                )
+                            )
                             if isinstance(option["selection"], dict):
                                 config[name] = option["selection"][str(value)]
                             else:
                                 config[name] = str(value)
                         else:
-                            log.error("Value '{value}' for config option '{option}' is not one of {selections}".format(
-                                    value=value, option=name, selections=[key for key in option["selection"]]))
+                            log.error(
+                                "Value '{value}' for config option '{option}' is not one of {selections}".format(
+                                    value=value,
+                                    option=name,
+                                    selections=[key for key in option["selection"]],
+                                )
+                            )
                             return False
 
                     else:
-                        log.trace("Got value '{value}' for config option '{option}'".format(
-                                value="*"*len(value) if "pass" in name.lower() else value, option=name))
+                        log.trace(
+                            "Got value '{value}' for config option '{option}'".format(
+                                value="*" * len(value)
+                                if "pass" in name.lower()
+                                else value,
+                                option=name,
+                            )
+                        )
                         config[name] = value
             return True
 
@@ -153,16 +193,31 @@ def parse_config(data, options, log=log):
         config = {}
         for key in options:
             if not isinstance(options[key], dict):
-                continue # 'required' option, skip
+                continue  # 'required' option, skip
 
             if str(key).split(":", 1)[0] == "regex":
-                log.trace("Found regex '{key}' in options".format(key=str(key).split(":", 1)[-1]))
+                log.trace(
+                    "Found regex '{key}' in options".format(
+                        key=str(key).split(":", 1)[-1]
+                    )
+                )
                 for data_key in [data_key for data_key in data]:
                     if re.fullmatch(str(key).split(":", 1)[-1], str(data_key)):
-                        log.trace("Config key '{data_key}' matched to options regex '{key}'".format(data_key=data_key, key=str(key).split(":", 1)[-1]))
-                        valid = valid and process_option(data_key, data.pop(data_key, "**NO DATA**"), options[key], config)
+                        log.trace(
+                            "Config key '{data_key}' matched to options regex '{key}'".format(
+                                data_key=data_key, key=str(key).split(":", 1)[-1]
+                            )
+                        )
+                        valid = valid and process_option(
+                            data_key,
+                            data.pop(data_key, "**NO DATA**"),
+                            options[key],
+                            config,
+                        )
             else:
-                valid = valid and process_option(key, data.pop(key, "**NO DATA**"), options[key], config)
+                valid = valid and process_option(
+                    key, data.pop(key, "**NO DATA**"), options[key], config
+                )
 
         return valid, config
 
@@ -201,7 +256,7 @@ def resolve_type(value):
             return literal_eval(value)
         except ValueError:
             pass
-        except SyntaxError: # happens with single topics starting with '/'
+        except SyntaxError:  # happens with single topics starting with '/'
             pass
         # unparseable, return as str
         return value

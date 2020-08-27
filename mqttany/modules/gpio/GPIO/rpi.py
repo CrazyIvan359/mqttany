@@ -28,18 +28,23 @@ GPIO Library Wrapper for WiringPi-Python
 try:
     import wiringpi
 except ImportError:
-    raise ImportError("MQTTany's GPIO module requires 'wiringpi' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's GPIO module requires 'wiringpi' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 try:
     import adafruit_platformdetect
 except ImportError:
-    raise ImportError("MQTTany's GPIO module requires 'Adafruit-PlatformDetect' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's GPIO module requires 'Adafruit-PlatformDetect' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 import threading, subprocess
 from time import sleep
 from datetime import datetime
+
 now = datetime.now
 
 import logger
@@ -47,23 +52,25 @@ from common import TEXT_PIN_PREFIX, Mode, Logic, Direction, Resistor, Interrupt
 from modules.gpio.common import config, CONF_KEY_MODE
 from modules.gpio.GPIO.common import baseGPIO
 
-TEXT_NAME = ".".join([__name__.split(".")[-3], __name__.split(".")[-1]]) # gives gpio.rpi
+TEXT_NAME = ".".join(
+    [__name__.split(".")[-3], __name__.split(".")[-1]]
+)  # gives gpio.rpi
 
 log = logger.get_module_logger(module=TEXT_NAME)
 
-__all__ = [ "rpiGPIO" ]
+__all__ = ["rpiGPIO"]
 
 
 map_wiringpi_setup = {
     Mode.BOARD: wiringpi.wiringPiSetupPhys,
     Mode.SOC: wiringpi.wiringPiSetupGpio,
-    Mode.WIRINGPI: wiringpi.wiringPiSetup
+    Mode.WIRINGPI: wiringpi.wiringPiSetup,
 }
 map_direction = {
     Direction.INPUT: wiringpi.INPUT,
     Direction.OUTPUT: wiringpi.OUTPUT,
     wiringpi.INPUT: Direction.INPUT,
-    wiringpi.OUTPUT: Direction.OUTPUT
+    wiringpi.OUTPUT: Direction.OUTPUT,
 }
 map_resistor = {
     Resistor.OFF: wiringpi.PUD_OFF,
@@ -71,7 +78,7 @@ map_resistor = {
     Resistor.PULL_DOWN: wiringpi.PUD_DOWN,
     wiringpi.PUD_OFF: Resistor.OFF,
     wiringpi.PUD_UP: Resistor.PULL_UP,
-    wiringpi.PUD_DOWN: Resistor.PULL_DOWN
+    wiringpi.PUD_DOWN: Resistor.PULL_DOWN,
 }
 map_interrupt = {
     Interrupt.RISING: wiringpi.INT_EDGE_RISING,
@@ -79,15 +86,16 @@ map_interrupt = {
     Interrupt.BOTH: wiringpi.INT_EDGE_BOTH,
     wiringpi.INT_EDGE_RISING: Interrupt.RISING,
     wiringpi.INT_EDGE_FALLING: Interrupt.FALLING,
-    wiringpi.INT_EDGE_BOTH: Interrupt.BOTH
+    wiringpi.INT_EDGE_BOTH: Interrupt.BOTH,
 }
 map_interrupt_gpio = {
     Interrupt.RISING: "rising",
     Interrupt.FALLING: "falling",
-    Interrupt.BOTH: "both"
+    Interrupt.BOTH: "both",
 }
 
 ### Valid GPIOs
+# fmt: off
 PINS_40 = [
      0,  1,  2,  3,  4,  5,  6,  7, # 0..7
      8,  9, 10, 11, 12, 13, 14, 15, # 8..15
@@ -118,6 +126,8 @@ PINS_26_R1 = [
     -1, -1, -1, -1, -1, -1, -1, -1, # 48..55
     -1, -1, -1, -1, -1, -1, -1, -1, # 56..63
 ]
+# fmt :on
+
 detector = adafruit_platformdetect.Detector()
 board = detector.board.id
 rpi_40 = detector.board.any_raspberry_pi_40_pin

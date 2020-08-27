@@ -29,8 +29,10 @@ from modules.onewire.device.base import OneWireDevice
 from modules.onewire.device import ds18x20
 
 __all__ = [
-    "getDevice", "getConfDeviceOptions",
-    "getConfDeviceTypes", "getDeviceTypeByFamily"
+    "getDevice",
+    "getConfDeviceOptions",
+    "getConfDeviceTypes",
+    "getDeviceTypeByFamily",
 ]
 
 

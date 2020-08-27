@@ -28,21 +28,25 @@ Dallas OneWire Module
 try:
     from mprop import mproperty
 except ImportError:
-    raise ImportError("MQTTany's OneWire module requires 'mprop' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's OneWire module requires 'mprop' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 from modules.onewire import core
 from modules.onewire.core import init, pre_loop, post_loop
 from modules.onewire.core import _device_message, poll_all
 from modules.onewire.common import log
 
-__all__ = [ "init", "pre_loop", "post_loop", "queue" ]
+__all__ = ["init", "pre_loop", "post_loop", "queue"]
 
 _queue = None
+
 
 @mproperty
 def queue(module):
     return _queue
+
 
 @queue.setter
 def queue(module, value):

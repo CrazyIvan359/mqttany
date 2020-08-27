@@ -27,8 +27,10 @@ I2C Core
 try:
     from smbus2 import SMBus
 except ImportError:
-    raise ImportError("MQTTany's I2C module requires 'smbus2' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's I2C module requires 'smbus2' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 from collections import OrderedDict
 from threading import Timer
@@ -42,7 +44,7 @@ from modules.i2c.device import getDeviceClass, getConfOptions, getDeviceOptions
 from modules.i2c.common import config
 from modules.i2c.common import *
 
-__all__ = [  ]
+__all__ = []
 
 TEXT_NAME = TEXT_PACKAGE_NAME
 
@@ -62,18 +64,29 @@ def build_device(device_name, device_config):
         if bus not in buses:
             buses[bus] = SMBus()
     else:
-        log.error("Failed to configure {device} '{name}', bus is invalid.".format(
-            device=device, name=device_name))
+        log.error(
+            "Failed to configure {device} '{name}', bus is invalid.".format(
+                device=device, name=device_name
+            )
+        )
         return None
 
     if clazz:
         if address is None:
-            log.warn("{device} '{name}' has an invalid address '{address}'".format(
-                device=device, name=device_name, address=device_config[CONF_KEY_ADDRESS]))
+            log.warn(
+                "{device} '{name}' has an invalid address '{address}'".format(
+                    device=device,
+                    name=device_name,
+                    address=device_config[CONF_KEY_ADDRESS],
+                )
+            )
             return False
 
-        log.debug("Configuring {device} '{name}' at address 0x{address:02x} on bus '{bus}'".format(
-                device=device, name=device_name, address=address, bus=bus))
+        log.debug(
+            "Configuring {device} '{name}' at address 0x{address:02x} on bus '{bus}'".format(
+                device=device, name=device_name, address=address, bus=bus
+            )
+        )
         return clazz(
             device_name,
             address,
@@ -81,11 +94,14 @@ def build_device(device_name, device_config):
             bus,
             buses[bus],
             device_config[CONF_KEY_TOPIC],
-            device_config
+            device_config,
         )
     else:
-        log.warn("{device} '{name}' is not a supported device".format(
-                device=device, name=device_name))
+        log.warn(
+            "{device} '{name}' is not a supported device".format(
+                device=device, name=device_name
+            )
+        )
         return None
 
 
@@ -108,10 +124,7 @@ def init(config_data={}):
 
         for device_name in [key for key in config if isinstance(config[key], dict)]:
             device_config = config.pop(device_name)
-            device_object = build_device(
-                device_name,
-                device_config
-            )
+            device_object = build_device(device_name, device_config)
             if device_object:
                 devices.append(device_object)
 
@@ -131,43 +144,48 @@ def pre_loop():
         try:
             buses[bus].open(bus)
         except IOError as err:
-            log.error("Failed to open I2C bus '{bus}': {err}".format(
-                bus=bus, err=err))
+            log.error("Failed to open I2C bus '{bus}': {err}".format(bus=bus, err=err))
 
     # Scan bus for devices
-    #for bus in buses:
+    # for bus in buses:
     #    log.info("Scanning I2C bus '{bus}' for devices")
     # TODO
 
     # Setup devices
     for index, device in enumerate(devices):
         if device.setup():
-            log.debug("Successfully setup {device} '{name}'".format(
-                device=device.device, name=device.name))
-            for topic in device.get_subscriptions():
-                subscribe(
-                    topic,
-                    callback=callback_device_message
+            log.debug(
+                "Successfully setup {device} '{name}'".format(
+                    device=device.device, name=device.name
                 )
+            )
+            for topic in device.get_subscriptions():
+                subscribe(topic, callback=callback_device_message)
         else:
-            log.warn("Failed to setup {device} '{name}', it will be ignored".format(
-                device=device.device, name=device.name))
+            log.warn(
+                "Failed to setup {device} '{name}', it will be ignored".format(
+                    device=device.device, name=device.name
+                )
+            )
             del devices[index]
 
     log.debug("Adding MQTT subscription to poll all devices topic")
     subscribe(
-            config[CONF_KEY_TOPIC_GETTER],
-            callback=callback_poll_all,
-            subtopics=["{module_topic}"],
-            substitutions={
-                "module_topic": config[CONF_KEY_TOPIC],
-                "module_name": TEXT_NAME,
-            }
-        )
+        config[CONF_KEY_TOPIC_GETTER],
+        callback=callback_poll_all,
+        subtopics=["{module_topic}"],
+        substitutions={
+            "module_topic": config[CONF_KEY_TOPIC],
+            "module_name": TEXT_NAME,
+        },
+    )
 
     if config[CONF_KEY_POLL_INT] > 0:
-        log.debug("Starting polling timer with interval of {interval}s".format(
-                interval=config[CONF_KEY_POLL_INT]))
+        log.debug(
+            "Starting polling timer with interval of {interval}s".format(
+                interval=config[CONF_KEY_POLL_INT]
+            )
+        )
         global polling_timer
         polling_timer = Timer(config[CONF_KEY_POLL_INT], poll_interval)
         polling_timer.start()
@@ -196,10 +214,9 @@ def callback_device_message(client, userdata, message):
     """
     Callback for message on device topic
     """
-    queue.put_nowait({
-        "func": "_device_message",
-        "args": [message.topic, message.payload]
-    })
+    queue.put_nowait(
+        {"func": "_device_message", "args": [message.topic, message.payload]}
+    )
 
 
 def _device_message(topic, payload):
@@ -211,9 +228,7 @@ def callback_poll_all(client, userdata, message):
     """
     Callback for poll all
     """
-    queue.put_nowait({
-        "func": "poll_all"
-    })
+    queue.put_nowait({"func": "poll_all"})
 
 
 def poll_all():

@@ -28,8 +28,10 @@ GPIO Module
 try:
     import adafruit_platformdetect
 except ImportError:
-    raise ImportError("MQTTany's GPIO module requires 'Adafruit-PlatformDetect' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's GPIO module requires 'Adafruit-PlatformDetect' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 from threading import Timer
 
@@ -43,7 +45,7 @@ from modules.gpio.pin import getPin, updateConfOptions
 from modules.gpio.common import config
 from modules.gpio.common import *
 
-__all__ = [  ]
+__all__ = []
 
 TEXT_NAME = TEXT_PACKAGE_NAME
 
@@ -56,6 +58,7 @@ def init(config_data={}):
     """
     Initializes the module
     """
+
     def build_pin(name, pin_config, index=None):
         clazz = getPin(pin_config[CONF_KEY_DIRECTION])
         if clazz:
@@ -70,17 +73,16 @@ def init(config_data={}):
             else:
                 pin = pin_config[CONF_KEY_PIN]
 
-            return clazz(
-                name,
-                pin,
-                topic,
-                pin_config,
-                index
-            )
+            return clazz(name, pin, topic, pin_config, index)
         else:
-            log.warn("Direction '{dir}'  for '{name}' on {pin_prefix}{pin:02d} is not supported".format(
-                dir=pin_config[CONF_KEY_DIRECTION], name=name,
-                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=pin))
+            log.warn(
+                "Direction '{dir}'  for '{name}' on {pin_prefix}{pin:02d} is not supported".format(
+                    dir=pin_config[CONF_KEY_DIRECTION],
+                    name=name,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                    pin=pin,
+                )
+            )
             return None
 
     conf_options = updateConfOptions(CONF_OPTIONS)
@@ -108,11 +110,22 @@ def init(config_data={}):
             if isinstance(named_config[CONF_KEY_PIN], int):
                 pin = named_config[CONF_KEY_PIN]
                 if not pin_valid(pin, named_config[CONF_KEY_DIRECTION]):
-                    log.warn("{pin_prefix}{pin:02d} in '{name}' is not a valid pin for this board, it will be ignored".format(
-                        pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=pin, name=name))
+                    log.warn(
+                        "{pin_prefix}{pin:02d} in '{name}' is not a valid pin for this board, it will be ignored".format(
+                            pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                            pin=pin,
+                            name=name,
+                        )
+                    )
                 elif pin in used_pins:
-                    log.warn("Duplicate configuration for {pin_prefix}{pin:02d} found in '{name}' will be ignored, pin already configured under '{original}'".format(
-                        pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=pin, name=name, original=pins[used_pins[pin]].name))
+                    log.warn(
+                        "Duplicate configuration for {pin_prefix}{pin:02d} found in '{name}' will be ignored, pin already configured under '{original}'".format(
+                            pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                            pin=pin,
+                            name=name,
+                            original=pins[used_pins[pin]].name,
+                        )
+                    )
                 else:
                     pin_object = build_pin(name, named_config)
 
@@ -125,11 +138,22 @@ def init(config_data={}):
                 for index in range(len(named_config[CONF_KEY_PIN])):
                     pin = named_config[CONF_KEY_PIN][index]
                     if not pin_valid(pin, named_config[CONF_KEY_DIRECTION]):
-                        log.warn("{pin_prefix}{pin:02d} in '{name}' is not a valid pin for this board, it will be ignored".format(
-                            pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=pin, name=name))
+                        log.warn(
+                            "{pin_prefix}{pin:02d} in '{name}' is not a valid pin for this board, it will be ignored".format(
+                                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                                pin=pin,
+                                name=name,
+                            )
+                        )
                     elif pin in used_pins:
-                        log.warn("Duplicate configuration for {pin_prefix}{pin:02d} found in '{name}' will be ignored, pin already configured under '{original}'".format(
-                            pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]], pin=pin, name=name, original=pins[used_pins[pin]].name))
+                        log.warn(
+                            "Duplicate configuration for {pin_prefix}{pin:02d} found in '{name}' will be ignored, pin already configured under '{original}'".format(
+                                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                                pin=pin,
+                                name=name,
+                                original=pins[used_pins[pin]].name,
+                            )
+                        )
                     else:
                         pin_object = build_pin(name, named_config, index)
 
@@ -152,10 +176,7 @@ def pre_loop():
 
     for index, pin in enumerate(pins):
         if pin.setup():
-            subscribe(
-                "{}/+/#".format(pin.topic),
-                callback=callback_pin_message
-            )
+            subscribe("{}/+/#".format(pin.topic), callback=callback_pin_message)
         else:
             del pins[index]
 
@@ -167,12 +188,15 @@ def pre_loop():
         substitutions={
             "module_topic": config[CONF_KEY_TOPIC],
             "module_name": TEXT_NAME,
-        }
+        },
     )
 
     if config[CONF_KEY_POLL_INT] > 0:
-        log.debug("Starting polling timer with interval of {interval}s".format(
-                interval=config[CONF_KEY_POLL_INT]))
+        log.debug(
+            "Starting polling timer with interval of {interval}s".format(
+                interval=config[CONF_KEY_POLL_INT]
+            )
+        )
         global polling_timer
         polling_timer = Timer(config[CONF_KEY_POLL_INT], poll_interval)
         polling_timer.start()
@@ -196,10 +220,7 @@ def callback_pin_message(client, userdata, message):
     """
     Callback for message on pin topic
     """
-    queue.put_nowait({
-        "func": "_pin_message",
-        "args": [message.topic, message.payload]
-    })
+    queue.put_nowait({"func": "_pin_message", "args": [message.topic, message.payload]})
 
 
 def _pin_message(topic, payload):
@@ -212,9 +233,7 @@ def callback_poll_all(client, userdata, message):
     """
     Callback for poll all
     """
-    queue.put_nowait({
-        "func": "poll_all"
-    })
+    queue.put_nowait({"func": "poll_all"})
 
 
 def poll_all():

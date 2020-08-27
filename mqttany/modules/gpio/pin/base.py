@@ -34,11 +34,11 @@ from modules.gpio.GPIO import getGPIO
 from modules.gpio.common import config
 from modules.gpio.common import *
 
-TEXT_NAME = ".".join(__name__.split(".")[-3:3]) # gives gpio.pin
+TEXT_NAME = ".".join(__name__.split(".")[-3:3])  # gives gpio.pin
 
 log = logger.get_module_logger(module=TEXT_NAME)
 
-__all__ = [ "Pin" ]
+__all__ = ["Pin"]
 
 
 class Pin(object):
@@ -59,8 +59,8 @@ class Pin(object):
                 "module_name": TEXT_PACKAGE_NAME,
                 "pin": pin,
                 "pin_name": name,
-                "index": index if index is not None else ""
-            }
+                "index": index if index is not None else "",
+            },
         )
 
     def setup(self):
@@ -71,13 +71,29 @@ class Pin(object):
         their own lock on the pin.
         """
         if not self._gpio:
-            log.error("No GPIO library available for '{name}' on {pin_prefix}{pin:02d}".format(
-                name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+            log.error(
+                "No GPIO library available for '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name,
+                    pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                )
+            )
             return False
 
-        if not acquire_gpio_lock(self._pin, self._gpio.getPinFromMode(self._pin, config[CONF_KEY_MODE]), TEXT_PACKAGE_NAME, timeout=2000, mode=config[CONF_KEY_MODE]):
-            log.error("Failed to acquire a lock for '{name}' on {pin_prefix}{pin:02d}".format(
-                name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]]))
+        if not acquire_gpio_lock(
+            self._pin,
+            self._gpio.getPinFromMode(self._pin, config[CONF_KEY_MODE]),
+            TEXT_PACKAGE_NAME,
+            timeout=2000,
+            mode=config[CONF_KEY_MODE],
+        ):
+            log.error(
+                "Failed to acquire a lock for '{name}' on {pin_prefix}{pin:02d}".format(
+                    name=self._name,
+                    pin=self._pin,
+                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
+                )
+            )
             return False
         return True
 
@@ -86,8 +102,14 @@ class Pin(object):
         Cleanup actions when stopping
         """
         self._setup = False
-        if self._gpio: self._gpio.cleanup(self._pin)
-        release_gpio_lock(self._pin, self._gpio.getPinFromMode(self._pin, config[CONF_KEY_MODE]), TEXT_PACKAGE_NAME, mode=config[CONF_KEY_MODE])
+        if self._gpio:
+            self._gpio.cleanup(self._pin)
+        release_gpio_lock(
+            self._pin,
+            self._gpio.getPinFromMode(self._pin, config[CONF_KEY_MODE]),
+            TEXT_PACKAGE_NAME,
+            mode=config[CONF_KEY_MODE],
+        )
 
     def publish_state(self):
         """
@@ -103,11 +125,15 @@ class Pin(object):
         arrives on ``{pin_topic}/{CONF_KEY_TOPIC_GETTER}``.
         Subclass may override this method.
         """
-        if topic_matches_sub("{}/{}".format(self._topic, config[CONF_KEY_TOPIC_GETTER]), topic):
+        if topic_matches_sub(
+            "{}/{}".format(self._topic, config[CONF_KEY_TOPIC_GETTER]), topic
+        ):
             self.publish_state()
 
     @property
-    def name(self): return self._name
+    def name(self):
+        return self._name
 
     @property
-    def topic(self): return self._topic
+    def topic(self):
+        return self._topic

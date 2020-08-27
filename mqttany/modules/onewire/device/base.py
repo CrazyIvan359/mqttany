@@ -31,10 +31,10 @@ from modules.onewire.bus import getBus, OneWireBus
 from modules.onewire.common import config
 from modules.onewire.common import *
 
-__all__ = [ "OneWireDevice" ]
+__all__ = ["OneWireDevice"]
 
 
-class OneWireDevice():
+class OneWireDevice:
     """
     OneWire Device base class
     """
@@ -55,8 +55,8 @@ class OneWireDevice():
                 "device_name": name,
                 "device_type": dev_type,
                 "address": address,
-                "index": index if index is not None else ""
-            }
+                "index": index if index is not None else "",
+            },
         )
 
     def setup(self, *args, **kwargs):
@@ -65,13 +65,11 @@ class OneWireDevice():
         Returns ``True`` if device is available, ``False`` otherwise.
         """
         if not self._bus:
-            self.log.error("Bus not available for '{name}'".format(
-                name=self._name))
+            self.log.error("Bus not available for '{name}'".format(name=self._name))
             return False
 
         if not self._address:
-            self.log.error("Address for '{name}' is invalid".format(
-                name=self._name))
+            self.log.error("Address for '{name}' is invalid".format(name=self._name))
             return False
 
         return True
@@ -90,17 +88,23 @@ class OneWireDevice():
         arrives on ``{device_topic}/{CONF_KEY_TOPIC_GETTER}``.
         Subclass may override this method.
         """
-        if topic_matches_sub("{}/{}".format(self._topic, config[CONF_KEY_TOPIC_GETTER]), topic):
+        if topic_matches_sub(
+            "{}/{}".format(self._topic, config[CONF_KEY_TOPIC_GETTER]), topic
+        ):
             self.publish_state()
 
     @property
-    def name(self): return self._name
+    def name(self):
+        return self._name
 
     @property
-    def address(self): return self._address
+    def address(self):
+        return self._address
 
     @property
-    def type(self): return self._type
+    def type(self):
+        return self._type
 
     @property
-    def topic(self): return self._topic
+    def topic(self):
+        return self._topic

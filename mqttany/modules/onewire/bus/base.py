@@ -29,10 +29,10 @@ import re
 
 re_hex_chars = re.compile("[^a-fA-F0-9]")
 
-__all__ = [ "OneWireBus" ]
+__all__ = ["OneWireBus"]
 
 
-class OneWireBus():
+class OneWireBus:
     """
     OneWire Bus base class
     """
@@ -64,9 +64,10 @@ class OneWireBus():
         for i in range(len(data)):
             byte = data[i]
             for bit in range(8):
-                mix = ( crc ^ byte ) & 0x01
+                mix = (crc ^ byte) & 0x01
                 crc >>= 1
-                if mix: crc ^= 0x8C
+                if mix:
+                    crc ^= 0x8C
                 byte >>= 1
         return bytes([crc])
 

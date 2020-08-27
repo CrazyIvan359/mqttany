@@ -32,7 +32,7 @@ import logger
 from modules.onewire.bus.base import OneWireBus
 from modules.onewire.common import *
 
-all = [ "OneWireBus_wire1" ]
+all = ["OneWireBus_wire1"]
 
 CONF_OPTIONS = {}
 CONF_BUS_SELECTION = ["w1", "W1", "wire1", "WIRE1", "Wire1"]
@@ -41,11 +41,14 @@ BUS_PATH = "/sys/bus/w1/devices"
 DEVICE_RAW = "rw"
 DEVICE_SLAVE = "w1_slave"
 
-TEXT_NAME = ".".join([__name__.split(".")[-3], __name__.split(".")[-1]]) # gives onewire.wire1
+TEXT_NAME = ".".join(
+    [__name__.split(".")[-3], __name__.split(".")[-1]]
+)  # gives onewire.wire1
 
 log = logger.get_module_logger(module=TEXT_NAME)
 
-__all__ = [ "wire1" ]
+__all__ = ["wire1"]
+
 
 class wire1(OneWireBus):
     """
@@ -64,7 +67,9 @@ class wire1(OneWireBus):
             for device in os.listdir(BUS_PATH):
                 if "w1" not in device:
                     device = device.replace("-", "")
-                    device = "{}{}".format(device, self.crc8(bytes.fromhex(device)).hex())
+                    device = "{}{}".format(
+                        device, self.crc8(bytes.fromhex(device)).hex()
+                    )
                     devices.append(device.upper())
         return devices
 
@@ -74,7 +79,9 @@ class wire1(OneWireBus):
         """
         buffer = self.read_rw(address, length) or self.read_slave(address, length)
         if buffer is None:
-            log.warn("Failed to read from device at '{address}'".format(address=address))
+            log.warn(
+                "Failed to read from device at '{address}'".format(address=address)
+            )
         return buffer
 
     def read_rw(self, address, length):
@@ -82,17 +89,23 @@ class wire1(OneWireBus):
         Read raw bytes from ``rw`` device file.
         Returns ``length`` bytes (not including crc8), will be ``None`` if read fails.
         """
-        addr = "{}-{}".format(address[:2],address[2:])[:-2].lower()
+        addr = "{}-{}".format(address[:2], address[2:])[:-2].lower()
         buffer = None
 
-        log.trace("Attempting to read from 'rw' file '{path}'".format(
-            path=os.path.join(BUS_PATH, addr, DEVICE_RAW)))
+        log.trace(
+            "Attempting to read from 'rw' file '{path}'".format(
+                path=os.path.join(BUS_PATH, addr, DEVICE_RAW)
+            )
+        )
 
         if os.path.exists(os.path.join(BUS_PATH, addr, DEVICE_RAW)):
-            pass # read raw
+            pass  # read raw
         else:
-            log.trace("Unable to read from device at address '{address}', no 'rw' file".format(
-                address=address))
+            log.trace(
+                "Unable to read from device at address '{address}', no 'rw' file".format(
+                    address=address
+                )
+            )
         return buffer
 
     def read_slave(self, address, length):
@@ -100,11 +113,14 @@ class wire1(OneWireBus):
         Read raw bytes from ``w1_slave`` file.
         Returns ``length`` bytes (not including crc8), will be ``None`` if read fails.
         """
-        addr = "{}-{}".format(address[:2],address[2:])[:-2].lower()
+        addr = "{}-{}".format(address[:2], address[2:])[:-2].lower()
         buffer = None
 
-        log.trace("Attempting to read from 'w1_slave' file '{path}'".format(
-            path=os.path.join(BUS_PATH, addr, DEVICE_SLAVE)))
+        log.trace(
+            "Attempting to read from 'w1_slave' file '{path}'".format(
+                path=os.path.join(BUS_PATH, addr, DEVICE_SLAVE)
+            )
+        )
 
         if os.path.exists(os.path.join(BUS_PATH, addr, DEVICE_SLAVE)):
             try:
@@ -112,29 +128,46 @@ class wire1(OneWireBus):
                     lines = fh.readlines()
                 if lines:
                     try:
-                        buffer = bytes.fromhex("".join(lines[0].split(" ")[:length+1]))
+                        buffer = bytes.fromhex(
+                            "".join(lines[0].split(" ")[: length + 1])
+                        )
                     except:
-                        log.error("Failed to read {length} bytes from '{address}' 'w1_slave' file line 1 '{line}'".format(
-                            length=length, address=address, line=lines[0]))
+                        log.error(
+                            "Failed to read {length} bytes from '{address}' 'w1_slave' file line 1 '{line}'".format(
+                                length=length, address=address, line=lines[0]
+                            )
+                        )
                     else:
-                        if buffer != bytes([*buffer[:length], *self.crc8(buffer[:length])]):
-                            log.error("Read invalid data from device at address '{address}'".format(address=address))
+                        if buffer != bytes(
+                            [*buffer[:length], *self.crc8(buffer[:length])]
+                        ):
+                            log.error(
+                                "Read invalid data from device at address '{address}'".format(
+                                    address=address
+                                )
+                            )
                             buffer = None
                         else:
                             buffer = buffer[:length]
             except Exception as err:
-                log.error("Failed to read from device at address '{address}', an error occurred when reading 'w1_slave' file: {error}".format(
-                    address=address, error=err))
+                log.error(
+                    "Failed to read from device at address '{address}', an error occurred when reading 'w1_slave' file: {error}".format(
+                        address=address, error=err
+                    )
+                )
         else:
-            log.trace("Unable to read from device at address '{address}', no 'w1_slave' file".format(
-                address=address))
+            log.trace(
+                "Unable to read from device at address '{address}', no 'w1_slave' file".format(
+                    address=address
+                )
+            )
         return buffer
 
     def write_raw(self, address, buffer):
         """
         Write raw bytes to device
         """
-        addr = "{}-{}".format(address[:2],address[2:])
+        addr = "{}-{}".format(address[:2], address[2:])
 
     @property
     def valid(self):

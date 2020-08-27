@@ -26,6 +26,7 @@ MQTTany
 # SOFTWARE.
 
 import version as mqttanyversion
+
 __version__ = mqttanyversion.__version__
 
 import time, argparse
@@ -43,14 +44,30 @@ def get_args():
     """
     Get arguments
     """
-    parser = argparse.ArgumentParser(description="MQTTany allows you to connect things to MQTT")
-    parser.add_argument("-v", "--verbose", action="count", help="turn on debug logging", default=0)
-    parser.add_argument("config_file", nargs='?', default="/etc/mqttany/mqttany.yml", metavar="CONFIG_FILE", help="path to configuration file (default '/etc/mqttany/mqttany.yml')")
-    parser.add_argument("-V", "--version", action="version", version="MQTTany {}".format(__version__), help="show version and exit")
+    parser = argparse.ArgumentParser(
+        description="MQTTany allows you to connect things to MQTT"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="count", help="turn on debug logging", default=0
+    )
+    parser.add_argument(
+        "config_file",
+        nargs="?",
+        default="/etc/mqttany/mqttany.yml",
+        metavar="CONFIG_FILE",
+        help="path to configuration file (default '/etc/mqttany/mqttany.yml')",
+    )
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version="MQTTany {}".format(__version__),
+        help="show version and exit",
+    )
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     signal = SignalHook()
     args = get_args()
     if args.verbose > 1:
@@ -76,10 +93,10 @@ if __name__ == '__main__':
     try:
         if modules.load(args.config_file):
             while not signal.exit:
-                try: # to get an item from the queue
+                try:  # to get an item from the queue
                     message = queue.get_nowait()
                 except QueueEmptyError:
-                    time.sleep(0.1) # 100ms
+                    time.sleep(0.1)  # 100ms
                 else:
                     poison_pill = True
                     log.debug("Received poison pill")
@@ -91,7 +108,8 @@ if __name__ == '__main__':
         poison_pill = True
 
     else:
-        if signal.signal == signal.SIGINT: print() # newline after '^C'
+        if signal.signal == signal.SIGINT:
+            print()  # newline after '^C'
         modules.unload()
 
         if poison_pill:

@@ -31,7 +31,7 @@ from config import parse_config
 
 from modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
 
-__all__ = [  ]
+__all__ = []
 
 # Configuration keys, best to define them once so they can be changed easily
 CONF_KEY_TOPIC = "topic"
@@ -43,21 +43,31 @@ CONF_KEY_SUBSECTION = "sub section"
 # Configuration layout for `parse_config`
 # it should be a dict of `key: {}`
 CONF_OPTIONS = {
-        # all modules should use this default for their topic
-    CONF_KEY_TOPIC: {"default": "{module_name}"}, # if a `default` is given the option is assumed to be optional
-    CONF_KEY_STRING: {}, # an empty dict means any value is valid and option is required
-    CONF_KEY_FIXED_TYPE: {"type": int, "default": 200}, # fixed type options should provide a type to compare with
-    CONF_KEY_SUBSECTION: { # subsections are also possible
-        "type": "section", # they must have type set to "section"
-        "required": False, # if a subsection is optional you must specify, if this is omitted the subsection is assumed to be required
-            # you can limit the possible values by providing a list or dict of possibilities.
-            # the config will be invalid if the value is not in "selection".
-            # if "selection" is a dict then the key's value will be returned, not the key.
-        CONF_KEY_SELECTION: {"default": None, "selection": {"option 1": 1, "option 2": 2}}
+    # all modules should use this default for their topic
+    CONF_KEY_TOPIC: {  # if a `default` is given the option is assumed to be optional
+        "default": "{module_name}"
     },
-    "regex:pattern": { # regex pattern sections can also be used, their key must be "regex:{pattern}"
-        "type": "section" # when using regex sections that may match other keys they should be last
-    }                     # and CONF_OPTIONS should be an OrderedDict
+    CONF_KEY_STRING: {},  # an empty dict means any value is valid and option is required
+    CONF_KEY_FIXED_TYPE: {  # fixed type options should provide a type to compare with
+        "type": int,
+        "default": 200,
+    },
+    CONF_KEY_SUBSECTION: {  # subsections are also possible
+        "type": "section",  # they must have type set to "section"
+        "required": False,  # if a subsection is optional you must specify this, if this
+        # is omitted the subsection is assumed to be required.
+        CONF_KEY_SELECTION: {
+            # you can limit the possible values by providing a list or dict of
+            # possibilities. The config will be invalid if the value is not in
+            # "selection". If "selection" is a dict then the key's value will be
+            # returned, not the key.
+            "default": None,
+            "selection": {"option 1": 1, "option 2": 2},
+        },
+    },
+    "regex:pattern": {  # regex pattern sections can also be used, their key must be "regex:{pattern}"
+        "type": "section"  # when using regex sections that may match other keys they should be last
+    },  # and CONF_OPTIONS should be an OrderedDict
 }
 
 # Module name, this should be included in all modules and used when the module name is needed
@@ -93,6 +103,7 @@ def init(config_data={}):
         log.error("Error loading config")
         return False
 
+
 def pre_loop():
     """
     Actions to be done in the subprocess before the loop starts.
@@ -103,14 +114,16 @@ def pre_loop():
     """
     log.debug("Adding MQTT subscription to poll topic")
     subscribe(
-            "topic",
-            callback=message_callback,
-            subtopics=["{module_topic}"],
-            substitutions={
-                "module_topic": config[CONF_KEY_TOPIC], # module topic, all modules should have this option
-                "module_name": TEXT_NAME,
-            }
-        )
+        "topic",
+        callback=message_callback,
+        subtopics=["{module_topic}"],
+        substitutions={
+            "module_topic": config[
+                CONF_KEY_TOPIC
+            ],  # module topic, all modules should have this option
+            "module_name": TEXT_NAME,
+        },
+    )
 
 
 def post_loop():
@@ -150,14 +163,16 @@ def message_callback(client, userdata, message):
         to a string. Use ``s = message.payload.decode("utf-8")`` to get a
         string from ``bytes``.
     """
-    queue.put_notwait({
-        "func": "function_name",
-        "args": [],
-        "kwargs": {
-            "topic": message.topic,
-            "payload": message.payload.decode("utf-8")
+    queue.put_notwait(
+        {
+            "func": "function_name",
+            "args": [],
+            "kwargs": {
+                "topic": message.topic,
+                "payload": message.payload.decode("utf-8"),
+            },
         }
-    })
+    )
 
 
 def dangerous_method():

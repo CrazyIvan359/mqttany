@@ -28,8 +28,10 @@ LED Shared
 try:
     from mprop import mproperty
 except ImportError:
-    raise ImportError("MQTTany's LED module requires 'mprop' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's LED module requires 'mprop' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 from collections import OrderedDict
 
@@ -45,46 +47,73 @@ CONF_KEY_PER_PIXEL = "leds per pixel"
 CONF_KEY_BRIGHTNESS = "brightness"
 CONF_KEY_COLOR_ORDER = "color order"
 
-CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
-    (CONF_KEY_TOPIC, {"default": "{module_name}"}),
-    (CONF_KEY_ANIM_DIR, {"type": (str, list), "default": []}),
-    (CONF_KEY_ANIM_STARTUP, {"type": str, "default": "test.array"}),
-    (CONF_KEY_ANIM_FPS, {"type": int, "default": 60}),
-    ("regex:.+", {
-        "type": "section",
-        "required": False,
-        CONF_KEY_OUTPUT: {"selection": {}},
-        CONF_KEY_TOPIC: {"type": str, "default": "{array_name}"},
-        CONF_KEY_COUNT: {"type": int},
-        CONF_KEY_PER_PIXEL: {"type": int, "default": 1},
-        CONF_KEY_BRIGHTNESS: {"type": int, "default": 255},
-        CONF_KEY_COLOR_ORDER: {"default": "{default}", "selection": ["RGB", "RBG", "GRB", "GBR", "BRG", "BGR", "RGBW", "RBGW", "GRBW", "GBRW", "BRGW", "BGRW"]},
-    })
-])
+CONF_OPTIONS = OrderedDict(
+    [  # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
+        (CONF_KEY_TOPIC, {"default": "{module_name}"}),
+        (CONF_KEY_ANIM_DIR, {"type": (str, list), "default": []}),
+        (CONF_KEY_ANIM_STARTUP, {"type": str, "default": "test.array"}),
+        (CONF_KEY_ANIM_FPS, {"type": int, "default": 60}),
+        (
+            "regex:.+",
+            {
+                "type": "section",
+                "required": False,
+                CONF_KEY_OUTPUT: {"selection": {}},
+                CONF_KEY_TOPIC: {"type": str, "default": "{array_name}"},
+                CONF_KEY_COUNT: {"type": int},
+                CONF_KEY_PER_PIXEL: {"type": int, "default": 1},
+                CONF_KEY_BRIGHTNESS: {"type": int, "default": 255},
+                CONF_KEY_COLOR_ORDER: {
+                    "default": "{default}",
+                    "selection": [
+                        "RGB",
+                        "RBG",
+                        "GRB",
+                        "GBR",
+                        "BRG",
+                        "BGR",
+                        "RGBW",
+                        "RBGW",
+                        "GRBW",
+                        "GBRW",
+                        "BRGW",
+                        "BGRW",
+                    ],
+                },
+            },
+        ),
+    ]
+)
 
 ANIM_KEY_ARRAY = "array"
 ANIM_KEY_NAME = "anim"
 ANIM_KEY_REPEAT = "repeat"
 ANIM_KEY_PRIORITY = "priority"
 
-TEXT_PACKAGE_NAME = __name__.split(".")[-2] # gives led
+TEXT_PACKAGE_NAME = __name__.split(".")[-2]  # gives led
 
 log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}
 
 __all__ = [
-    "CONF_KEY_TOPIC", "CONF_KEY_ANIM_DIR", "CONF_KEY_ANIM_STARTUP",
-    "CONF_KEY_ANIM_FPS", "CONF_KEY_OUTPUT", "CONF_KEY_COUNT",
-    "CONF_KEY_PER_PIXEL", "CONF_KEY_BRIGHTNESS", "CONF_KEY_COLOR_ORDER",
-
+    "CONF_KEY_TOPIC",
+    "CONF_KEY_ANIM_DIR",
+    "CONF_KEY_ANIM_STARTUP",
+    "CONF_KEY_ANIM_FPS",
+    "CONF_KEY_OUTPUT",
+    "CONF_KEY_COUNT",
+    "CONF_KEY_PER_PIXEL",
+    "CONF_KEY_BRIGHTNESS",
+    "CONF_KEY_COLOR_ORDER",
     "CONF_OPTIONS",
-
-    "ANIM_KEY_ARRAY", "ANIM_KEY_NAME", "ANIM_KEY_REPEAT", "ANIM_KEY_PRIORITY",
-
+    "ANIM_KEY_ARRAY",
+    "ANIM_KEY_NAME",
+    "ANIM_KEY_REPEAT",
+    "ANIM_KEY_PRIORITY",
     "TEXT_PACKAGE_NAME",
-
-    "log"
+    "log",
 ]
+
 
 @mproperty
 def config(module):

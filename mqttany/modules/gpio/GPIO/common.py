@@ -25,9 +25,10 @@ GPIO Library Wrapper Common
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = [ "baseGPIO" ]
+__all__ = ["baseGPIO"]
 
-class baseGPIO():
+
+class baseGPIO:
     """
     GPIO Library Wrapper base class
     """

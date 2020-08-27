@@ -28,8 +28,10 @@ GPIO Shared
 try:
     from mprop import mproperty
 except ImportError:
-    raise ImportError("MQTTany's GPIO module requires 'mprop' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's GPIO module requires 'mprop' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 from collections import OrderedDict
 
@@ -48,45 +50,68 @@ CONF_KEY_FIRST_INDEX = "first index"
 CONF_KEY_DIRECTION = "direction"
 CONF_KEY_INVERT = "invert"
 
-CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
-    (CONF_KEY_MODE, {"default": Mode.SOC, "selection": {
-        "BOARD": Mode.BOARD, "board": Mode.BOARD,
-        "SOC": Mode.SOC, "soc": Mode.SOC, "BCM": Mode.SOC, "bcm": Mode.SOC,
-        "WIRINGPI": Mode.WIRINGPI, "wiringpi": Mode.WIRINGPI, "WiringPi": Mode.WIRINGPI}}),
-    (CONF_KEY_TOPIC, {"default": "{module_name}"}),
-    (CONF_KEY_TOPIC_SETTER, {"default": "set"}),
-    (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
-    (CONF_KEY_PAYLOAD_ON, {"default": "ON"}),
-    (CONF_KEY_PAYLOAD_OFF, {"default": "OFF"}),
-    (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
-    ("regex:.+", {
-        "type": "section",
-        "required": False,
-        CONF_KEY_PIN: {"type": (int, list)},
-        CONF_KEY_TOPIC: {"type": (str, list), "default": "{pin}"},
-        CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
-        CONF_KEY_DIRECTION: {"default": Direction.INPUT, "selection": {}},
-        CONF_KEY_INVERT: {"type": bool, "default": False},
-    })
-])
+CONF_OPTIONS = OrderedDict(
+    [  # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
+        (
+            CONF_KEY_MODE,
+            {
+                "default": Mode.SOC,
+                "selection": {
+                    "BOARD": Mode.BOARD,
+                    "board": Mode.BOARD,
+                    "SOC": Mode.SOC,
+                    "soc": Mode.SOC,
+                    "BCM": Mode.SOC,
+                    "bcm": Mode.SOC,
+                    "WIRINGPI": Mode.WIRINGPI,
+                    "wiringpi": Mode.WIRINGPI,
+                    "WiringPi": Mode.WIRINGPI,
+                },
+            },
+        ),
+        (CONF_KEY_TOPIC, {"default": "{module_name}"}),
+        (CONF_KEY_TOPIC_SETTER, {"default": "set"}),
+        (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
+        (CONF_KEY_PAYLOAD_ON, {"default": "ON"}),
+        (CONF_KEY_PAYLOAD_OFF, {"default": "OFF"}),
+        (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
+        (
+            "regex:.+",
+            {
+                "type": "section",
+                "required": False,
+                CONF_KEY_PIN: {"type": (int, list)},
+                CONF_KEY_TOPIC: {"type": (str, list), "default": "{pin}"},
+                CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
+                CONF_KEY_DIRECTION: {"default": Direction.INPUT, "selection": {}},
+                CONF_KEY_INVERT: {"type": bool, "default": False},
+            },
+        ),
+    ]
+)
 
-TEXT_PACKAGE_NAME = __name__.split(".")[-2] # gives gpio
+TEXT_PACKAGE_NAME = __name__.split(".")[-2]  # gives gpio
 
 log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}
 
 __all__ = [
-    "CONF_KEY_MODE", "CONF_KEY_TOPIC", "CONF_KEY_TOPIC_SETTER",
-    "CONF_KEY_TOPIC_GETTER", "CONF_KEY_PAYLOAD_ON", "CONF_KEY_PAYLOAD_OFF",
-    "CONF_KEY_POLL_INT", "CONF_KEY_PIN", "CONF_KEY_FIRST_INDEX",
-    "CONF_KEY_DIRECTION", "CONF_KEY_INVERT",
-
+    "CONF_KEY_MODE",
+    "CONF_KEY_TOPIC",
+    "CONF_KEY_TOPIC_SETTER",
+    "CONF_KEY_TOPIC_GETTER",
+    "CONF_KEY_PAYLOAD_ON",
+    "CONF_KEY_PAYLOAD_OFF",
+    "CONF_KEY_POLL_INT",
+    "CONF_KEY_PIN",
+    "CONF_KEY_FIRST_INDEX",
+    "CONF_KEY_DIRECTION",
+    "CONF_KEY_INVERT",
     "CONF_OPTIONS",
-
     "TEXT_PACKAGE_NAME",
-
-    "log"
+    "log",
 ]
+
 
 @mproperty
 def config(module):

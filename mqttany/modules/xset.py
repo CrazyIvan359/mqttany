@@ -31,7 +31,7 @@ import logger
 from config import parse_config
 from modules.mqtt import subscribe, publish
 
-__all__ = [ "init", "pre_loop", "post_loop", "queue" ]
+__all__ = ["init", "pre_loop", "post_loop", "queue"]
 
 CONF_KEY_TOPIC = "topic"
 CONF_KEY_DEFAULT_DISPLAY = "default display"
@@ -40,10 +40,10 @@ CONF_KEY_STARTUP_COMMANDS = "startup commands"
 CONF_OPTIONS = {
     CONF_KEY_TOPIC: {"type": str, "default": "{module_name}"},
     CONF_KEY_DEFAULT_DISPLAY: {"type": str, "default": None},
-    CONF_KEY_STARTUP_COMMANDS: {"type": list}
+    CONF_KEY_STARTUP_COMMANDS: {"type": list},
 }
 
-TEXT_NAME = __name__.split(".")[-1] # gives xset
+TEXT_NAME = __name__.split(".")[-1]  # gives xset
 
 log = logger.get_module_logger()
 queue = None
@@ -82,7 +82,7 @@ def pre_loop():
         substitutions={
             "module_topic": config[CONF_KEY_TOPIC],
             "module_name": TEXT_NAME,
-        }
+        },
     )
 
 
@@ -97,10 +97,7 @@ def callback_command(client, userdata, message):
     """
     Callback for commands
     """
-    queue.put_nowait({
-        "func": "_command",
-        "args": [message.payload.decode("utf-8")]
-    })
+    queue.put_nowait({"func": "_command", "args": [message.payload.decode("utf-8")]})
 
 
 def _command(payload):
@@ -112,7 +109,9 @@ def _command(payload):
         try:
             payload = json.loads(payload)
         except ValueError:
-            log.error("Received malformed JSON payload '{payload}'".format(payload=payload))
+            log.error(
+                "Received malformed JSON payload '{payload}'".format(payload=payload)
+            )
             return
         else:
             display = payload.get("display", config[CONF_KEY_DEFAULT_DISPLAY])
@@ -121,7 +120,9 @@ def _command(payload):
     # List payload "display, command"
     elif len(payload.split(",")) > 1:
         if len(payload.split(",")) != 2:
-            log.error("Received unrecognized payload '{payload}'".format(payload=payload))
+            log.error(
+                "Received unrecognized payload '{payload}'".format(payload=payload)
+            )
             return
         display, command = payload.split(",", 2)
 
@@ -133,22 +134,27 @@ def _command(payload):
     if command:
         # strip out commands that follow for security
         command = command.split(";")[0].split("&")[0].split("|")[0].strip()
-        command = "xset{display} {command}" \
-                  .format(display="" if display is None else " -display {}".format(display),
-                          command=command)
+        command = "xset{display} {command}".format(
+            display="" if display is None else " -display {}".format(display),
+            command=command,
+        )
         log.debug("Running command '{command}'".format(command=command))
-        result = subprocess.run(command.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-        log.trace("Command '{command}' result: {result}"
-                  .format(command=command,
-                          result=result.stdout))
-        publish("{}/result".format(config[CONF_KEY_TOPIC]),
-                result.stdout,
-                subtopics=["{module_topic}"],
-                substitutions={
-                    "module_topic": config[CONF_KEY_TOPIC],
-                    "module_name": TEXT_NAME,
-                })
+        result = subprocess.run(
+            command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
+        log.trace(
+            "Command '{command}' result: {result}".format(
+                command=command, result=result.stdout
+            )
+        )
+        publish(
+            "{}/result".format(config[CONF_KEY_TOPIC]),
+            result.stdout,
+            subtopics=["{module_topic}"],
+            substitutions={
+                "module_topic": config[CONF_KEY_TOPIC],
+                "module_name": TEXT_NAME,
+            },
+        )
     else:
         log.error("No command provided in payload '{payload}'".format(payload=payload))

@@ -10,6 +10,11 @@
   * XSET module to allow sending `xset` commands to control screensaver,
     screen power options, etc.
 
+* **Changed**
+  * Begin using Python Black code formatter. This has resulted in a massive commit as
+    there are changes to most files. All changes made by Black have been reviewed and
+    no errors were found.
+
 ## 0.10.3
 
 * **Fixed**

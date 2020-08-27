@@ -30,7 +30,7 @@ import os
 from modules.onewire.bus.base import OneWireBus
 from modules.onewire.bus import wire1
 
-__all__ = [ "getBus", "getConfBusOptions", "getConfBusTypes" ]
+__all__ = ["getBus", "getConfBusOptions", "getConfBusTypes"]
 
 
 def getBus(bus_type):

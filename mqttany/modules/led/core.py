@@ -37,7 +37,7 @@ from modules.led.anim import load_animations
 from modules.led.common import config
 from modules.led.common import *
 
-__all__ = [  ]
+__all__ = []
 
 TEXT_NAME = TEXT_PACKAGE_NAME
 
@@ -87,18 +87,13 @@ def pre_loop():
         if array.begin():
             array.anims = anims
             array.runAnimation(config[CONF_KEY_ANIM_STARTUP])
-            subscribe(
-                topic="{}/#".format(array.topic),
-                callback=callback_anim_message
-            )
+            subscribe(topic="{}/#".format(array.topic), callback=callback_anim_message)
 
     # subscribe to module topic
     subscribe(
         topic=config[CONF_KEY_TOPIC],
         callback=callback_anim_message,
-        substitutions={
-            "module_name": TEXT_NAME,
-        }
+        substitutions={"module_name": TEXT_NAME,},
     )
 
 
@@ -116,17 +111,22 @@ def callback_anim_message(client, userdata, message):
     """
     Callback for animation message
     """
-    queue.put_nowait({
-        "func": "_anim_message",
-        "args": [message.topic, message.payload.decode("utf-8")]
-    })
+    queue.put_nowait(
+        {
+            "func": "_anim_message",
+            "args": [message.topic, message.payload.decode("utf-8")],
+        }
+    )
 
 
 def _anim_message(topic, payload):
     array, anim = None, None
     repeat, priority = 1, 1
-    log.trace("Received message '{payload}' on topic '{topic}'".format(
-        payload=payload, topic=topic))
+    log.trace(
+        "Received message '{payload}' on topic '{topic}'".format(
+            payload=payload, topic=topic
+        )
+    )
 
     # message to module topic
     if not topic_matches_sub(config[CONF_KEY_TOPIC], topic):
@@ -147,8 +147,11 @@ def _anim_message(topic, payload):
                 payload = json.loads(payload)
             except ValueError:
                 if array is None or anim is None:
-                    log.error("Received malformed JSON '{payload}' on topic '{topic}'".format(
-                        payload=payload, topic=topic))
+                    log.error(
+                        "Received malformed JSON '{payload}' on topic '{topic}'".format(
+                            payload=payload, topic=topic
+                        )
+                    )
                 else:
                     payload = {}
             else:
@@ -163,27 +166,47 @@ def _anim_message(topic, payload):
 
         if array and anim:
             if anim not in anims:
-                log.warn("Unrecognized animation '{anim}' requested for array '{array}' on topic '{topic}'".format(
-                    anim=anim, array=array.name, topic=topic))
+                log.warn(
+                    "Unrecognized animation '{anim}' requested for array '{array}' on topic '{topic}'".format(
+                        anim=anim, array=array.name, topic=topic
+                    )
+                )
             else:
-                log.debug("Array '{array}' received command '{anim}' priority {priority} repeat {repeat} on topic '{topic}' with arguments {args}".format(
-                    args=payload, anim=anim, array=array.name, topic=topic, priority=priority, repeat=repeat))
+                log.debug(
+                    "Array '{array}' received command '{anim}' priority {priority} repeat {repeat} on topic '{topic}' with arguments {args}".format(
+                        args=payload,
+                        anim=anim,
+                        array=array.name,
+                        topic=topic,
+                        priority=priority,
+                        repeat=repeat,
+                    )
+                )
                 array.runAnimation(
-                    anim,
-                    repeat=repeat,
-                    priority=priority,
-                    anim_args=payload or {}
+                    anim, repeat=repeat, priority=priority, anim_args=payload or {}
                 )
         elif array:
-            log.warn("Unable to determine animation for array '{array}' from message '{payload}' on topic '{topic}'".format(
-                array=array.name, payload=payload, topic=topic))
+            log.warn(
+                "Unable to determine animation for array '{array}' from message '{payload}' on topic '{topic}'".format(
+                    array=array.name, payload=payload, topic=topic
+                )
+            )
         elif anim:
-            log.warn("Unable to determine array for animation '{anim}' from message '{payload}' on topic '{topic}'".format(
-                anim=anim, payload=payload, topic=topic))
+            log.warn(
+                "Unable to determine array for animation '{anim}' from message '{payload}' on topic '{topic}'".format(
+                    anim=anim, payload=payload, topic=topic
+                )
+            )
         else:
-            log.warn("Unable to determine array or animation from message '{payload}' on topic '{topic}'".format(
-                payload=payload, topic=topic))
+            log.warn(
+                "Unable to determine array or animation from message '{payload}' on topic '{topic}'".format(
+                    payload=payload, topic=topic
+                )
+            )
 
     else:
-        log.warn("Received unknown animation message '{payload}' on topic '{topic}'".format(
-            payload=payload, topic=topic))
+        log.warn(
+            "Received unknown animation message '{payload}' on topic '{topic}'".format(
+                payload=payload, topic=topic
+            )
+        )

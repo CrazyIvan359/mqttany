@@ -27,8 +27,10 @@ I2C Common
 try:
     from mprop import mproperty
 except ImportError:
-    raise ImportError("MQTTany's I2C module requires 'mprop' to be installed, \
-        please see the wiki for instructions on how to install requirements")
+    raise ImportError(
+        "MQTTany's I2C module requires 'mprop' to be installed, "
+        "please see the wiki for instructions on how to install requirements"
+    )
 
 import os
 from collections import OrderedDict
@@ -44,37 +46,48 @@ CONF_KEY_DEVICE = "device"
 CONF_KEY_BUS = "bus"
 CONF_KEY_ADDRESS = "address"
 
-CONF_OPTIONS = OrderedDict([ # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
-    (CONF_KEY_TOPIC, {"default": "{module_name}"}),
-    (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
-    (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
-    (CONF_KEY_BUS_SCAN, {"type": bool, "default": False}),
-    ("regex:.+", { # Device definition
-        "type": "section",
-        "required": False,
-        CONF_KEY_DEVICE: {"type": str},
-        CONF_KEY_BUS: {"type": (int, str), "default": 1},
-        CONF_KEY_ADDRESS: {"type": (int, list)},
-        CONF_KEY_TOPIC: {"type": (str, list), "default": "{device_name}"},
-    })
-])
+CONF_OPTIONS = OrderedDict(
+    [  # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
+        (CONF_KEY_TOPIC, {"default": "{module_name}"}),
+        (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
+        (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
+        (CONF_KEY_BUS_SCAN, {"type": bool, "default": False}),
+        (
+            "regex:.+",
+            {  # Device definition
+                "type": "section",
+                "required": False,
+                CONF_KEY_DEVICE: {"type": str},
+                CONF_KEY_BUS: {"type": (int, str), "default": 1},
+                CONF_KEY_ADDRESS: {"type": (int, list)},
+                CONF_KEY_TOPIC: {"type": (str, list), "default": "{device_name}"},
+            },
+        ),
+    ]
+)
 
-TEXT_PACKAGE_NAME = __name__.split(".")[-2] # gives i2c
+TEXT_PACKAGE_NAME = __name__.split(".")[-2]  # gives i2c
 
 log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
 _config = {}
 
 __all__ = [
-    "CONF_KEY_TOPIC", "CONF_KEY_TOPIC_GETTER", "CONF_KEY_POLL_INT",
-    "CONF_KEY_BUS", "CONF_KEY_BUS_SCAN", "CONF_KEY_DEVICE", "CONF_KEY_BUS",
+    "CONF_KEY_TOPIC",
+    "CONF_KEY_TOPIC_GETTER",
+    "CONF_KEY_POLL_INT",
+    "CONF_KEY_BUS",
+    "CONF_KEY_BUS_SCAN",
+    "CONF_KEY_DEVICE",
+    "CONF_KEY_BUS",
     "CONF_KEY_ADDRESS",
-
     "CONF_OPTIONS",
-
     "TEXT_PACKAGE_NAME",
-
-    "log", "config", "validateAddress", "validateBus"
+    "log",
+    "config",
+    "validateAddress",
+    "validateBus",
 ]
+
 
 @mproperty
 def config(module):
@@ -108,8 +121,7 @@ def validateBus(bus):
         return None
 
     if not os.path.exists(filepath):
-        log.error("I2C bus path '{filepath}' does not exist".format(
-            filepath=filepath))
+        log.error("I2C bus path '{filepath}' does not exist".format(filepath=filepath))
         return None
 
     return filepath
