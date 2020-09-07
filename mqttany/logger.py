@@ -55,7 +55,7 @@ def warn_log(self, msg, *args, **kwargs):
     Warn method that will be injected into ``logging.Logger``.
     Needed because ``log.warn`` is depreciated in Python 3.7
     """
-    if self.isEnabledFor(TRACE):
+    if self.isEnabledFor(WARN):
         self._log(WARN, msg, args, **kwargs)
 
 
