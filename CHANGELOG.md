@@ -2,6 +2,9 @@
 
 ## Development
 
+* **Fixed**
+  * Remove requirements file for old MCP230xx module that was removed in v0.10.0.
+
 ## 0.11.0
 
 * **Added**
