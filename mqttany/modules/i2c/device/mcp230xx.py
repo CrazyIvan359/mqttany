@@ -24,26 +24,39 @@ I2C Device MCP230xx
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ["CONF_OPTIONS", "CONF_DEVICE_OPTIONS", "SUPPORTED_DEVICES"]
+
 from collections import OrderedDict
 from enum import Enum
 import json
 from threading import Timer
 
-from common import Logic, Direction, Resistor, Interrupt
 import logger
-from modules.mqtt import publish, resolve_topic, topic_matches_sub
-from modules.i2c.device.common import I2CDevice
-from modules.i2c.common import config
-from modules.i2c.common import *
+from config import resolve_type
+from common import BusMessage, BusNode, BusProperty, validate_id
+from modules.i2c.device.base import I2CDevice
+from modules.i2c import common
+from modules.i2c.common import CONF_KEY_NAME
 
 
-__all__ = ["SUPPORTED_DEVICES", "CONF_OPTIONS", "CONF_DEVICE_OPTIONS"]
+class Logic(Enum):
+    LOW = 0
+    HIGH = 1
+
+
+class Direction(Enum):
+    INPUT = 10
+    OUTPUT = 11
+
+
+class Resistor(Enum):
+    OFF = 20
+    PULL_UP = 21
+
+
+TEXT_STATE = {False: "OFF", "OFF": False, True: "ON", "ON": True}
 
 CONF_KEY_MCP = "mcp230xx"
-CONF_KEY_TOPIC_SETTER = "topic set"
-CONF_KEY_TOPIC_PULSE = "topic pulse"
-CONF_KEY_PAYLOAD_ON = "payload on"
-CONF_KEY_PAYLOAD_OFF = "payload off"
 CONF_KEY_PIN = "pin"
 CONF_KEY_DIRECTION = "direction"
 CONF_KEY_RESISTOR = "resistor"
@@ -51,23 +64,19 @@ CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
 CONF_KEY_FIRST_INDEX = "first index"
 
-CONF_OPTIONS = {  # added to root config section
-    CONF_KEY_TOPIC_SETTER: {"default": "set"},
-    CONF_KEY_TOPIC_PULSE: {"type": str, "default": "pulse"},
-    CONF_KEY_PAYLOAD_ON: {"default": "ON"},
-    CONF_KEY_PAYLOAD_OFF: {"default": "OFF"},
-}
-
+CONF_OPTIONS = {}  # added to root config section
 CONF_DEVICE_OPTIONS = {  # added to device definition section
     CONF_KEY_MCP: OrderedDict(
         [
+            ("type", "section"),
+            ("required", False),
             (
                 "regex:.+",
                 {
                     "type": "section",
                     "required": False,
                     CONF_KEY_PIN: {"type": (int, list)},
-                    CONF_KEY_TOPIC: {"type": (str, list), "default": "{pin}"},
+                    CONF_KEY_NAME: {"type": (str, list), "default": "{pin_id}"},
                     CONF_KEY_DIRECTION: {
                         "default": Direction.INPUT,
                         "selection": {
@@ -87,19 +96,21 @@ CONF_DEVICE_OPTIONS = {  # added to device definition section
                         },
                     },
                     CONF_KEY_INVERT: {"type": bool, "default": False},
-                    CONF_KEY_INITIAL: {"default": "{payload_off}"},
+                    CONF_KEY_INITIAL: {
+                        "selection": {
+                            "ON": True,
+                            "on": True,
+                            "OFF": False,
+                            "off": False,
+                        },
+                        "default": False,
+                    },
                     CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
                 },
-            )
+            ),
         ]
     )
 }
-
-TEXT_NAME = ".".join(
-    [__name__.split(".")[-3], __name__.split(".")[-1]]
-)  # gives i2c.mcp230xx
-
-PAYLOAD_LOOKUP = {}
 
 
 # helpers to get/set bits
@@ -117,263 +128,108 @@ def _clear_bit(val, bit):
 
 class Pin(object):
     """
-    Device Pin class
+    MCP230xx Pin class
     """
 
-    def __init__(self, pin, name, topic, direction, resistor, invert, initial, device):
-        self.pin = pin
-        self.name = name
-        self.topic = topic
-        self.direction = direction
-        self.invert = invert
+    def __init__(
+        self,
+        pin: int,
+        id: str,
+        name: str,
+        direction: Direction,
+        resistor: Resistor,
+        invert: bool,
+        initial: bool,
+        device: I2CDevice,
+    ):
+        self._pin = pin
+        self._id = id
+        self._name = name
+        self._direction = direction
+        self._invert = invert
         self._device = device
+        self._path = f"{self._device.id}/{self.id}"
         self._pulse_timer = None
+
         if direction == Direction.INPUT:
             if resistor == Resistor.PULL_UP:
                 device._gppu = _set_bit(device._gppu, pin)
         else:
             device._iodir = _clear_bit(device._iodir, pin)
-            if initial in PAYLOAD_LOOKUP:
-                self.state_payload = initial
-            else:
-                self._device.log.warn(
-                    "Invalid initial state '{state}' for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                        state=initial,
-                        pin_name=name,
-                        pin=pin,
-                        device=device.device,
-                        device_name=device.name,
-                    )
-                )
-                self.state = 0
+            self.state = initial
 
     def publish_state(self):
-        """ Publish pin state """
-        publish(self.topic, self.state_payload)
+        state = self.state_log
+        common.publish_queue.put_nowait(
+            BusMessage(path=self._path, content=TEXT_STATE[state])
+        )
 
     @property
-    def state(self):
-        """ Pin state as ``int`` after applying invert flag """
-        return self.state_logic ^ self.invert
+    def state(self) -> bool:
+        """
+        Returns pin state as ``bool`` after applying invert flag
+        """
+        return bool(_get_bit(self._device._gpio, self._pin) ^ self._invert)
 
     @state.setter
-    def state(self, value):
-        self.state_logic = int(value) ^ self.invert
+    def state(self, value: bool):
+        if self._direction == Direction.OUTPUT:
+            self._device._gpio = _set_bit(
+                self._device._gpio, self._pin, int(value) ^ self._invert
+            )
 
     @property
-    def state_logic(self):
-        """ Raw pin state """
-        return _get_bit(self._device._gpio, self.pin)
-
-    @state_logic.setter
-    def state_logic(self, value):
-        if self.direction == Direction.INPUT:
-            return
-        self._device._gpio = _set_bit(self._device._gpio, self.pin, int(value))
-
-    @property
-    def state_payload(self):
-        """ Pin state as one of ``payload_on`` or ``payload_off`` """
-        self._device.log.debug(
-            "Read state '{state}' logic {logic} from GP{pin:02d} on {device} '{device_name}'".format(
-                state=PAYLOAD_LOOKUP[self.state],
-                logic=Logic(self.state).name,
-                pin=self.pin,
-                device=self._device.device,
-                device_name=self._device.name,
-            )
-        )
-        return PAYLOAD_LOOKUP[self.state]
-
-    @state_payload.setter
-    def state_payload(self, payload):
-        if self.direction == Direction.INPUT:
-            return
-        if payload in PAYLOAD_LOOKUP:
-            if self._pulse_timer is not None:
-                self._pulse_timer.cancel()
-                self._pulse_timer = None
-                self._device.log.debug(
-                    "Cancelled PULSE timer for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                        pin_name=self.name,
-                        pin=self.pin,
-                        device=self._device.device,
-                        device_name=self._device.name,
-                    )
-                )
-
-            self.state = PAYLOAD_LOOKUP[payload]
-            self._device.log.debug(
-                "Set state '{state}' logic {logic} on GP{pin:02d} on {device} '{device_name}'".format(
-                    state=PAYLOAD_LOOKUP[self.state],
-                    logic=Logic(self.state).name,
-                    pin=self.pin,
-                    device=self._device.device,
-                    device_name=self._device.name,
-                )
-            )
-            self.publish_state()
-
-        else:
-            self._device.log.warn(
-                "Received unrecognized SET payload '{payload}' for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                    payload=payload,
-                    pin_name=self.name,
-                    pin=self.pin,
-                    device=self._device.device,
-                    device_name=self._device.name,
-                )
-            )
-
-    def pulse(self, payload):
+    def state_log(self) -> bool:
         """
-        Handle a PULSE message
+        Returns pin state as ``bool`` after applying invert flag and logs the event
         """
-        if self.direction == Direction.INPUT:
-            return
-
-        # JSON payload
-        if "{" in payload:
-            try:
-                payload = json.loads(payload)
-            except ValueError:
-                self._device.log.error(
-                    "Received malformed JSON '{payload}' for PULSE for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                        payload=payload,
-                        pin_name=self.name,
-                        pin=self.pin,
-                        device=self._device.device,
-                        device_name=self._device.name,
-                    )
-                )
-                return
-            else:
-                if not "time" in payload:
-                    self._device.log.error(
-                        "Received JSON PULSE command missing 'time' argument for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                            pin_name=self.name,
-                            pin=self.pin,
-                            device=self._device.device,
-                            device_name=self._device.name,
-                        )
-                    )
-                    return
-                if not "state" in payload:
-                    payload["state"] = self.state
-                    if payload["state"] is not None:
-                        payload["state"] = not payload["state"]
-                    else:
-                        self._device.log.error(
-                            "PULSE failed, unable to read pin state for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                                pin_name=self.name,
-                                pin=self.pin,
-                                device=self._device.device,
-                                device_name=self._device.name,
-                            )
-                        )
-                        return
-
-        # List payload "time, state"
-        elif len(payload.split(",")) > 1:
-            if len(payload.split(",")) != 2:
-                self._device.log.error(
-                    "Received unrecognized PULSE command '{payload}' for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                        payload=payload,
-                        pin_name=self.name,
-                        pin=self.pin,
-                        device=self._device.device,
-                        device_name=self._device.name,
-                    )
-                )
-                return
-            payload = {
-                "time": resolve_type(payload.split(",")[0].strip()),
-                "state": payload.split(",")[1].strip(),
-            }
-            if not isinstance(payload["time"], int):
-                self._device.log.error(
-                    "Received invalid time '{time}' for PULSE command for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                        time=payload["time"],
-                        pin_name=self.name,
-                        pin=self.pin,
-                        device=self._device.device,
-                        device_name=self._device.name,
-                    )
-                )
-                return
-
-        # Time only payload
-        else:
-            payload = {"time": resolve_type(payload)}
-            if not isinstance(payload["time"], int):
-                self._device.log.error(
-                    "Received invalid time '{time}' for PULSE command for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                        time=payload["time"],
-                        pin_name=self.name,
-                        pin=self.pin,
-                        device=self._device.device,
-                        device_name=self._device.name,
-                    )
-                )
-                return
-            payload["state"] = self.state
-            if payload["state"] is not None:
-                payload["state"] = not payload["state"]
-            else:
-                self._device.log.error(
-                    "PULSE failed, unable to read pin state for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                        pin_name=self.name,
-                        pin=self.pin,
-                        device=self._device.device,
-                        device_name=self._device.name,
-                    )
-                )
-                return
-
-        if isinstance(payload["state"], str):
-            if payload["state"] in PAYLOAD_LOOKUP:
-                payload["state"] = PAYLOAD_LOOKUP[payload["state"]]
-            else:
-                self._device.log.error(
-                    "Received unrecognized state '{state}' for PULSE command for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                        state=payload["state"],
-                        pin_name=self.name,
-                        pin=self.pin,
-                        device=self._device.device,
-                        device_name=self._device.name,
-                    )
-                )
-                return
-
-        self._device.log.debug(
-            "Pulsing '{pin_name}' on GP{pin:02d} on {device} '{device_name}' to '{state}' logic {logic} for {time}ms".format(
-                pin_name=self.name,
-                pin=self.pin,
-                device=self._device.device,
-                device_name=self._device.name,
-                logic=Logic(self.state_logic).name,
-                state=PAYLOAD_LOOKUP[self.state],
-                time=payload["time"],
-            )
+        state = self.state
+        self._device._log.debug(
+            "Read state %s logic %s from pin GP%02d '%s' on %s '%s'",
+            TEXT_STATE[state],
+            Logic(int(state ^ self._invert)).name,
+            self._pin,
+            self._name,
+            self._device.device,
+            self._device.name,
         )
+        return state
 
-        self.state = payload["state"]
+    @state_log.setter
+    def state_log(self, state: bool):
+        if self._direction == Direction.OUTPUT:
+            self._pulse_cancel()
+            self.state = state
+            self._device._log.debug(
+                "Set pin GP%02d '%s' on %s '%s' to %s logic %s",
+                self._pin,
+                self._name,
+                self._device.device,
+                self._device.name,
+                TEXT_STATE[state],
+                Logic(int(state ^ self._invert)).name,
+            )
+
+    def _pulse(self, time: int, state: bool):
+        """
+        Sets the pin to ``state`` for ``time`` ms then to ``not state``.
+        Any calls to ``pulse`` while the timer is running will cancel the previous pulse.
+        Any changes to the pin state will cancel the timer.
+        """
+        self._pulse_cancel()
+        self._device.log.debug(
+            "Pulsing pin GP%02d '%s' on %s '%s' to %s logic %s for %dms",
+            self._pin,
+            self._name,
+            self._device.device,
+            self._device.name,
+            TEXT_STATE[state],
+            Logic(int(state)).name,
+            time,
+        )
+        self.state_log = state
         self._device._write_gpio()
-        if self._pulse_timer is not None:
-            self._pulse_timer.cancel()
-            self._pulse_timer = None
-            self._device.log.debug(
-                "Cancelled PULSE timer for '{pin_name}' on GP{pin:02d} on {device} '{device_name}'".format(
-                    pin_name=self.name,
-                    pin=self.pin,
-                    device=self._device.device,
-                    device_name=self._device.name,
-                )
-            )
-
-        self._pulse_timer = Timer(
-            float(payload["time"]) / 1000, self._pulse_end, args=[not payload["state"]]
-        )
+        self._pulse_timer = Timer(float(time) / 1000, self._pulse_end, args=[not state])
         self._pulse_timer.start()
         self.publish_state()
 
@@ -382,19 +238,122 @@ class Pin(object):
         End of a pulse cycle, set pin to state and log
         """
         self._pulse_timer = None
-        self.state = state
-        self._device._write_gpio()
         self._device.log.debug(
-            "PULSE ended for '{pin_name}' on GP{pin:02d} on {device} '{device_name}' set pin to '{state}' logic {logic}".format(
-                pin_name=self.name,
-                pin=self.pin,
-                device=self._device.device,
-                device_name=self._device.name,
-                logic=Logic(self.state_logic).name,
-                state=PAYLOAD_LOOKUP[self.state],
-            )
+            "PULSE ended for pin GP%02d '%s' on %s '%s'",
+            self._pin,
+            self._name,
+            self._device.device,
+            self._device.name,
         )
+        self.state_log = state
+        self._device._write_gpio()
         self.publish_state()
+
+    def _pulse_cancel(self):
+        if self._pulse_timer is not None:
+            self._pulse_timer.cancel()
+            self._pulse_timer = None
+            self._device.log.debug(
+                "Cancelled PULSE timer for pin GP%02d '%s' on %s '%s'",
+                self._pin,
+                self._name,
+                self._device.device,
+                self._device.name,
+            )
+
+    def set(self, content: str):
+        """
+        Handle a SET message
+        """
+        if self._direction == Direction.OUTPUT:
+            state = str(resolve_type(content))
+            if state in TEXT_STATE:
+                self._pulse_cancel()
+                self.state_log = TEXT_STATE[state]
+                self._device._write_gpio()
+                self.publish_state()
+            else:
+                self._device._log.warn(
+                    "Received unrecognized SET message for pin GP%02d '%s' on %s '%s': %s",
+                    self._pin,
+                    self._name,
+                    self._device.device,
+                    self._device.name,
+                    content,
+                )
+        else:
+            self._device._log.warn(
+                "Received SET command for pin GP%02d '%s' on %s '%s' but it is not "
+                "configured as an output",
+                self._pin,
+                self._name,
+                self._device.device,
+                self._device.name,
+            )
+
+    def pulse(self, content: str):
+        """
+        Handle a PULSE message
+        """
+        if self._direction == Direction.OUTPUT:
+            try:
+                content = json.loads(content)
+            except ValueError:
+                self._device._log.warn(
+                    "Received unrecognized PULSE command for pin GP%02d '%s' on %s '%s': %s",
+                    self._pin,
+                    self._name,
+                    self._device.device,
+                    self._device.name,
+                    content,
+                )
+            else:
+                time = content.get("time")
+                state = content.get("state")
+                if not time:
+                    self._device._log.error(
+                        "Received PULSE command missing 'time' argument for pin "
+                        "GP%02d '%s' on %s '%s': %s",
+                        self._pin,
+                        self._name,
+                        self._device.device,
+                        self._device.name,
+                        content,
+                    )
+                    return
+                if state is None:
+                    self._device._read_gpio()
+                    state = TEXT_STATE[self.state]
+                else:
+                    state = str(resolve_type(content))
+                if state in TEXT_STATE:
+                    self._pulse(time, TEXT_STATE[state])
+                else:
+                    self._device._log.warn(
+                        "Received unrecognized PULSE state for pin GP%02d '%s' on %s '%s': %s",
+                        self._pin,
+                        self._name,
+                        self._device.device,
+                        self._device.name,
+                        state,
+                    )
+        else:
+            self._device._log.warn(
+                "Received PULSE command for pin GP%02d '%s' on %s '%s' but it is not "
+                "configured as an output",
+                self._pin,
+                self._name,
+                self._device.device,
+                self._device.name,
+            )
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+    @property
+    def name(self) -> str:
+        return self._name
 
 
 class MCP230xx(I2CDevice):
@@ -402,211 +361,229 @@ class MCP230xx(I2CDevice):
     Base class for MCP23008 and MCP23017 GPIO Expanders
     """
 
-    def __init__(self, name, address, device, bus_path, bus, topic, device_config):
-        super().__init__(name, address, device, bus_path, bus, topic, self.log)
-        PAYLOAD_LOOKUP[config[CONF_KEY_PAYLOAD_ON]] = 1
-        PAYLOAD_LOOKUP[1] = config[CONF_KEY_PAYLOAD_ON]
-        PAYLOAD_LOOKUP[config[CONF_KEY_PAYLOAD_OFF]] = 0
-        PAYLOAD_LOOKUP[0] = config[CONF_KEY_PAYLOAD_OFF]
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        device: str,
+        address: int,
+        bus,
+        bus_path: str,
+    ):
+        super().__init__(id, name, device, address, bus, bus_path)
+        self._pins = []
+        self._pin_max = 0
+        self._pin_from_path = {}
+        self._gpio = None  # set by subclass
 
-        # Setup device pins from config
-        for pin_name in [
-            key
-            for key in device_config[CONF_KEY_MCP]
-            if isinstance(device_config[CONF_KEY_MCP][key], dict)
-        ]:
-            pin_config = device_config[CONF_KEY_MCP].pop(pin_name)
-            if isinstance(pin_config[CONF_KEY_PIN], int):  # Single pin definition
-                if not isinstance(pin_config[CONF_KEY_TOPIC], str):
-                    self.log.error(
-                        "Failed to configure pin group '{pin_name}' for {device} '{device_name}'. Single pin definitions can have only 1 topic".format(
-                            pin_name=pin_name, device=self.device, device_name=self.name
-                        )
-                    )
-                else:
-                    self._setup_pin(
-                        pin=pin_config[CONF_KEY_PIN],
-                        pin_name=pin_name,
-                        pin_topic=pin_config[CONF_KEY_TOPIC],
-                        direction=pin_config[CONF_KEY_DIRECTION],
-                        resistor=pin_config[CONF_KEY_RESISTOR],
-                        invert=pin_config[CONF_KEY_INVERT],
-                        initial=pin_config[CONF_KEY_INITIAL],
-                    )
-            elif isinstance(pin_config[CONF_KEY_PIN], list):  # Multiple pin definition
-                if isinstance(pin_config[CONF_KEY_TOPIC], list) and len(
-                    pin_config[CONF_KEY_PIN]
-                ) != len(pin_config[CONF_KEY_TOPIC]):
-                    self.log.error(
-                        "Failed to configure pin group '{pin_name}' for {device} '{device_name}'. "
-                        "There are {pins} and {topics}, must have the same number".format(
-                            pin_name=pin_name,
-                            device=self.device,
-                            device_name=self.name,
-                            pins=len(pin_config[CONF_KEY_PIN]),
-                            topics=len(pin_config[CONF_KEY_TOPIC]),
-                        )
-                    )
-                else:
-                    for index in range(len(pin_config[CONF_KEY_PIN])):
-                        self._setup_pin(
-                            pin=pin_config[CONF_KEY_PIN][index],
-                            pin_name=pin_name,
-                            pin_topic=pin_config[CONF_KEY_TOPIC][index]
-                            if isinstance(pin_config[CONF_KEY_TOPIC], list)
-                            else pin_config[CONF_KEY_TOPIC],
-                            direction=pin_config[CONF_KEY_DIRECTION],
-                            resistor=pin_config[CONF_KEY_RESISTOR],
-                            invert=pin_config[CONF_KEY_INVERT],
-                            initial=pin_config[CONF_KEY_INITIAL],
-                            index_sub=index + pin_config[CONF_KEY_FIRST_INDEX],
-                        )
+    def get_node(self) -> BusNode:
+        node = super().get_node()
+        node.add_property(
+            "poll-all",
+            BusProperty(name="Poll All Pins", settable=True, callback="device_message"),
+        )
+        node.add_property(
+            "pulse", BusProperty(name="Pulse", settable=True, callback="device_message")
+        )
+        for pin in [pin for pin in self._pins if pin is not None]:
+            node.add_property(
+                pin.id,
+                BusProperty(
+                    name=pin._name,
+                    settable=pin._direction == Direction.OUTPUT,
+                    callback="device_message",
+                ),
+            )
+            node.add_property(str(pin._pin), node.properties[pin.id])
+        return node
 
     def cleanup(self):
         """
         Perform cleanup on module shutdown.
         Subclasses may override this method
         """
-        self._gpio = 0
-        for pin in self._pins:
-            if pin is None:
-                continue
-            pin.state = 0  # set all pins to configured OFF
-        self._write_gpio()
-
-    def _setup_pin(
-        self,
-        pin,
-        pin_name,
-        pin_topic,
-        direction,
-        resistor,
-        invert,
-        initial,
-        index_sub="",
-    ):
-        """
-        Setup pin for given options
-        """
-        if self._pins[pin] is not None:
-            self.log.warn(
-                "Duplicate configuration for GP{pin:02d} found in '{pin_name}' for {device} '{device_name}' will be ignored, pin already configured under '{original}'".format(
-                    pin=pin,
-                    pin_name=pin_name,
-                    device=self.device,
-                    device_name=self._name,
-                    original=self._pins[pin].name,
-                )
-            )
-        elif pin > self._pin_max:
-            self.log.warn(
-                "Found pin GP{pin:02d} in '{pin_name}' for '{device_name}' but highest pin for '{device}' is GP{max}".format(
-                    pin=pin,
-                    pin_name=pin_name,
-                    device_name=self._name,
-                    device=self._device,
-                    max=self._pin_max,
-                )
-            )
-        else:
-            self._pins[pin] = Pin(
-                pin=pin,
-                name=pin_name,
-                topic=resolve_topic(
-                    pin_topic,
-                    subtopics=["{module_topic}", "{device_topic}"],
-                    substitutions={
-                        "module_topic": config[CONF_KEY_TOPIC],
-                        "module_name": TEXT_PACKAGE_NAME,
-                        "device_topic": self._topic,
-                        "address": self._address,
-                        "device_name": self._name,
-                        "pin_name": pin_name,
-                        "pin": pin,
-                        "index": index_sub,
-                    },
-                ),
-                direction=direction,
-                resistor=resistor,
-                invert=invert,
-                initial=initial.format(
-                    payload_on=config[CONF_KEY_PAYLOAD_ON],
-                    payload_off=config[CONF_KEY_PAYLOAD_OFF],
-                ),
-                device=self,
-            )
-            self.log.debug(
-                "Configured '{pin_name}' on GP{pin:02d} on {device} '{device_name}' with options: {options}".format(
-                    pin_name=pin_name,
-                    pin=pin,
-                    device=self._device,
-                    device_name=self._name,
-                    options={
-                        "direction": direction.name,
-                        "resistor": resistor.name,
-                        "invert": invert,
-                    },
-                )
-            )
+        if self._setup:
+            self._gpio = 0
+            for pin in self._pins:
+                if pin is not None:
+                    pin.state = 0  # set all pins to configured OFF
+            self._write_gpio()
 
     def publish_state(self):
         """
         Publishes the state of all configured pins
         """
-        if not self._setup:
-            return
-        self._read_gpio()
-        for pin in self._pins:
-            if pin is None:
-                continue
-            pin.publish_state()
+        if self._setup:
+            self._log.debug("Polling all pins")
+            self._read_gpio()
+            for pin in self._pins:
+                if pin is not None:
+                    pin.publish_state()
 
-    def handle_message(self, topic, payload):
+    def message_callback(self, message: BusMessage) -> None:
         """
         Handle messages to any of this device's subscriptions.
         """
-        if not self._setup:
-            return
-        if topic_matches_sub(
-            "{}/{}".format(self._topic, config[CONF_KEY_TOPIC_GETTER]), topic
-        ):
-            self.publish_state()
-        else:
-            for pin in self._pins:
-                if pin is None:
-                    continue
-                if topic_matches_sub("{}/+".format(pin.topic), topic):
-                    if topic_matches_sub(
-                        "{}/{}".format(pin.topic, config[CONF_KEY_TOPIC_SETTER]), topic
-                    ):
-                        pin.state_payload = payload.decode("utf-8")
-                        self._write_gpio()
-                        break
-                    elif topic_matches_sub(
-                        "{}/{}".format(pin.topic, config[CONF_KEY_TOPIC_PULSE]), topic
-                    ):
-                        pin.pulse(payload.decode("utf-8"))
-                        break
-                    elif topic_matches_sub(
-                        "{}/{}".format(pin.topic, config[CONF_KEY_TOPIC_GETTER]), topic
-                    ):
-                        self._read_gpio()
-                        pin.publish_state()
-                        break
+        if self._setup:
+            path = message.path.strip("/").split("/")[1:]
+            if len(path) > 2:
+                self._log.debug("Received message on unregistered path: %s", message)
+            elif path[0] == "poll-all":
+                self.publish_state()
+            elif path[0] == "pulse":
+                try:
+                    content_json = json.loads(message.content)
+                except ValueError:
+                    self._log.warn(
+                        "Received unrecognized PULSE command: %s", message.content
+                    )
+                else:
+                    if content_json.get("pin") in self._pin_from_path:
+                        self._pins[self._pin_from_path[content_json["pin"]]].pulse(
+                            message.content
+                        )
+                    else:
+                        self._log.warn(
+                            "Received PULSE command for unknown pin %s: %s",
+                            content_json.get("pin"),
+                            message.content,
+                        )
+            elif path[0] in self._pin_from_path and path[1] == "set":
+                self._pins[self._pin_from_path[path[0]]].set(message.content)
+            elif path[0] in self._pin_from_path and path[1] == "pulse":
+                try:
+                    content_json = json.loads(message.content)
+                except ValueError:
+                    self._log.warn(
+                        "Received unrecognized PULSE command for pin GP%02d '%s': %s",
+                        self._pins[self._pin_from_path[path[0]]]._pin,
+                        self._pins[self._pin_from_path[path[0]]].name,
+                        message.content,
+                    )
+                else:
+                    self._pins[self._pin_from_path[path[0]]].pulse(message.content)
+            else:
+                self._log.debug("Received message on unregistered path: %s", message)
 
-    def get_subscriptions(self):
+    def _build_pins(self, device_config):
         """
-        Return all device and pin topics to subscribe to
+        Setup device pins from config
         """
-        topics = super().get_subscriptions()
-        for pin in self._pins:
-            if pin is None:
-                continue
-            topics.append("{}/{}".format(pin.topic, config[CONF_KEY_TOPIC_GETTER]))
-            if pin.direction == Direction.OUTPUT:
-                topics.append("{}/{}".format(pin.topic, config[CONF_KEY_TOPIC_SETTER]))
-                topics.append("{}/{}".format(pin.topic, config[CONF_KEY_TOPIC_PULSE]))
-        return topics
+        for pin_id in [
+            key
+            for key in device_config[CONF_KEY_MCP]
+            if isinstance(device_config[CONF_KEY_MCP][key], dict)
+        ]:
+            pin_config = device_config[CONF_KEY_MCP].pop(pin_id)
+            if isinstance(pin_config[CONF_KEY_PIN], int):  # Single pin definition
+                if not isinstance(pin_config[CONF_KEY_NAME], str):
+                    self._log.error(
+                        "Failed to configure pin '%s' for %s '%s': single pin "
+                        "definitions can have only 1 name",
+                        pin_id,
+                        self.device,
+                        self.name,
+                    )
+                else:
+                    self._setup_pin(
+                        pin=pin_config[CONF_KEY_PIN],
+                        id=pin_id,
+                        name=pin_config[CONF_KEY_NAME],
+                        direction=pin_config[CONF_KEY_DIRECTION],
+                        resistor=pin_config[CONF_KEY_RESISTOR],
+                        invert=pin_config[CONF_KEY_INVERT],
+                        initial=pin_config[CONF_KEY_INITIAL],
+                    )
+            elif isinstance(pin_config[CONF_KEY_PIN], list):  # Multiple pin definition
+                if isinstance(pin_config[CONF_KEY_NAME], list) and len(
+                    pin_config[CONF_KEY_PIN]
+                ) != len(pin_config[CONF_KEY_NAME]):
+                    self._log.error(
+                        "Failed to configure pin group '%s' for %s '%s': must have the "
+                        "same number of pins and names",
+                        pin_id,
+                        self.device,
+                        self.name,
+                    )
+                else:
+                    for index in range(len(pin_config[CONF_KEY_PIN])):
+                        if isinstance(pin_config[CONF_KEY_NAME], list):
+                            name = pin_config[CONF_KEY_NAME][index]
+                        elif "{index}" in pin_config[CONF_KEY_NAME]:
+                            name = pin_config[CONF_KEY_NAME]
+                        else:
+                            name = f"{pin_config[CONF_KEY_NAME]} {index + pin_config[CONF_KEY_FIRST_INDEX]}"
+                        self._setup_pin(
+                            pin=pin_config[CONF_KEY_PIN][index],
+                            id=f"{pin_id}-{index + pin_config[CONF_KEY_FIRST_INDEX]}",
+                            name=name,
+                            direction=pin_config[CONF_KEY_DIRECTION],
+                            resistor=pin_config[CONF_KEY_RESISTOR],
+                            invert=pin_config[CONF_KEY_INVERT],
+                            initial=pin_config[CONF_KEY_INITIAL],
+                        )
+
+    def _setup_pin(
+        self,
+        pin: int,
+        id: str,
+        name: str,
+        direction: Direction,
+        resistor: Resistor,
+        invert: bool,
+        initial: bool,
+    ):
+        """
+        Setup pin for given options
+        """
+        if not validate_id(id):
+            self._log.warn("'%s' is not a valid ID and will be ignored", id)
+        elif self._pins[pin] is not None:
+            self._log.warn(
+                "Duplicate configuration for GP%02d '%s' found in '%s' for %s '%s' "
+                "will be ignored, pin already configured under '%s'",
+                pin,
+                id,
+                self._device.id,
+                self._device,
+                self._name,
+                self._pins[pin].name,
+            )
+        elif pin > self._pin_max:
+            self._log.warn(
+                "Found pin GP%02d in '%s' for %s '%s' but highest pin for device is GP%02d",
+                pin,
+                id,
+                self._device.id,
+                self._name,
+                self._pin_max,
+            )
+        else:
+            self._pins[pin] = Pin(
+                pin=pin,
+                id=id,
+                name=name,
+                direction=direction,
+                resistor=resistor,
+                invert=invert,
+                initial=initial,
+                device=self,
+            )
+            self._pin_from_path[id] = pin
+            self._log.debug(
+                "Configured pin GP%02d '%s' on %s '%s' with options: %s",
+                pin,
+                name,
+                self.device,
+                self.name,
+                {
+                    "ID": id,
+                    CONF_KEY_DIRECTION: direction.name,
+                    CONF_KEY_RESISTOR: resistor.name,
+                    CONF_KEY_INVERT: invert,
+                    CONF_KEY_INITIAL: TEXT_STATE[initial],
+                },
+            )
 
     def _read_gpio(self):
         """
@@ -626,11 +603,6 @@ class MCP23008(MCP230xx):
     MCP23008 8-channel GPIO Expander
     """
 
-    log = logger.get_module_logger(
-        module=".".join([__name__.split(".")[-3], "mcp23008"])
-    )
-    _pin_max = 7
-
     # Device Registers
     # fmt: off
     _IODIR =   0x00  # Direction
@@ -646,14 +618,26 @@ class MCP23008(MCP230xx):
     _OLAT =    0x0A  # Output Latch
     # fmt: on
 
-    def __init__(self, name, address, device, bus_path, bus, topic, device_config):
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        device: str,
+        address: int,
+        bus,
+        bus_path: str,
+        device_config: dict,
+    ):
+        super().__init__(id, name, device, address, bus, bus_path)
+        self._log = logger.get_module_logger("i2c.mcp23008")
+        self._pin_max = 7
         self._pins = [None] * (self._pin_max + 1)
         self._gpio = 0x0000
         self._iodir = 0xFFFF
         self._gppu = 0x0000
-        super().__init__(name, address, device, bus_path, bus, topic, device_config)
+        super()._build_pins(device_config)
 
-    def setup(self):
+    def setup(self) -> bool:
         """
         Setup the hardware
         """
@@ -661,13 +645,12 @@ class MCP23008(MCP230xx):
             return False
 
         self._setup = True
-        self.log.debug(
-            "Writing initial values to registers of {device} '{name}' at address 0x{address:02x} on bus '{bus}'".format(
-                device=self._device,
-                name=self._name,
-                address=self._address,
-                bus=self._bus_path,
-            )
+        self._log.debug(
+            "Writing initial values to registers of %s '%s' at address 0x%02x on bus '%s'",
+            self._device,
+            self._name,
+            self._address,
+            self._bus_path,
         )
         if not self._write_block(
             0x00,
@@ -704,11 +687,6 @@ class MCP23017(MCP230xx):
     MCP23017 16-channel GPIO Expander
     """
 
-    log = logger.get_module_logger(
-        module=".".join([__name__.split(".")[-3], "mcp23017"])
-    )
-    _pin_max = 15
-
     # Device Registers
     # fmt: off
     _IODIRA =   0x00  # Direction
@@ -735,12 +713,24 @@ class MCP23017(MCP230xx):
     _OLATB =    0x15
     # fmt: on
 
-    def __init__(self, name, address, device, bus_path, bus, topic, device_config):
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        device: str,
+        address: int,
+        bus,
+        bus_path: str,
+        device_config: dict,
+    ):
+        super().__init__(id, name, device, address, bus, bus_path)
+        self._log = logger.get_module_logger("i2c.mcp23017")
+        self._pin_max = 15
         self._pins = [None] * (self._pin_max + 1)
         self._gpio = 0x0000
         self._iodir = 0xFFFF
         self._gppu = 0x0000
-        super().__init__(name, address, device, bus_path, bus, topic, device_config)
+        super()._build_pins(device_config)
 
     def setup(self):
         """
@@ -750,13 +740,12 @@ class MCP23017(MCP230xx):
             return False
 
         self._setup = True
-        self.log.debug(
-            "Writing initial values to registers of {device} '{name}' at address 0x{address:02x} on bus '{bus}'".format(
-                device=self._device,
-                name=self._name,
-                address=self._address,
-                bus=self._bus_path,
-            )
+        self._log.debug(
+            "Writing initial values to registers of %s '%s' at address 0x%02x on bus '%s'",
+            self._device,
+            self._name,
+            self._address,
+            self._bus_path,
         )
         if not self._write_block(
             0x00,

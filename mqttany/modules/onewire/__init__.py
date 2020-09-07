@@ -25,30 +25,29 @@ Dallas OneWire Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-try:
-    from mprop import mproperty
-except ImportError:
-    raise ImportError(
-        "MQTTany's OneWire module requires 'mprop' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
+__all__ = []
 
-from modules.onewire import core
-from modules.onewire.core import init, pre_loop, post_loop
-from modules.onewire.core import _device_message, poll_all
-from modules.onewire.common import log
+from mprop import mproperty
 
-__all__ = ["init", "pre_loop", "post_loop", "queue"]
+from modules import ModuleType
 
-_queue = None
+from modules.onewire.core import load, start, stop
+from modules.onewire.core import device_message, poll_message
+from modules.onewire import common
+from modules.onewire.common import log, nodes
+
+
+_module_type = ModuleType.INTERFACE
+_publish_queue = None
+subscribe_queue = None
 
 
 @mproperty
-def queue(module):
-    return _queue
+def publish_queue(module):
+    return _publish_queue
 
 
-@queue.setter
-def queue(module, value):
-    module._queue = value
-    core.queue = value
+@publish_queue.setter
+def publish_queue(module, value):
+    module._publish_queue = value
+    common.publish_queue = value

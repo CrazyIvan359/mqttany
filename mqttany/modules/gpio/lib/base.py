@@ -1,7 +1,7 @@
 """
-***************************
-GPIO Library Wrapper Common
-***************************
+*******************************
+GPIO Library Wrapper Base Class
+*******************************
 
 :Author: Michael Murton
 """

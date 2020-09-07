@@ -25,211 +25,180 @@ Common
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time, collections, signal
-from ctypes import c_char_p, c_int
+import collections, signal
 import multiprocessing as mproc
 from enum import Enum
+from typing import Dict, List, Optional, Any
+from types import MappingProxyType
+import re
 
 import logger
+from logger import log_traceback
 
 log = logger.get_logger()
 
 __all__ = [
     "POISON_PILL",
     "SignalHook",
-    "Mode",
-    "Logic",
-    "Direction",
-    "Resistor",
-    "Interrupt",
-    "TEXT_LOGIC_STATE",
-    "TEXT_PIN_PREFIX",
-    "acquire_gpio_lock",
-    "release_gpio_lock",
+    "DataType",
+    "BusMessage",
+    "BusProperty",
+    "BusNode",
+    "validate_id",
+    "validate_tag",
+    "update_dict",
+    "lock_gpio",
 ]
 
 POISON_PILL = {"stop": True}
 
-
-class Mode(Enum):
-    BOARD = 50
-    SOC = 51
-    WIRINGPI = 52
-
-
-class Logic(Enum):
-    LOW = 0
-    HIGH = 1
-
-
-class Direction(Enum):
-    INPUT = 10
-    OUTPUT = 11
-
-
-class Resistor(Enum):
-    OFF = 20
-    PULL_UP = 21
-    PULL_DOWN = 22
-
-
-class Interrupt(Enum):
-    NONE = 0
-    RISING = 30
-    FALLING = 31
-    BOTH = 32
-
-
-TEXT_LOGIC_STATE = ["LOW", "HIGH"]
-TEXT_PIN_PREFIX = {Mode.BOARD: "pin ", Mode.SOC: "GPIO", Mode.WIRINGPI: "WiringPi pin "}
-
 # fmt: off
-_gpio_lock = {  # GPIO pin locks
-      0: mproc.Array(c_char_p, 16),  #   0
-      1: mproc.Array(c_char_p, 16),  #   1
-      2: mproc.Array(c_char_p, 16),  #   2
-      3: mproc.Array(c_char_p, 16),  #   3
-      4: mproc.Array(c_char_p, 16),  #   4
-      5: mproc.Array(c_char_p, 16),  #   5
-      6: mproc.Array(c_char_p, 16),  #   6
-      7: mproc.Array(c_char_p, 16),  #   7
-      8: mproc.Array(c_char_p, 16),  #   8
-      9: mproc.Array(c_char_p, 16),  #   9
-     10: mproc.Array(c_char_p, 16),  #  10
-     11: mproc.Array(c_char_p, 16),  #  11
-     12: mproc.Array(c_char_p, 16),  #  12
-     13: mproc.Array(c_char_p, 16),  #  13
-     14: mproc.Array(c_char_p, 16),  #  14
-     15: mproc.Array(c_char_p, 16),  #  15
-     16: mproc.Array(c_char_p, 16),  #  16
-     17: mproc.Array(c_char_p, 16),  #  17
-     18: mproc.Array(c_char_p, 16),  #  18
-     19: mproc.Array(c_char_p, 16),  #  19
-     20: mproc.Array(c_char_p, 16),  #  20
-     21: mproc.Array(c_char_p, 16),  #  21
-     22: mproc.Array(c_char_p, 16),  #  22
-     23: mproc.Array(c_char_p, 16),  #  23
-     24: mproc.Array(c_char_p, 16),  #  24
-     25: mproc.Array(c_char_p, 16),  #  25
-     26: mproc.Array(c_char_p, 16),  #  26
-     27: mproc.Array(c_char_p, 16),  #  27
-     28: mproc.Array(c_char_p, 16),  #  28
-     29: mproc.Array(c_char_p, 16),  #  29
-     30: mproc.Array(c_char_p, 16),  #  30
-     31: mproc.Array(c_char_p, 16),  #  31
-     33: mproc.Array(c_char_p, 16),  #  33
-     34: mproc.Array(c_char_p, 16),  #  34
+_gpio_locks = {  # GPIO pin locks
+      0: mproc.Lock(),  #   0
+      1: mproc.Lock(),  #   1
+      2: mproc.Lock(),  #   2
+      3: mproc.Lock(),  #   3
+      4: mproc.Lock(),  #   4
+      5: mproc.Lock(),  #   5
+      6: mproc.Lock(),  #   6
+      7: mproc.Lock(),  #   7
+      8: mproc.Lock(),  #   8
+      9: mproc.Lock(),  #   9
+     10: mproc.Lock(),  #  10
+     11: mproc.Lock(),  #  11
+     12: mproc.Lock(),  #  12
+     13: mproc.Lock(),  #  13
+     14: mproc.Lock(),  #  14
+     15: mproc.Lock(),  #  15
+     16: mproc.Lock(),  #  16
+     17: mproc.Lock(),  #  17
+     18: mproc.Lock(),  #  18
+     19: mproc.Lock(),  #  19
+     20: mproc.Lock(),  #  20
+     21: mproc.Lock(),  #  21
+     22: mproc.Lock(),  #  22
+     23: mproc.Lock(),  #  23
+     24: mproc.Lock(),  #  24
+     25: mproc.Lock(),  #  25
+     26: mproc.Lock(),  #  26
+     27: mproc.Lock(),  #  27
+     28: mproc.Lock(),  #  28
+     29: mproc.Lock(),  #  29
+     30: mproc.Lock(),  #  30
+     31: mproc.Lock(),  #  31
+     33: mproc.Lock(),  #  33
+     34: mproc.Lock(),  #  34
 
-     74: mproc.Array(c_char_p, 16),  #  74
-     75: mproc.Array(c_char_p, 16),  #  75
-     76: mproc.Array(c_char_p, 16),  #  76
-     77: mproc.Array(c_char_p, 16),  #  77
+     74: mproc.Lock(),  #  74
+     75: mproc.Lock(),  #  75
+     76: mproc.Lock(),  #  76
+     77: mproc.Lock(),  #  77
 
-     83: mproc.Array(c_char_p, 16),  #  83
+     83: mproc.Lock(),  #  83
 
-     87: mproc.Array(c_char_p, 16),  #  87
-     88: mproc.Array(c_char_p, 16),  #  88
+     87: mproc.Lock(),  #  87
+     88: mproc.Lock(),  #  88
 
-     97: mproc.Array(c_char_p, 16),  #  97
-     98: mproc.Array(c_char_p, 16),  #  98
-     99: mproc.Array(c_char_p, 16),  #  99
-    100: mproc.Array(c_char_p, 16),  # 100
-    101: mproc.Array(c_char_p, 16),  # 101
-    102: mproc.Array(c_char_p, 16),  # 102
-    103: mproc.Array(c_char_p, 16),  # 103
-    104: mproc.Array(c_char_p, 16),  # 104
-    105: mproc.Array(c_char_p, 16),  # 105
-    106: mproc.Array(c_char_p, 16),  # 106
-    107: mproc.Array(c_char_p, 16),  # 107
-    108: mproc.Array(c_char_p, 16),  # 108
+     97: mproc.Lock(),  #  97
+     98: mproc.Lock(),  #  98
+     99: mproc.Lock(),  #  99
+    100: mproc.Lock(),  # 100
+    101: mproc.Lock(),  # 101
+    102: mproc.Lock(),  # 102
+    103: mproc.Lock(),  # 103
+    104: mproc.Lock(),  # 104
+    105: mproc.Lock(),  # 105
+    106: mproc.Lock(),  # 106
+    107: mproc.Lock(),  # 107
+    108: mproc.Lock(),  # 108
 
-    113: mproc.Array(c_char_p, 16),  # 113
-    114: mproc.Array(c_char_p, 16),  # 114
-    115: mproc.Array(c_char_p, 16),  # 115
-    116: mproc.Array(c_char_p, 16),  # 116
-    117: mproc.Array(c_char_p, 16),  # 117
-    118: mproc.Array(c_char_p, 16),  # 118
+    113: mproc.Lock(),  # 113
+    114: mproc.Lock(),  # 114
+    115: mproc.Lock(),  # 115
+    116: mproc.Lock(),  # 116
+    117: mproc.Lock(),  # 117
+    118: mproc.Lock(),  # 118
 
-    128: mproc.Array(c_char_p, 16),  # 128
+    128: mproc.Lock(),  # 128
 
-    130: mproc.Array(c_char_p, 16),  # 130
-    131: mproc.Array(c_char_p, 16),  # 131
-    132: mproc.Array(c_char_p, 16),  # 132
-    133: mproc.Array(c_char_p, 16),  # 133
+    130: mproc.Lock(),  # 130
+    131: mproc.Lock(),  # 131
+    132: mproc.Lock(),  # 132
+    133: mproc.Lock(),  # 133
 
-    171: mproc.Array(c_char_p, 16),  # 171
-    172: mproc.Array(c_char_p, 16),  # 172
-    173: mproc.Array(c_char_p, 16),  # 173
-    174: mproc.Array(c_char_p, 16),  # 174
+    171: mproc.Lock(),  # 171
+    172: mproc.Lock(),  # 172
+    173: mproc.Lock(),  # 173
+    174: mproc.Lock(),  # 174
 
-    187: mproc.Array(c_char_p, 16),  # 187
-    188: mproc.Array(c_char_p, 16),  # 188
-    189: mproc.Array(c_char_p, 16),  # 189
-    190: mproc.Array(c_char_p, 16),  # 190
-    191: mproc.Array(c_char_p, 16),  # 191
-    192: mproc.Array(c_char_p, 16),  # 192
+    187: mproc.Lock(),  # 187
+    188: mproc.Lock(),  # 188
+    189: mproc.Lock(),  # 189
+    190: mproc.Lock(),  # 190
+    191: mproc.Lock(),  # 191
+    192: mproc.Lock(),  # 192
 
-    205: mproc.Array(c_char_p, 16),  # 205
-    206: mproc.Array(c_char_p, 16),  # 206
-    207: mproc.Array(c_char_p, 16),  # 207
-    208: mproc.Array(c_char_p, 16),  # 208
-    209: mproc.Array(c_char_p, 16),  # 209
-    210: mproc.Array(c_char_p, 16),  # 210
+    205: mproc.Lock(),  # 205
+    206: mproc.Lock(),  # 206
+    207: mproc.Lock(),  # 207
+    208: mproc.Lock(),  # 208
+    209: mproc.Lock(),  # 209
+    210: mproc.Lock(),  # 210
 
-    214: mproc.Array(c_char_p, 16),  # 214
+    214: mproc.Lock(),  # 214
 
-    218: mproc.Array(c_char_p, 16),  # 218
-    219: mproc.Array(c_char_p, 16),  # 219
+    218: mproc.Lock(),  # 218
+    219: mproc.Lock(),  # 219
 
-    224: mproc.Array(c_char_p, 16),  # 224
-    225: mproc.Array(c_char_p, 16),  # 225
-    226: mproc.Array(c_char_p, 16),  # 226
-    227: mproc.Array(c_char_p, 16),  # 227
-    228: mproc.Array(c_char_p, 16),  # 228
-    229: mproc.Array(c_char_p, 16),  # 229
-    230: mproc.Array(c_char_p, 16),  # 230
-    231: mproc.Array(c_char_p, 16),  # 231
-    232: mproc.Array(c_char_p, 16),  # 232
-    233: mproc.Array(c_char_p, 16),  # 233
-    234: mproc.Array(c_char_p, 16),  # 234
-    235: mproc.Array(c_char_p, 16),  # 235
-    236: mproc.Array(c_char_p, 16),  # 236
-    237: mproc.Array(c_char_p, 16),  # 237
-    238: mproc.Array(c_char_p, 16),  # 238
-    239: mproc.Array(c_char_p, 16),  # 239
-    240: mproc.Array(c_char_p, 16),  # 240
-    241: mproc.Array(c_char_p, 16),  # 241
+    224: mproc.Lock(),  # 224
+    225: mproc.Lock(),  # 225
+    226: mproc.Lock(),  # 226
+    227: mproc.Lock(),  # 227
+    228: mproc.Lock(),  # 228
+    229: mproc.Lock(),  # 229
+    230: mproc.Lock(),  # 230
+    231: mproc.Lock(),  # 231
+    232: mproc.Lock(),  # 232
+    233: mproc.Lock(),  # 233
+    234: mproc.Lock(),  # 234
+    235: mproc.Lock(),  # 235
+    236: mproc.Lock(),  # 236
+    237: mproc.Lock(),  # 237
+    238: mproc.Lock(),  # 238
+    239: mproc.Lock(),  # 239
+    240: mproc.Lock(),  # 240
+    241: mproc.Lock(),  # 241
 
-    247: mproc.Array(c_char_p, 16),  # 247
+    247: mproc.Lock(),  # 247
 
-    249: mproc.Array(c_char_p, 16),  # 249
+    249: mproc.Lock(),  # 249
 
-    464: mproc.Array(c_char_p, 16),  # 464
+    464: mproc.Lock(),  # 464
 
-    472: mproc.Array(c_char_p, 16),  # 472
-    473: mproc.Array(c_char_p, 16),  # 473
-    474: mproc.Array(c_char_p, 16),  # 474
-    475: mproc.Array(c_char_p, 16),  # 475
-    476: mproc.Array(c_char_p, 16),  # 476
-    477: mproc.Array(c_char_p, 16),  # 477
-    478: mproc.Array(c_char_p, 16),  # 478
-    479: mproc.Array(c_char_p, 16),  # 479
-    480: mproc.Array(c_char_p, 16),  # 480
-    481: mproc.Array(c_char_p, 16),  # 481
-    482: mproc.Array(c_char_p, 16),  # 482
-    483: mproc.Array(c_char_p, 16),  # 483
-    484: mproc.Array(c_char_p, 16),  # 484
-    485: mproc.Array(c_char_p, 16),  # 485
-    486: mproc.Array(c_char_p, 16),  # 486
-    487: mproc.Array(c_char_p, 16),  # 487
-    488: mproc.Array(c_char_p, 16),  # 488
-    489: mproc.Array(c_char_p, 16),  # 489
-    490: mproc.Array(c_char_p, 16),  # 490
-    491: mproc.Array(c_char_p, 16),  # 491
-    492: mproc.Array(c_char_p, 16),  # 492
-    493: mproc.Array(c_char_p, 16),  # 493
-    494: mproc.Array(c_char_p, 16),  # 494
-    495: mproc.Array(c_char_p, 16),  # 495
+    472: mproc.Lock(),  # 472
+    473: mproc.Lock(),  # 473
+    474: mproc.Lock(),  # 474
+    475: mproc.Lock(),  # 475
+    476: mproc.Lock(),  # 476
+    477: mproc.Lock(),  # 477
+    478: mproc.Lock(),  # 478
+    479: mproc.Lock(),  # 479
+    480: mproc.Lock(),  # 480
+    481: mproc.Lock(),  # 481
+    482: mproc.Lock(),  # 482
+    483: mproc.Lock(),  # 483
+    484: mproc.Lock(),  # 484
+    485: mproc.Lock(),  # 485
+    486: mproc.Lock(),  # 486
+    487: mproc.Lock(),  # 487
+    488: mproc.Lock(),  # 488
+    489: mproc.Lock(),  # 489
+    490: mproc.Lock(),  # 490
+    491: mproc.Lock(),  # 491
+    492: mproc.Lock(),  # 492
+    493: mproc.Lock(),  # 493
+    494: mproc.Lock(),  # 494
+    495: mproc.Lock(),  # 495
 }
 # fmt: on
 
@@ -259,7 +228,7 @@ class SignalHook:
             pass
 
     def _signal_received(self, signum, frame):
-        self._last_signal = signal.Signals(signum)
+        self._last_signal = signal.Signals(signum)  # pylint: disable=no-member
 
     @property
     def signal(self):
@@ -270,122 +239,212 @@ class SignalHook:
         return self._last_signal in [self.SIGINT, self.SIGTERM, self.SIGKILL]
 
 
-def acquire_gpio_lock(pin, gpio_pin, module, timeout=0, mode=Mode.SOC):
+class DataType(Enum):
+    INT = "integer"
+    FLOAT = "float"
+    BOOL = "boolean"
+    STR = "string"
+    ENUM = "enum"
+    COLOR = "color"
+    DATETIME = "datetime"
+    DURATION = "duration"
+
+
+class BusMessage(object):
     """
-    Acquire lock on GPIO pin
-    Timeout is ms
+    Message object used in all queues.
+
+    Args:
+        - path (str): path to publish an outgoing message to, or path an incoming message
+          was received on.
+        - content (str): message content.
+        - mqtt_retained (bool): for outgoing messages on MQTT only, if ``None`` then
+          default from MQTT module will be used.
+        - mqtt_qos (int): for outgoing messages on MQTT only, if ``None`` then
+          default from MQTT module will be used.
+        - callback (str): **Internal Use** for incoming messages this will be set to the
+          name of the function to call if the property is settable.
     """
-    log.trace(
-        "Module '{module}' requested a lock on {pin_prefix}{pin:02d}{gpio_pin}".format(
-            module=module,
-            pin=pin,
-            pin_prefix=TEXT_PIN_PREFIX[mode],
-            gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin),
-        )
-    )
 
-    if _gpio_lock[gpio_pin].raw == "":
-        _gpio_lock[gpio_pin].raw = module
-        log.debug(
-            "Module '{module}' locked {pin_prefix}{pin:02d}{gpio_pin}".format(
-                module=module,
-                pin=pin,
-                pin_prefix=TEXT_PIN_PREFIX[mode],
-                gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin),
+    __slots__ = "path", "content", "mqtt_retained", "mqtt_qos", "callback"
+
+    def __init__(
+        self,
+        path: str,
+        content: Any,
+        mqtt_retained: Optional[bool] = None,
+        mqtt_qos: Optional[int] = None,
+        callback: Optional[str] = None,
+    ):
+        path = path.strip("/")
+        if len(path.split("/")) < 2:
+            raise ValueError(
+                f"Message Path '{path}' is less than the minimum 2 levels deep"
             )
-        )
-        return True
-    elif _gpio_lock[gpio_pin].raw == module:
-        _gpio_lock[gpio_pin].raw = module
-        log.trace(
-            "Module '{module}' already has a lock on {pin_prefix}{pin:02d}{gpio_pin}".format(
-                module=module,
-                pin=pin,
-                pin_prefix=TEXT_PIN_PREFIX[mode],
-                gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin),
-            )
-        )
-        return True
-    elif timeout:
-        then = time.time() + (timeout / 1000)
-        while time.time() < then:
-            if _gpio_lock[gpio_pin].raw == "":
-                _gpio_lock[gpio_pin].raw = module
-                log.debug(
-                    "Module '{module}' locked {pin_prefix}{pin:02d}{gpio_pin}".format(
-                        module=module,
-                        pin=pin,
-                        pin_prefix=TEXT_PIN_PREFIX[mode],
-                        gpio_pin=""
-                        if mode == Mode.SOC
-                        else " (GPIO{:02d})".format(gpio_pin),
-                    )
-                )
-                return True
-            else:
-                time.sleep(0.025)
+        self.path = path
+        self.content = content
+        self.mqtt_retained = mqtt_retained
+        self.mqtt_qos = mqtt_qos
+        self.callback = callback
 
-    log.warn(
-        "Module '{module}' failed to acquire a lock on {pin_prefix}{pin:02d}{gpio_pin} because '{owner}' already has a lock on it".format(
-            module=module,
-            pin=pin,
-            owner=_gpio_lock[pin].raw,
-            pin_prefix=TEXT_PIN_PREFIX[mode],
-            gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin),
+    def __str__(self):
+        return f"Message('{self.path}', '{self.content}')"
+
+    def __repr__(self):
+        return (
+            f"Message(Path: '{self.path}', Content: '{self.content}', "
+            f"MQTT Retained: '{self.mqtt_retained}', MQTT QOS: '{self.mqtt_qos}', "
+            f"Callback: '{self.callback}')"
         )
-    )
-    return False
 
 
-def release_gpio_lock(pin, gpio_pin, module, mode=Mode.SOC):
+class BusProperty(object):
     """
-    Release lock on GPIO pin
+    Property object to be provided to the internal bus by all interface modules in order
+    to build a map of all nodes and properties available. Modules may provide as many
+    nodes as they need with as many properties as needed. Nodes must be unique within the
+    entire application, requests to create a node with a
+
+    Args:
+        - name (str): friendly name.
+        - datatype (DataType): must be one of Enum ``DataType``.
+        - format (str): for numbers it must be the valid range, for enums must be enums.
+        - unit (str): one of ``°C``, ``°F``, ``°``, ``L``, ``gal``, ``V``, ``W``, ``A``,
+          ``%``, ``m``, ``ft``, ``Pa``, ``psi``, ``#``, or blank, or any other value.
+        - settable (bool): ``True`` if this property can receive commands, default ``False``.
+        - callback (str): name of a function to call if a message is received that satisfies
+          a matching pattern in the communication module it arrived on. Callback must
+          accept exactly 1 argument of type ``BusMessage``.
     """
-    log.trace(
-        "Module '{module}' requested to release a lock on {pin_prefix}{pin:02d}{gpio_pin}".format(
-            module=module,
-            pin=pin,
-            pin_prefix=TEXT_PIN_PREFIX[mode],
-            gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin),
-        )
-    )
 
-    if _gpio_lock[gpio_pin].raw == module:
-        _gpio_lock[gpio_pin].raw == ""
-    elif _gpio_lock[gpio_pin].raw == "":
-        log.trace(
-            "Module '{module}' attempted to release {pin_prefix}{pin:02d}{gpio_pin} but it is not locked.".format(
-                module=module,
-                pin=pin,
-                pin_prefix=TEXT_PIN_PREFIX[mode],
-                gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin),
-            )
-        )
-        return True
-    else:
-        log.warn(
-            "Module '{module}' attempted to release a lock on {pin_prefix}{pin:02d}{gpio_pin} but it is locked by '{owner}'".format(
-                module=module,
-                pin=pin,
-                owner=_gpio_lock[pin].raw,
-                pin_prefix=TEXT_PIN_PREFIX[mode],
-                gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin),
-            )
-        )
-        return False
+    __slots__ = "name", "datatype", "format", "unit", "settable", "callback", "_tags"
 
-    log.debug(
-        "Module '{module}' released lock on {pin_prefix}{pin:02d}{gpio_pin}".format(
-            module=module,
-            pin=pin,
-            pin_prefix=TEXT_PIN_PREFIX[mode],
-            gpio_pin="" if mode == Mode.SOC else " (GPIO{:02d})".format(gpio_pin),
-        )
-    )
-    return True
+    def __init__(
+        self,
+        name: str,
+        datatype: Optional[DataType] = DataType.STR,
+        format: Optional[str] = "",
+        unit: Optional[str] = None,
+        settable: Optional[bool] = False,
+        callback: Optional[str] = None,
+        tags: Optional[list] = [],
+    ):
+        self.name = name
+        self.datatype = datatype
+        self.format = format
+        self.unit = unit
+        self.settable = settable
+        self.callback = callback
+        self._tags = []
+        for tag in tags:
+            self.add_tag(tag)
+
+    @property
+    def tags(self):
+        return tuple(self._tags)
+
+    @tags.setter
+    def tags(self, value: List[str]):
+        self._tags = []
+        for tag in value:
+            self.add_tag(tag)
+
+    @tags.deleter
+    def tags(self):
+        self._tags = []
+
+    def add_tag(self, tag: str):
+        if not validate_tag(tag):
+            raise KeyError(f"Tag '{tag}' is invalid")
+        elif tag in self._tags:
+            pass
+        else:
+            self._tags.append(tag)
 
 
-def update_dict(d, u):
+class BusNode(object):
+    """
+    Node
+
+    Args:
+        - name (str): friendly node name.
+        - type (str): node type.
+        - tags (list):
+        - properties (dict): a dict of ``name: BusProperty`` describing all properties
+          in this node.
+    """
+
+    __slots__ = "module", "name", "type", "_tags", "_properties"
+
+    def __init__(
+        self,
+        name: str,
+        type: str,
+        tags: Optional[List[str]] = [],
+        properties: Optional[Dict[str, BusProperty]] = {},
+    ):
+        self.module = None
+        self.name = name
+        self.type = type
+        self._tags = []
+        for tag in tags:
+            self.add_tag(tag)
+        self._properties = {}
+        for property_name in properties:
+            self.add_property(property_name, properties[property_name])
+
+    @property
+    def tags(self):
+        return tuple(self._tags)
+
+    @tags.setter
+    def tags(self, value: List[str]):
+        self._tags = []
+        for tag in value:
+            self.add_tag(tag)
+
+    @tags.deleter
+    def tags(self):
+        self._tags = []
+
+    def add_tag(self, tag: str):
+        if not validate_tag(tag):
+            raise KeyError(f"Tag '{tag}' is invalid")
+        elif tag in self._tags:
+            pass
+        else:
+            self._tags.append(tag)
+
+    @property
+    def properties(self):
+        return MappingProxyType(self._properties)
+
+    @properties.setter
+    def properties(self, value: Dict[str, BusProperty]):
+        self._properties = {}
+        for name in value:
+            self.add_property(name, value[name])
+
+    @properties.deleter
+    def properties(self):
+        self._properties = {}
+
+    def add_property(self, id: str, prop: BusProperty):
+        if not validate_id(id):
+            raise KeyError(f"Property id '{id}' is invalid")
+        else:
+            self._properties[id] = prop
+
+
+def validate_id(id):
+    return not re.search("^-|[^a-z0-9-]|-$", id)
+
+
+def validate_tag(tag):
+    return not re.search("[^a-zA-Z0-9]", tag)
+
+
+def update_dict(d: dict, u: dict) -> dict:
     """
     Recursively update dict ``d`` with dict ``u``
     """
@@ -400,7 +459,47 @@ def update_dict(d, u):
     return d
 
 
-### Initialize
+def _call(module, name, **kwargs):
+    """
+    Calls ``name`` if defined in ``module``
+    """
+    func = getattr(module, name, None)
+    if func is not None:
+        retval = False
+        if callable(func):
+            try:
+                retval = func(**kwargs)
+            except:
+                module.log.error(
+                    "An exception occurred while running function '%s'",
+                    getattr(func, "__name__", func),
+                )
+                log_traceback(module.log)
+            finally:
+                # This function intentionally swallows exceptions. It is only used by
+                # the core to call functions in modules. If there is an error in a
+                # module the core must continue to run in order to exit gracefully.
+                # If the core were to stop because of exceptions in modules, all child
+                # processes would be orphaned and would have to be killed by manually
+                # sending SIG.TERM or SIG.KILL to them.
+                return retval  # pylint: disable=lost-exception
 
-for pin in _gpio_lock:
-    _gpio_lock[pin].raw = ""
+
+def lock_gpio(pin: int, module: str) -> bool:
+    """
+    Modules using GPIO pins **must** call this before interacting with the hardware in
+    order to prevent multiple modules trying to manipulate the hardware. Returns ``True``
+    if the pin is available or ``False`` if it is already in use.
+
+    Args:
+        - pin (int): GPIO number. NOT wiringpi pin, not physical pin!
+        - module (str): name of the module requesting the lock, for logging.
+    """
+    success = _gpio_locks[pin].acquire(False)
+    if success:
+        log.debug("Module %s acquired a lock on GPIO%02d", module, pin)
+    else:
+        log.warn(
+            "Module %s failed to lock GPIO%02d, it is already in use!", module, pin
+        )
+    return success

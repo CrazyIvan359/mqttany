@@ -1,6 +1,6 @@
 """
 *********************
-Dallas OneWire Shared
+Dallas OneWire Common
 *********************
 
 :Author: Michael Murton
@@ -25,43 +25,65 @@ Dallas OneWire Shared
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-try:
-    from mprop import mproperty
-except ImportError:
-    raise ImportError(
-        "MQTTany's OneWire module requires 'mprop' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
-
-import logger
-
-CONF_KEY_TOPIC = "topic"
-CONF_KEY_TOPIC_GETTER = "topic get"
-CONF_KEY_POLL_INT = "polling interval"
-CONF_KEY_BUS = "bus interface"
-CONF_KEY_BUS_SCAN = "bus scan"
-CONF_KEY_ADDRESS = "address"
-CONF_KEY_FIRST_INDEX = "first index"
-
-TEXT_PACKAGE_NAME = __name__.split(".")[-2]  # gives onewire
-
-log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
-_config = {}
-
 __all__ = [
-    "CONF_KEY_TOPIC",
-    "CONF_KEY_TOPIC_GETTER",
+    "log",
+    "CONFIG",
+    "publish_queue",
+    "nodes",
     "CONF_KEY_POLL_INT",
     "CONF_KEY_BUS",
     "CONF_KEY_BUS_SCAN",
+    "CONF_KEY_NAME",
     "CONF_KEY_ADDRESS",
     "CONF_KEY_FIRST_INDEX",
-    "TEXT_PACKAGE_NAME",
-    "log",
-    "config",
+    "CONF_OPTIONS",
 ]
 
+from collections import OrderedDict
 
-@mproperty
-def config(module):
-    return _config
+import logger
+from common import DataType, BusNode, BusProperty
+
+log = logger.get_module_logger("onewire")
+CONFIG = {}
+
+publish_queue = None
+nodes = {
+    "onewire": BusNode(
+        name="OneWire",
+        type="Module",
+        properties={
+            "poll-all": BusProperty(
+                name="Poll All", settable=True, callback="poll_message"
+            ),
+            "polling-interval": BusProperty(
+                name="Polling Interval", datatype=DataType.INT, unit="s"
+            ),
+        },
+    )
+}
+
+CONF_KEY_POLL_INT = "polling interval"
+CONF_KEY_BUS = "bus interface"
+CONF_KEY_BUS_SCAN = "bus scan"
+CONF_KEY_NAME = "name"
+CONF_KEY_ADDRESS = "address"
+CONF_KEY_FIRST_INDEX = "first index"
+
+CONF_OPTIONS = OrderedDict(
+    [
+        (CONF_KEY_BUS, {"default": "w1", "selection": []}),
+        (CONF_KEY_POLL_INT, {"type": int, "default": 60}),
+        (CONF_KEY_BUS_SCAN, {"type": bool, "default": False}),
+        (
+            "regex:.+",
+            {
+                "type": "section",
+                "required": False,
+                CONF_KEY_NAME: {"type": (str, list), "default": "{device}"},
+                CONF_KEY_ADDRESS: {"type": (str, list)},
+                CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
+            },
+        ),
+    ]
+)

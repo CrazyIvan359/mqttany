@@ -25,6 +25,8 @@ GPIO Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ["load", "start", "stop", "pin_message", "poll_message", "pulse_message"]
+
 try:
     import adafruit_platformdetect
 except ImportError:
@@ -33,134 +35,143 @@ except ImportError:
         "please see the wiki for instructions on how to install requirements"
     )
 
+import json
 from threading import Timer
 
 from config import parse_config
+from common import BusMessage, validate_id
 
-from common import TEXT_PIN_PREFIX
-from modules.mqtt import subscribe, topic_matches_sub
-
-from modules.gpio.GPIO import getGPIO
+from modules.gpio import common
+from modules.gpio.lib import getGPIO
 from modules.gpio.pin import getPin, updateConfOptions
-from modules.gpio.common import config
-from modules.gpio.common import *
+from modules.gpio.common import (
+    log,
+    CONFIG,
+    nodes,
+    CONF_KEY_MODE,
+    CONF_KEY_POLL_INT,
+    CONF_KEY_PIN,
+    CONF_KEY_NAME,
+    CONF_KEY_FIRST_INDEX,
+    CONF_KEY_DIRECTION,
+    CONF_OPTIONS,
+    TEXT_GPIO_MODE,
+)
 
-__all__ = []
-
-TEXT_NAME = TEXT_PACKAGE_NAME
-
-pins = []
-queue = None
+pins = {}
+pin_from_path = {}
 polling_timer = None
 
 
-def init(config_data={}):
+def load(config_raw={}):
     """
     Initializes the module
     """
 
-    def build_pin(name, pin_config, index=None):
+    def build_pin(id, pin_config, index=None):
+        if not validate_id(id):
+            log.warn("'%s' is not a valid ID and will be ignored", id)
+            return None
         clazz = getPin(pin_config[CONF_KEY_DIRECTION])
         if clazz:
-            if isinstance(pin_config[CONF_KEY_TOPIC], list):
-                topic = pin_config[CONF_KEY_TOPIC][index]
-            else:
-                topic = pin_config[CONF_KEY_TOPIC]
-
-            if isinstance(pin_config[CONF_KEY_PIN], list):
-                pin = pin_config[CONF_KEY_PIN][index]
-                index = index + pin_config[CONF_KEY_FIRST_INDEX]
-            else:
+            if index is None:
                 pin = pin_config[CONF_KEY_PIN]
+                name = pin_config[CONF_KEY_NAME].format(pin=pin, pin_id=id, index="")
+            else:
+                if isinstance(pin_config[CONF_KEY_NAME], list):
+                    name = pin_config[CONF_KEY_NAME][index]
+                elif "{index}" in pin_config[CONF_KEY_NAME]:
+                    name = pin_config[CONF_KEY_NAME]
+                else:
+                    name = f"{pin_config[CONF_KEY_NAME]} {index + pin_config[CONF_KEY_FIRST_INDEX]}"
+                pin = pin_config[CONF_KEY_PIN][index]
+                name = name.format(
+                    pin=pin, pin_id=id, index=index + pin_config[CONF_KEY_FIRST_INDEX]
+                )
+                id = f"{id}-{index + pin_config[CONF_KEY_FIRST_INDEX]}"
 
-            return clazz(name, pin, topic, pin_config, index)
+            clazz = clazz(pin, id, name, pin_config)
         else:
             log.warn(
-                "Direction '{dir}'  for '{name}' on {pin_prefix}{pin:02d} is not supported".format(
-                    dir=pin_config[CONF_KEY_DIRECTION],
-                    name=name,
-                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                    pin=pin,
-                )
+                "Direction '%s' for '%s' on %s is not supported",
+                pin_config[CONF_KEY_DIRECTION],
+                id,
+                TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
             )
-            return None
+        return clazz
 
     conf_options = updateConfOptions(CONF_OPTIONS)
     conf_options.move_to_end("regex:.+")
-    raw_config = parse_config(config_data, conf_options, log)
-    del config_data
-    if raw_config:
+    config_data = parse_config(config_raw, conf_options, log)
+    del config_raw
+    if config_data:
         log.debug("Config loaded")
-        config.update(raw_config)
-        del raw_config
-        used_pins = {}
+        CONFIG.update(config_data)
+        del config_data
 
         detector = adafruit_platformdetect.Detector()
         if getGPIO() is None:
-            log.error("Unsupported board {board}".format(board=detector.board.id))
+            log.error("Unsupported board: %s", detector.board.id)
             return False
-        log.debug("Board is {board}".format(board=detector.board.id))
+        log.info("Detected board: %s", detector.board.id)
 
         pin_valid = getGPIO().pin_valid
 
-        for name in [key for key in config if isinstance(config[key], dict)]:
-            named_config = config.pop(name)
+        for id in [key for key in CONFIG if isinstance(CONFIG[key], dict)]:
+            named_config = CONFIG.pop(id)
             pin_object = None
 
-            if isinstance(named_config[CONF_KEY_PIN], int):
+            if isinstance(named_config.get(CONF_KEY_PIN), int):
                 pin = named_config[CONF_KEY_PIN]
                 if not pin_valid(pin, named_config[CONF_KEY_DIRECTION]):
                     log.warn(
-                        "{pin_prefix}{pin:02d} in '{name}' is not a valid pin for this board, it will be ignored".format(
-                            pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                            pin=pin,
-                            name=name,
-                        )
+                        "%s in '%s' is not a valid pin for this board, it will be ignored",
+                        TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                        id,
                     )
-                elif pin in used_pins:
+                elif pin in pins:
                     log.warn(
-                        "Duplicate configuration for {pin_prefix}{pin:02d} found in '{name}' will be ignored, pin already configured under '{original}'".format(
-                            pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                            pin=pin,
-                            name=name,
-                            original=pins[used_pins[pin]].name,
-                        )
+                        "Duplicate configuration for %s found in '%s' will be ignored, "
+                        "pin already configured under '%s'",
+                        TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                        id,
+                        pins[pin].name,
                     )
                 else:
-                    pin_object = build_pin(name, named_config)
+                    pin_object = build_pin(id, named_config)
 
                 if pin_object:
-                    used_pins[pin] = len(pins)
-                    pins.append(pin_object)
+                    pins[pin] = pin_object
                     pin_object = None
 
-            elif isinstance(named_config[CONF_KEY_PIN], list):
+            elif isinstance(named_config.get(CONF_KEY_PIN), list):
                 for index in range(len(named_config[CONF_KEY_PIN])):
                     pin = named_config[CONF_KEY_PIN][index]
                     if not pin_valid(pin, named_config[CONF_KEY_DIRECTION]):
                         log.warn(
-                            "{pin_prefix}{pin:02d} in '{name}' is not a valid pin for this board, it will be ignored".format(
-                                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                                pin=pin,
-                                name=name,
-                            )
+                            "%s in '%s' is not a valid pin for this board, it will be ignored",
+                            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                            id,
                         )
-                    elif pin in used_pins:
+                    elif pin in pins:
                         log.warn(
-                            "Duplicate configuration for {pin_prefix}{pin:02d} found in '{name}' will be ignored, pin already configured under '{original}'".format(
-                                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                                pin=pin,
-                                name=name,
-                                original=pins[used_pins[pin]].name,
-                            )
+                            "Duplicate configuration for %s found in '%s' will be "
+                            "ignored, pin already configured under '%s'",
+                            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                            id,
+                            pins[pin].name,
                         )
                     else:
-                        pin_object = build_pin(name, named_config, index)
+                        pin_object = build_pin(id, named_config, index)
 
                     if pin_object:
-                        used_pins[pin] = len(pins)
-                        pins.append(pin_object)
+                        pins[pin] = pin_object
                         pin_object = None
+
+        # build properties and lookup dict
+        for pin in pins:
+            nodes["gpio"].add_property(pins[pin].id, pins[pin].get_property())
+            pin_from_path[pins[pin].id] = pin
 
         return True
     else:
@@ -168,43 +179,36 @@ def init(config_data={}):
         return False
 
 
-def pre_loop():
+def start():
     """
     Actions to be done in the subprocess before the loop starts
     """
     log.debug("Setting up hardware")
 
-    for index, pin in enumerate(pins):
-        if pin.setup():
-            subscribe("{}/+/#".format(pin.topic), callback=callback_pin_message)
-        else:
-            del pins[index]
+    for pin in pins:
+        if not pins[pin].setup():
+            del pins[pin]
+            del pin_from_path[[k for k in pin_from_path if pin_from_path[k] == pin][0]]
 
-    log.debug("Adding MQTT subscription to poll all topic")
-    subscribe(
-        config[CONF_KEY_TOPIC_GETTER],
-        callback=callback_poll_all,
-        subtopics=["{module_topic}"],
-        substitutions={
-            "module_topic": config[CONF_KEY_TOPIC],
-            "module_name": TEXT_NAME,
-        },
-    )
-
-    if config[CONF_KEY_POLL_INT] > 0:
+    if CONFIG[CONF_KEY_POLL_INT] > 0:
         log.debug(
-            "Starting polling timer with interval of {interval}s".format(
-                interval=config[CONF_KEY_POLL_INT]
-            )
+            "Starting polling timer with interval of %ds", CONFIG[CONF_KEY_POLL_INT]
         )
         global polling_timer
-        polling_timer = Timer(config[CONF_KEY_POLL_INT], poll_interval)
+        polling_timer = Timer(CONFIG[CONF_KEY_POLL_INT], polling_timer_callback)
         polling_timer.start()
 
+    common.publish_queue.put_nowait(
+        BusMessage(
+            path="gpio/polling-interval",
+            content=CONFIG[CONF_KEY_POLL_INT],
+            mqtt_retained=True,
+        )
+    )
     poll_all()
 
 
-def post_loop():
+def stop():
     """
     Actions to be done in the subprocess after the loop is exited
     """
@@ -213,27 +217,17 @@ def post_loop():
         polling_timer.cancel()
 
     for pin in pins:
-        pin.cleanup()
+        log.debug("Running pin cleanup")
+        pins[pin].cleanup()
 
 
-def callback_pin_message(client, userdata, message):
-    """
-    Callback for message on pin topic
-    """
-    queue.put_nowait({"func": "_pin_message", "args": [message.topic, message.payload]})
-
-
-def _pin_message(topic, payload):
-    for pin in pins:
-        if topic_matches_sub("{}/+/#".format(pin.topic), topic):
-            pin.handle_message(topic, payload)
-
-
-def callback_poll_all(client, userdata, message):
-    """
-    Callback for poll all
-    """
-    queue.put_nowait({"func": "poll_all"})
+def polling_timer_callback():
+    """ Polls all pins and restarts the timer """
+    log.debug("Polling timer fired")
+    global polling_timer
+    polling_timer = Timer(CONFIG[CONF_KEY_POLL_INT], polling_timer_callback)
+    polling_timer.start()
+    poll_all()
 
 
 def poll_all():
@@ -242,13 +236,56 @@ def poll_all():
     """
     log.debug("Polling all pins")
     for pin in pins:
-        pin.publish_state()
+        pins[pin].publish_state()
 
 
-def poll_interval():
-    """ Polls all pins and restarts the timer """
-    log.debug("Polling timer fired")
-    global polling_timer
-    polling_timer = Timer(config[CONF_KEY_POLL_INT], poll_interval)
-    polling_timer.start()
-    poll_all()
+def pin_message(message: BusMessage):
+    """
+    Callback for message matching a pin path
+    """
+    path = message.path.strip("/").split("/")[1:]  # strip '/' and drop node 'gpio'
+    if path[0] in pin_from_path:
+        pins[pin_from_path[path[0]]].message_callback("/".join(path[1:]), message)
+    else:
+        log.debug("Received message on unregistered path: %s", message)
+
+
+def poll_message(message: BusMessage):
+    """
+    Callback for message matching the poll all path
+    """
+    if message.path.strip("/") == "gpio/poll-all/set":
+        poll_all()
+    else:
+        log.debug("Received message on unregistered path: %s", message)
+
+
+# from pin.digital
+def pulse_message(message: BusMessage):
+    """
+    Callback for message matching pulse path
+    """
+    if message.path.strip("/") == "gpio/pulse/set":
+        try:
+            content_json = json.loads(message.content)
+        except ValueError:
+            log.warn("Received unrecognized PULSE command: %s", message.content)
+        else:
+            if content_json.get("pin") in pin_from_path:
+                pin = pins[pin_from_path[content_json["pin"]]]
+                if getattr(pin, "pulse", default=None):
+                    pin.pulse(message.content)
+                else:
+                    log.warn(
+                        "PULSE command not supported for pin %s (%s)",
+                        pin.id,
+                        pin.__class__.__name__,
+                    )
+            else:
+                log.warn(
+                    "Received PULSE command for unknown pin %s: %s",
+                    content_json.get("pin"),
+                    message.content,
+                )
+    else:
+        log.debug("Received message on unregistered path: %s", message)

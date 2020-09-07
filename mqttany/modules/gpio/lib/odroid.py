@@ -25,6 +25,8 @@ GPIO Library Wrapper for Odroid WiringPi-Python
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ["odroidGPIO"]
+
 try:
     import odroid_wiringpi as wiringpi
 except ImportError:
@@ -35,9 +37,6 @@ except ImportError:
 
 try:
     import adafruit_platformdetect
-
-    detector = adafruit_platformdetect.Detector()
-    board = detector.board.id
 except ImportError:
     raise ImportError(
         "MQTTany's GPIO module requires 'adafruit_platformdetect' to be installed, "
@@ -46,35 +45,34 @@ except ImportError:
 
 import threading, subprocess
 from time import sleep
-from datetime import datetime
-
-now = datetime.now
 
 import logger
-from common import TEXT_PIN_PREFIX, Mode, Logic, Direction, Resistor, Interrupt
-from modules.gpio.GPIO.common import baseGPIO
+from modules.gpio.common import CONFIG, CONF_KEY_MODE
+from modules.gpio.lib.base import baseGPIO
+from modules.gpio.common import (
+    Mode,
+    Direction,
+    Resistor,
+    Interrupt,
+    TEXT_GPIO_MODE,
+)
 
-TEXT_NAME = ".".join(
-    [__name__.split(".")[-3], __name__.split(".")[-1]]
-)  # gives gpio.odroid
 
-log = logger.get_module_logger(module=TEXT_NAME)
-
-__all__ = ["odroidGPIO"]
+log = logger.get_module_logger("gpio.odroid")
 
 
-map_wiringpi_setup = {
+MAP_WIRINGPI_SETUP = {
     Mode.BOARD: wiringpi.wiringPiSetupPhys,
     Mode.SOC: wiringpi.wiringPiSetupGpio,
     Mode.WIRINGPI: wiringpi.wiringPiSetup,
 }
-map_direction = {
+MAP_DIRECTION = {
     Direction.INPUT: wiringpi.INPUT,
     Direction.OUTPUT: wiringpi.OUTPUT,
     wiringpi.INPUT: Direction.INPUT,
     wiringpi.OUTPUT: Direction.OUTPUT,
 }
-map_resistor = {
+MAP_RESISTOR = {
     Resistor.OFF: wiringpi.PUD_OFF,
     Resistor.PULL_UP: wiringpi.PUD_UP,
     Resistor.PULL_DOWN: wiringpi.PUD_DOWN,
@@ -82,7 +80,7 @@ map_resistor = {
     wiringpi.PUD_UP: Resistor.PULL_UP,
     wiringpi.PUD_DOWN: Resistor.PULL_DOWN,
 }
-map_interrupt = {
+MAP_INTERRUPT = {
     Interrupt.RISING: wiringpi.INT_EDGE_RISING,
     Interrupt.FALLING: wiringpi.INT_EDGE_FALLING,
     Interrupt.BOTH: wiringpi.INT_EDGE_BOTH,
@@ -90,21 +88,11 @@ map_interrupt = {
     wiringpi.INT_EDGE_FALLING: Interrupt.FALLING,
     wiringpi.INT_EDGE_BOTH: Interrupt.BOTH,
 }
-map_interrupt_gpio = {
+MAP_INTERRUPT_GPIO = {
     Interrupt.RISING: "rising",
     Interrupt.FALLING: "falling",
     Interrupt.BOTH: "both",
 }
-
-
-def is_odroid_xu3():
-    """Return ``True`` if platform is Odroid XU3"""
-    return "ODROID-XU3" in detector.get_cpuinfo_field("Hardware")
-
-
-def is_odroid_xu4():
-    """Return ``True`` if platform is Odroid XU4"""
-    return "ODROID-XU3" in detector.get_cpuinfo_field("Hardware")
 
 
 ### Valid GPIOs
@@ -187,6 +175,20 @@ PINS_N2.extend([
 
 
 # Identify Board
+detector = adafruit_platformdetect.Detector()
+board = detector.board.id
+
+
+def is_odroid_xu3():
+    """Return ``True`` if platform is Odroid XU3"""
+    return "ODROID-XU3" in detector.get_cpuinfo_field("Hardware")
+
+
+def is_odroid_xu4():
+    """Return ``True`` if platform is Odroid XU4"""
+    return "ODROID-XU3" in detector.get_cpuinfo_field("Hardware")
+
+
 od_xu = is_odroid_xu3() or is_odroid_xu4()
 od_c1 = board == adafruit_platformdetect.board.ODROID_C1
 od_c1p = board == adafruit_platformdetect.board.ODROID_C1_PLUS
@@ -216,7 +218,7 @@ def gpioPinToGpio(pin):
         return PINS_N2[pin]
 
 
-map_pin_lookup = {
+MAP_PIN_LOOKUP = {
     Mode.BOARD: wiringpi.physPinToGpio,
     Mode.SOC: gpioPinToGpio,
     Mode.WIRINGPI: wiringpi.wpiPinToGpio,
@@ -232,7 +234,7 @@ class odroidGPIO(baseGPIO):
         self._mode = mode
         self._interrupts = {}
         if isinstance(mode, Mode):
-            map_wiringpi_setup[mode]()
+            MAP_WIRINGPI_SETUP[mode]()
         else:
             raise ValueError(
                 "Unexpected value for mode, must be BOARD, SOC, or WIRINGPI"
@@ -243,36 +245,34 @@ class odroidGPIO(baseGPIO):
         """
         Returns SOC GPIO number for ``pin`` in mode ``mode``
         """
-        return map_pin_lookup[mode](pin)
+        return MAP_PIN_LOOKUP[mode](pin)
 
-    def pin_valid(self, pin, direction):
+    @staticmethod
+    def pin_valid(pin, direction):
         """
         Return ``True`` if pin can be used for ``direction``
         """
         if -1 < pin < MAX_GPIO:
-            if map_pin_lookup[self._mode](pin) > -1:
+            if MAP_PIN_LOOKUP[CONFIG[CONF_KEY_MODE]](pin) > -1:
                 if direction in [Direction.INPUT, Direction.OUTPUT]:
                     return True
                 else:
                     log.error(
-                        "{pin_prefix}{pin} cannot be used for {direction} on {board}".format(
-                            pin_prefix=TEXT_PIN_PREFIX[self._mode],
-                            pin=pin,
-                            direction=direction.name,
-                            board=board,
-                        )
+                        "%s cannot be used as %s on %s",
+                        TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                        direction,
+                        board,
                     )
             else:
                 log.error(
-                    "{pin_prefix}{pin} cannot be used on {board}".format(
-                        pin_prefix=TEXT_PIN_PREFIX[self._mode], pin=pin, board=board
-                    )
+                    "%s cannot be used on %s",
+                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                    board,
                 )
         else:
             log.error(
-                "{pin_prefix}{pin} is out of range".format(
-                    pin_prefix=TEXT_PIN_PREFIX[self._mode], pin=pin
-                )
+                "%s is out of range",
+                TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
             )
         return False
 
@@ -280,9 +280,9 @@ class odroidGPIO(baseGPIO):
         """
         Set the pin direction (input or output).
         """
-        wiringpi.pinMode(pin, map_direction[direction])
+        wiringpi.pinMode(pin, MAP_DIRECTION[direction])
         if direction == Direction.INPUT:
-            wiringpi.pullUpDnControl(pin, map_resistor[resistor])
+            wiringpi.pullUpDnControl(pin, MAP_RESISTOR[resistor])
 
     def output(self, pin, value):
         """
@@ -321,9 +321,8 @@ class odroidGPIO(baseGPIO):
             )
             if not self._interrupts[pin].is_ok:
                 log.error(
-                    "Failed to setup interrupt for {pin_prefix}{pin:02d}".format(
-                        pin=pin, pin_prefix=TEXT_PIN_PREFIX[self._mode]
-                    )
+                    "Failed to setup interrupt for %s",
+                    TEXT_GPIO_MODE[self._mode].format(pin=pin),
                 )
                 self._interrupts.pop(pin)
 
@@ -369,7 +368,7 @@ class InterruptThread(object):
             self._cbargs = args
             self._cbkwargs = kwargs
             wiringpi.wiringPiISR(
-                pin, map_interrupt[edge], self._isr
+                pin, MAP_INTERRUPT[edge], self._isr
             )  # spawns a thread that loops forever
         else:
             self._ok = False
@@ -382,12 +381,13 @@ class InterruptThread(object):
         return self._ok
 
     def enable(self):
+        # re-enable interrupt trigger
         result = subprocess.run(
             [
                 self._gpio,
                 "edge",
-                str(map_pin_lookup[self._mode](self._pin)),
-                map_interrupt_gpio[self._edge],
+                str(MAP_PIN_LOOKUP[self._mode](self._pin)),
+                MAP_INTERRUPT_GPIO[self._edge],
             ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
@@ -396,22 +396,19 @@ class InterruptThread(object):
         if result.returncode:
             self._ok = False
             log.error(
-                "An error occurred while enabling the hardware interrupt for {pin_prefix}{pin:02d}{gpio_pin}: {error}".format(
-                    pin=self._pin,
-                    pin_prefix=TEXT_PIN_PREFIX[self._mode],
-                    error=stderr,
-                    gpio_pin=""
-                    if self._mode == Mode.SOC
-                    else " (GPIO{:02d})".format(
-                        odroidGPIO.getPinFromMode(self._pin, self._mode)
-                    ),
-                )
+                "An error occurred while enabling the hardware interrupt for %s%s: %s",
+                TEXT_GPIO_MODE[self._mode].format(pin=self._pin),
+                ""
+                if self._mode == Mode.SOC
+                else f" (GPIO{odroidGPIO.getPinFromMode(self._pin, self._mode):02d})",
+                stderr,
             )
-        # re-enable interrupt trigger
 
     def disable(self):
+        # doesn't seem to be another way to do this
+        # wiringpi offers nothing to remove an interrupt
         result = subprocess.run(
-            [self._gpio, "edge", str(map_pin_lookup[self._mode](self._pin)), "none"],
+            [self._gpio, "edge", str(MAP_PIN_LOOKUP[self._mode](self._pin)), "none"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
         )
@@ -419,19 +416,13 @@ class InterruptThread(object):
         if result.returncode:
             self._ok = False
             log.error(
-                "An error occurred while disabling the hardware interrupt for {pin_prefix}{pin:02d}{gpio_pin}: {error}".format(
-                    pin=self._pin,
-                    pin_prefix=TEXT_PIN_PREFIX[self._mode],
-                    error=stderr,
-                    gpio_pin=""
-                    if self._mode == Mode.SOC
-                    else " (GPIO{:02d})".format(
-                        odroidGPIO.getPinFromMode(self._pin, self._mode)
-                    ),
-                )
+                "An error occurred while disabling the hardware interrupt for %s%s: %s",
+                TEXT_GPIO_MODE[self._mode].format(pin=self._pin),
+                ""
+                if self._mode == Mode.SOC
+                else f" (GPIO{odroidGPIO.getPinFromMode(self._pin, self._mode):02d})",
+                stderr,
             )
-        # doesn't seem to be another way to do this
-        # wiringpi offers nothing to remove an interrupt
 
     def set_edge(self, edge):
         self._edge = edge
@@ -447,20 +438,17 @@ class InterruptThread(object):
     def _isr(self):
         if not self._thread or not self._thread.isAlive():
             self._thread = threading.Thread(
-                name="ISR{:02d}".format(self._pin), target=self._debounce
+                name=f"ISR{self._pin:02d}", target=self._debounce
             )
             self._thread.start()
         else:
             log.debug(
-                "Debounce thread for {pin_prefix}{pin:02d} already exists".format(
-                    pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[self._mode]
-                )
+                "Debounce thread for %s already exists",
+                TEXT_GPIO_MODE[self._mode].format(pin=self._pin),
             )
 
     def _debounce(self):
-        end = now().microsecond + self._bouncetime * 1000
         initial = wiringpi.digitalRead(self._pin)
-        while now().microsecond < end:
-            sleep(0.001)
+        sleep(float(self._bouncetime) / 1000)
         if initial == wiringpi.digitalRead(self._pin):
             self._callback(self._pin, *self._cbargs, **self._cbkwargs)

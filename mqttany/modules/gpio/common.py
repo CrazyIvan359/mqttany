@@ -1,6 +1,6 @@
 """
 ***********
-GPIO Shared
+GPIO Common
 ***********
 
 :Author: Michael Murton
@@ -25,33 +25,94 @@ GPIO Shared
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-try:
-    from mprop import mproperty
-except ImportError:
-    raise ImportError(
-        "MQTTany's GPIO module requires 'mprop' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
+__all__ = [
+    "log",
+    "CONFIG",
+    "nodes",
+    "Mode",
+    "Direction",
+    "Resistor",
+    "Interrupt",
+    "TEXT_GPIO_MODE",
+    "CONF_KEY_MODE",
+    "CONF_KEY_POLL_INT",
+    "CONF_KEY_PIN",
+    "CONF_KEY_NAME",
+    "CONF_KEY_FIRST_INDEX",
+    "CONF_KEY_DIRECTION",
+    "CONF_KEY_INVERT",
+    "CONF_OPTIONS",
+]
 
 from collections import OrderedDict
+from enum import Enum
 
 import logger
-from common import Mode, Direction
+from common import DataType, BusNode, BusProperty
+
+log = logger.get_module_logger("gpio")
+CONFIG = {}
+
+publish_queue = None
+nodes = {
+    "gpio": BusNode(
+        name="GPIO",
+        type="Module",
+        properties={
+            "poll-all": BusProperty(
+                name="Poll All Pins", settable=True, callback="poll_message"
+            ),
+            "polling-interval": BusProperty(
+                name="Polling Interval", datatype=DataType.FLOAT, unit="s"
+            ),
+            # from pin.digital
+            "pulse": BusProperty(name="Pulse", settable=True, callback="pulse_message"),
+        },
+    )
+}
+
+
+class Mode(Enum):
+    BOARD = 50
+    SOC = 51
+    WIRINGPI = 52
+
+
+class Direction(Enum):
+    INPUT = 10
+    OUTPUT = 11
+
+
+class Resistor(Enum):
+    OFF = 20
+    PULL_UP = 21
+    PULL_DOWN = 22
+
+
+class Interrupt(Enum):
+    NONE = 0
+    RISING = 30
+    FALLING = 31
+    BOTH = 32
+
+
+TEXT_GPIO_MODE = {
+    Mode.BOARD: "pin {pin}",
+    Mode.SOC: "GPIO{pin:02d}",
+    Mode.WIRINGPI: "WiringPi pin {pin}",
+}
+
 
 CONF_KEY_MODE = "mode"
-CONF_KEY_TOPIC = "topic"
-CONF_KEY_TOPIC_SETTER = "topic set"
-CONF_KEY_TOPIC_GETTER = "topic get"
-CONF_KEY_PAYLOAD_ON = "payload on"
-CONF_KEY_PAYLOAD_OFF = "payload off"
 CONF_KEY_POLL_INT = "polling interval"
 CONF_KEY_PIN = "pin"
+CONF_KEY_NAME = "name"
 CONF_KEY_FIRST_INDEX = "first index"
 CONF_KEY_DIRECTION = "direction"
 CONF_KEY_INVERT = "invert"
 
 CONF_OPTIONS = OrderedDict(
-    [  # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
+    [
         (
             CONF_KEY_MODE,
             {
@@ -69,19 +130,14 @@ CONF_OPTIONS = OrderedDict(
                 },
             },
         ),
-        (CONF_KEY_TOPIC, {"default": "{module_name}"}),
-        (CONF_KEY_TOPIC_SETTER, {"default": "set"}),
-        (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
-        (CONF_KEY_PAYLOAD_ON, {"default": "ON"}),
-        (CONF_KEY_PAYLOAD_OFF, {"default": "OFF"}),
-        (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
+        (CONF_KEY_POLL_INT, {"type": int, "default": 60}),
         (
             "regex:.+",
             {
                 "type": "section",
                 "required": False,
                 CONF_KEY_PIN: {"type": (int, list)},
-                CONF_KEY_TOPIC: {"type": (str, list), "default": "{pin}"},
+                CONF_KEY_NAME: {"type": (str, list), "default": "{pin_id}"},
                 CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
                 CONF_KEY_DIRECTION: {"default": Direction.INPUT, "selection": {}},
                 CONF_KEY_INVERT: {"type": bool, "default": False},
@@ -89,30 +145,3 @@ CONF_OPTIONS = OrderedDict(
         ),
     ]
 )
-
-TEXT_PACKAGE_NAME = __name__.split(".")[-2]  # gives gpio
-
-log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
-_config = {}
-
-__all__ = [
-    "CONF_KEY_MODE",
-    "CONF_KEY_TOPIC",
-    "CONF_KEY_TOPIC_SETTER",
-    "CONF_KEY_TOPIC_GETTER",
-    "CONF_KEY_PAYLOAD_ON",
-    "CONF_KEY_PAYLOAD_OFF",
-    "CONF_KEY_POLL_INT",
-    "CONF_KEY_PIN",
-    "CONF_KEY_FIRST_INDEX",
-    "CONF_KEY_DIRECTION",
-    "CONF_KEY_INVERT",
-    "CONF_OPTIONS",
-    "TEXT_PACKAGE_NAME",
-    "log",
-]
-
-
-@mproperty
-def config(module):
-    return _config

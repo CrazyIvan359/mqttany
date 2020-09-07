@@ -37,10 +37,9 @@ def getPin(direction):
     Returns a class for the pin based on the direction or ``None`` if one is
     not available.
     """
-    if direction in digital.SUPPORTED_DIRECTIONS:
-        return digital.DigitalPin
-    else:
-        return None
+    pin_classes = {}
+    pin_classes.update(digital.SUPPORTED_DIRECTIONS)
+    return pin_classes.get(direction, None)
 
 
 def updateConfOptions(conf_options):

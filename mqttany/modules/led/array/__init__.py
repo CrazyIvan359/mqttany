@@ -25,45 +25,43 @@ LED Array Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ["getArray", "getConfOptions"]
+
 from common import update_dict
 
 from modules.led.common import (
+    CONF_KEY_NAME,
     CONF_KEY_OUTPUT,
-    CONF_KEY_TOPIC,
     CONF_KEY_COUNT,
     CONF_KEY_PER_PIXEL,
     CONF_KEY_COLOR_ORDER,
+    CONF_KEY_BRIGHTNESS,
 )
 from modules.led.array import rpi, sacn
 
-__all__ = ["getArray", "getConfOptions"]
 
-
-def getArray(array_config, log):
+def getArray(array_id, array_config, log):
     """
     Returns an LED Object or ``None`` if one is not available for the specified hardware.
     """
     array_classes = {}
     array_classes.update(rpi.SUPPORTED_TYPES)
     array_classes.update(sacn.SUPPORTED_TYPES)
-    clazz = array_classes[array_config[CONF_KEY_OUTPUT]]
+    clazz = array_classes.get(array_config[CONF_KEY_OUTPUT], None)
 
-    if not clazz:
-        log.error(
-            "No library is available for '{name}' configuration".format(
-                name=array_config["name"]
-            )
+    if clazz:
+        return clazz(
+            id=array_id,
+            name=array_config[CONF_KEY_NAME],
+            count=array_config[CONF_KEY_COUNT],
+            leds_per_pixel=array_config[CONF_KEY_PER_PIXEL],
+            color_order=array_config[CONF_KEY_COLOR_ORDER],
+            init_brightness=array_config[CONF_KEY_BRIGHTNESS],
+            array_config=array_config,
         )
-        return None
-
-    return clazz(
-        name=array_config["name"],
-        topic=array_config[CONF_KEY_TOPIC],
-        count=array_config[CONF_KEY_COUNT],
-        leds_per_pixel=array_config[CONF_KEY_PER_PIXEL],
-        color_order=array_config[CONF_KEY_COLOR_ORDER],
-        array_config=array_config,
-    )
+    else:
+        log.error("No library is available for array '%s'", array_id)
+    return None
 
 
 def getConfOptions():

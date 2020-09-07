@@ -25,22 +25,40 @@ LED Shared
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-try:
-    from mprop import mproperty
-except ImportError:
-    raise ImportError(
-        "MQTTany's LED module requires 'mprop' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
+__all__ = [
+    "log",
+    "CONFIG",
+    "publish_queue",
+    "nodes",
+    "CONF_KEY_ANIM_DIR",
+    "CONF_KEY_ANIM_STARTUP",
+    "CONF_KEY_ANIM_FPS",
+    "CONF_KEY_NAME",
+    "CONF_KEY_OUTPUT",
+    "CONF_KEY_COUNT",
+    "CONF_KEY_PER_PIXEL",
+    "CONF_KEY_BRIGHTNESS",
+    "CONF_KEY_COLOR_ORDER",
+    "CONF_OPTIONS",
+    "ANIM_KEY_NAME",
+    "ANIM_KEY_REPEAT",
+    "ANIM_KEY_PRIORITY",
+]
 
 from collections import OrderedDict
 
 import logger
 
-CONF_KEY_TOPIC = "topic"
+log = logger.get_module_logger("led")
+CONFIG = {}
+
+publish_queue = None
+nodes = {}
+
 CONF_KEY_ANIM_DIR = "anim dir"
 CONF_KEY_ANIM_STARTUP = "anim startup"
 CONF_KEY_ANIM_FPS = "anim fps"
+CONF_KEY_NAME = "name"
 CONF_KEY_OUTPUT = "output"
 CONF_KEY_COUNT = "count"
 CONF_KEY_PER_PIXEL = "leds per pixel"
@@ -48,8 +66,7 @@ CONF_KEY_BRIGHTNESS = "brightness"
 CONF_KEY_COLOR_ORDER = "color order"
 
 CONF_OPTIONS = OrderedDict(
-    [  # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
-        (CONF_KEY_TOPIC, {"default": "{module_name}"}),
+    [
         (CONF_KEY_ANIM_DIR, {"type": (str, list), "default": []}),
         (CONF_KEY_ANIM_STARTUP, {"type": str, "default": "test.array"}),
         (CONF_KEY_ANIM_FPS, {"type": int, "default": 60}),
@@ -58,8 +75,8 @@ CONF_OPTIONS = OrderedDict(
             {
                 "type": "section",
                 "required": False,
+                CONF_KEY_NAME: {"type": str, "default": "{array_id}"},
                 CONF_KEY_OUTPUT: {"selection": {}},
-                CONF_KEY_TOPIC: {"type": str, "default": "{array_name}"},
                 CONF_KEY_COUNT: {"type": int},
                 CONF_KEY_PER_PIXEL: {"type": int, "default": 1},
                 CONF_KEY_BRIGHTNESS: {"type": int, "default": 255},
@@ -85,36 +102,6 @@ CONF_OPTIONS = OrderedDict(
     ]
 )
 
-ANIM_KEY_ARRAY = "array"
 ANIM_KEY_NAME = "anim"
 ANIM_KEY_REPEAT = "repeat"
 ANIM_KEY_PRIORITY = "priority"
-
-TEXT_PACKAGE_NAME = __name__.split(".")[-2]  # gives led
-
-log = logger.get_module_logger(module=TEXT_PACKAGE_NAME)
-_config = {}
-
-__all__ = [
-    "CONF_KEY_TOPIC",
-    "CONF_KEY_ANIM_DIR",
-    "CONF_KEY_ANIM_STARTUP",
-    "CONF_KEY_ANIM_FPS",
-    "CONF_KEY_OUTPUT",
-    "CONF_KEY_COUNT",
-    "CONF_KEY_PER_PIXEL",
-    "CONF_KEY_BRIGHTNESS",
-    "CONF_KEY_COLOR_ORDER",
-    "CONF_OPTIONS",
-    "ANIM_KEY_ARRAY",
-    "ANIM_KEY_NAME",
-    "ANIM_KEY_REPEAT",
-    "ANIM_KEY_PRIORITY",
-    "TEXT_PACKAGE_NAME",
-    "log",
-]
-
-
-@mproperty
-def config(module):
-    return _config

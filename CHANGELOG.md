@@ -2,12 +2,66 @@
 
 ## Development
 
+### Major Core Rewrite
+
+This release is a big one! The core functionality has been almost completely rewritten
+in order to make things a lot simplier for modules. There is now a standardized message
+bus that modules use, instead of calling functions directly in other modules. This
+abstraction also paves the way for adding other communication modules. However, as with
+anything, there was a price; a lot of things have changed and a few features were dropped.
+
+One of the major goals of this rewrite is to bring [Homie](https://homieiot.github.io/specification/)
+support to MQTTany. In order to do that it was necessary to abstract the way interface
+modules connect to communication modules. This means that interface modules must now
+provide more details on the data they export, but can no longer directly specify topics.
+
+Internally the new message bus largely resembles the Homie convention in order to have all
+details required for it. This means that topics must now have a minumum depth of 2 (ex.
+`{node}/{property}`, `gpio/1`) and absolute topics are no longer supported.
+
+Due to the number of changes, you will need to go over the documentation for each module
+you are using and update your configuration file to work with the new options and changes.
+If you were using default MQTT topics you will likely not have to change your home
+automation setup much in order to interface with this version of MQTTany.
+
+* ***BREAKING CHANGE***
+  * Absolute and custom topic support removed. This means all `topic` options in config
+    will now be ignored. **See the documentation for each module to see how paths work.**
+  * **GPIO** Digital pins now report their state as `ON` or `OFF`.
+  * **GPIO** Digital pins no longer support time only or comma separated messages for
+    pulse commands, only JSON is supported now.
+  * **I2C** MCP230xx pins now report their state as `ON` or `OFF`.
+  * **I2C** MCP230xx pins no longer support time only or comma separated messages for
+    pulse commands, only JSON is supported now.
+  * **LED** Options specific to output methods are now in a nested section inside the
+    array definition. See the documentation for details.
+  * **LED** Animations can only be called with JSON on path `{array_id}/animation/set`.
+  * **OneWire** Options specific to devices are now in nested sections inside the device
+    definition. See the device documentation for details.
+
 * **Added**
   * Colorized log output to terminal.
+  * Python version check before importing anything with a minimum version requirement.
+  * Import checking for the core requirements with log entries for missing packages.
+  * Template modules and documentation to help with creating new modules.
+
+* **Changed**
+  * Convert all string formatting to use *f-strings*. This change means you must be using
+    a minimum Python version of 3.6.
+  * Convert all logging to use lazy formatting. This should save some time building log
+    messages for disabled log levels.
+  * Logger `get_module_logger` now uses entire module name after `modules` instead of
+    only selecting the element after the last period.
+  * Move `mprop` requirement up into core, now modules don't need to make sure it is
+    installed.
+  * **MQTT** - Messages arriving on ``{node}/{property}/+/#`` will match and the callback
+    for the property will be called. The callback should further inspect the topic before
+    taking action.
 
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.
   * Fix logger checking if ``TRACE`` logging was enabled for ``WARN`` messages.
+  * Core not exiting correctly if an exception occurred in the core.
 
 ## 0.11.0
 

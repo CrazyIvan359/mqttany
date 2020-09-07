@@ -25,6 +25,8 @@ GPIO Library Wrapper for WiringPi-Python
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ["rpiGPIO"]
+
 try:
     import wiringpi
 except ImportError:
@@ -43,36 +45,33 @@ except ImportError:
 
 import threading, subprocess
 from time import sleep
-from datetime import datetime
-
-now = datetime.now
 
 import logger
-from common import TEXT_PIN_PREFIX, Mode, Logic, Direction, Resistor, Interrupt
-from modules.gpio.common import config, CONF_KEY_MODE
-from modules.gpio.GPIO.common import baseGPIO
+from modules.gpio.common import CONFIG, CONF_KEY_MODE
+from modules.gpio.lib.base import baseGPIO
+from modules.gpio.common import (
+    Mode,
+    Direction,
+    Resistor,
+    Interrupt,
+    TEXT_GPIO_MODE,
+)
 
-TEXT_NAME = ".".join(
-    [__name__.split(".")[-3], __name__.split(".")[-1]]
-)  # gives gpio.rpi
-
-log = logger.get_module_logger(module=TEXT_NAME)
-
-__all__ = ["rpiGPIO"]
+log = logger.get_module_logger("gpio.rpi")
 
 
-map_wiringpi_setup = {
+MAP_WIRINGPI_SETUP = {
     Mode.BOARD: wiringpi.wiringPiSetupPhys,
     Mode.SOC: wiringpi.wiringPiSetupGpio,
     Mode.WIRINGPI: wiringpi.wiringPiSetup,
 }
-map_direction = {
+MAP_DIRECTION = {
     Direction.INPUT: wiringpi.INPUT,
     Direction.OUTPUT: wiringpi.OUTPUT,
     wiringpi.INPUT: Direction.INPUT,
     wiringpi.OUTPUT: Direction.OUTPUT,
 }
-map_resistor = {
+MAP_RESISTOR = {
     Resistor.OFF: wiringpi.PUD_OFF,
     Resistor.PULL_UP: wiringpi.PUD_UP,
     Resistor.PULL_DOWN: wiringpi.PUD_DOWN,
@@ -80,7 +79,7 @@ map_resistor = {
     wiringpi.PUD_UP: Resistor.PULL_UP,
     wiringpi.PUD_DOWN: Resistor.PULL_DOWN,
 }
-map_interrupt = {
+MAP_INTERRUPT = {
     Interrupt.RISING: wiringpi.INT_EDGE_RISING,
     Interrupt.FALLING: wiringpi.INT_EDGE_FALLING,
     Interrupt.BOTH: wiringpi.INT_EDGE_BOTH,
@@ -88,7 +87,7 @@ map_interrupt = {
     wiringpi.INT_EDGE_FALLING: Interrupt.FALLING,
     wiringpi.INT_EDGE_BOTH: Interrupt.BOTH,
 }
-map_interrupt_gpio = {
+MAP_INTERRUPT_GPIO = {
     Interrupt.RISING: "rising",
     Interrupt.FALLING: "falling",
     Interrupt.BOTH: "both",
@@ -128,6 +127,7 @@ PINS_26_R1 = [
 ]
 # fmt :on
 
+# Identify Board
 detector = adafruit_platformdetect.Detector()
 board = detector.board.id
 rpi_40 = detector.board.any_raspberry_pi_40_pin
@@ -135,6 +135,7 @@ rpi_26_r1 = detector.board.id in [
     adafruit_platformdetect.board.RASPBERRY_PI_A,
     adafruit_platformdetect.board.RASPBERRY_PI_B_REV1
 ]
+MAX_GPIO = 64
 def gpioPinToGpio(pin):
     if rpi_40:
         return PINS_40[pin]
@@ -143,7 +144,7 @@ def gpioPinToGpio(pin):
     else:
         return PINS_26_R2[pin]
 
-map_pin_lookup = {
+MAP_PIN_LOOKUP = {
     Mode.BOARD: wiringpi.physPinToGpio,
     Mode.SOC: gpioPinToGpio,
     Mode.WIRINGPI: wiringpi.wpiPinToGpio
@@ -159,49 +160,55 @@ class rpiGPIO(baseGPIO):
         self._mode = mode
         self._interrupts = {}
         if isinstance(mode, Mode):
-            map_wiringpi_setup[mode]()
+            MAP_WIRINGPI_SETUP[mode]()
         else:
-            raise ValueError("Unexpected value for mode, must be BOARD, SOC, or WIRINGPI")
+            raise ValueError(
+                "Unexpected value for mode, must be BOARD, SOC, or WIRINGPI"
+            )
 
     @staticmethod
     def getPinFromMode(pin, mode):
         """
         Returns SOC GPIO number for ``pin`` in mode ``mode``
         """
-        return map_pin_lookup[mode](pin)
+        return MAP_PIN_LOOKUP[mode](pin)
 
-    def pin_valid(self, pin, direction):
+    @staticmethod
+    def pin_valid(pin, direction):
         """
         Return ``True`` if pin can be used for ``direction``
         """
-        if -1 < pin < 64:
-            if map_pin_lookup[self._mode](pin) > -1:
+        if -1 < pin < MAX_GPIO:
+            if MAP_PIN_LOOKUP[CONFIG[CONF_KEY_MODE]](pin) > -1:
                 if direction in [Direction.INPUT, Direction.OUTPUT]:
                     return True
                 else:
-                    log.error("{pin_prefix}{pin} cannot be used for {direction} on {board}".format(
-                        pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                        pin=pin, direction=direction.name, board=board))
+                    log.error(
+                        "%s cannot be used as %s on %s",
+                        TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                        direction,
+                        board
+                    )
             else:
-                log.error("{pin_prefix}{pin} cannot be used on {board}".format(
-                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                    pin=pin, board=board))
+                log.error(
+                    "%s cannot be used on %s",
+                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                    board
+                )
         else:
-            log.error("{pin_prefix}{pin} is out of range".format(
-                pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                pin=pin))
+            log.error(
+                "%s is out of range",
+                TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin)
+            )
         return False
 
     def setup(self, pin, direction, resistor=Resistor.OFF):
         """
         Set the pin direction (input or output).
         """
-        wiringpi.pinMode(
-            pin,
-            map_direction[direction]
-        )
+        wiringpi.pinMode(pin, MAP_DIRECTION[direction])
         if direction == Direction.INPUT:
-            wiringpi.pullUpDnControl(pin, map_resistor[resistor])
+            wiringpi.pullUpDnControl(pin, MAP_RESISTOR[resistor])
 
     def output(self, pin, value):
         """
@@ -227,15 +234,13 @@ class rpiGPIO(baseGPIO):
                 isr.enable()
         else:
             self._interrupts[pin] = InterruptThread(
-                pin,
-                edge,
-                self._mode,
-                callback,
-                bouncetime
+                pin, edge, self._mode, callback, bouncetime
             )
             if not self._interrupts[pin].is_ok:
-                log.error("Failed to setup interrupt for {pin_prefix}{pin:02d}".format(
-                    pin=pin, pin_prefix=TEXT_PIN_PREFIX[self._mode]))
+                log.error(
+                    "Failed to setup interrupt for %s",
+                    TEXT_GPIO_MODE[self._mode].format(pin=pin)
+                )
                 self._interrupts.pop(pin)
 
     def remove_event_detect(self, pin):
@@ -262,7 +267,13 @@ class InterruptThread(object):
     """
 
     def __init__(self, pin, edge, mode, callback, bouncetime, *args, **kwargs):
-        self._gpio = subprocess.run(["which", "gpio"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout.decode("utf-8").strip("\n")
+        self._gpio = (
+            subprocess.run(
+                ["which", "gpio"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+            )
+            .stdout.decode("utf-8")
+            .strip("\n")
+        )
         if self._gpio:
             self._ok = True
             self._pin = pin
@@ -273,7 +284,7 @@ class InterruptThread(object):
             self._callback = callback
             self._cbargs = args
             self._cbkwargs = kwargs
-            wiringpi.wiringPiISR(pin, map_interrupt[edge], self._isr) # spawns a thread that loops forever
+            wiringpi.wiringPiISR(pin, MAP_INTERRUPT[edge], self._isr) # spawns a thread that loops forever
         else:
             self._ok = False
             log.error("Could not find 'gpio' command on this system. Please make sure you have installed 'wiringpi'")
@@ -282,33 +293,53 @@ class InterruptThread(object):
     def is_ok(self): return self._ok
 
     def enable(self):
+        # re-enable interrupt trigger
         result = subprocess.run(
-            [self._gpio, "edge", str(map_pin_lookup[self._mode](self._pin)), map_interrupt_gpio[self._edge]],
+            [
+                self._gpio,
+                "edge",
+                str(MAP_PIN_LOOKUP[self._mode](self._pin)),
+                MAP_INTERRUPT_GPIO[self._edge]
+            ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE
         )
         stderr = result.stderr.decode("utf-8").strip("\n")
         if result.returncode:
             self._ok = False
-            log.error("An error occurred while enabling the hardware interrupt for {pin_prefix}{pin:02d}{gpio_pin}: {error}".format(
-                pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[self._mode], error=stderr,
-                gpio_pin="" if self._mode == Mode.SOC else " (GPIO{:02d})".format(rpiGPIO.getPinFromMode(self._pin, self._mode))))
-        # re-enable interrupt trigger
+            log.error(
+                "An error occurred while enabling the hardware interrupt for %s%s: %s",
+                TEXT_GPIO_MODE[self._mode].format(pin=self._pin),
+                ""
+                if self._mode == Mode.SOC
+                else f" (GPIO{rpiGPIO.getPinFromMode(self._pin, self._mode):02d})",
+                stderr
+            )
 
     def disable(self):
+        # doesn't seem to be another way to do this
+        # wiringpi offers nothing to remove an interrupt
         result = subprocess.run(
-            [self._gpio, "edge", str(map_pin_lookup[self._mode](self._pin)), "none"],
+            [
+                self._gpio,
+                "edge",
+                str(MAP_PIN_LOOKUP[self._mode](self._pin)),
+                "none"
+            ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
         )
         stderr = result.stderr.decode("utf-8").strip("\n")
         if result.returncode:
             self._ok = False
-            log.error("An error occurred while disabling the hardware interrupt for {pin_prefix}{pin:02d}{gpio_pin}: {error}".format(
-                pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[self._mode], error=stderr,
-                gpio_pin="" if self._mode == Mode.SOC else " (GPIO{:02d})".format(rpiGPIO.getPinFromMode(self._pin, self._mode))))
-        # doesn't seem to be another way to do this
-        # wiringpi offers nothing to remove an interrupt
+            log.error(
+                "An error occurred while disabling the hardware interrupt for %s%s: %s",
+                TEXT_GPIO_MODE[self._mode].format(pin=self._pin),
+                ""
+                if self._mode == Mode.SOC
+                else f" (GPIO{rpiGPIO.getPinFromMode(self._pin, self._mode):02d})",
+                stderr
+            )
 
     def set_edge(self, edge):
         self._edge = edge
@@ -324,18 +355,17 @@ class InterruptThread(object):
     def _isr(self):
         if not self._thread or not self._thread.isAlive():
             self._thread = threading.Thread(
-                name="ISR{:02d}".format(self._pin),
-                target=self._debounce
+                name=f"ISR{self._pin:02d}", target=self._debounce
             )
             self._thread.start()
         else:
-            log.debug("Debounce thread for {pin_prefix}{pin:02d} already exists".format(
-                pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[self._mode]))
+            log.debug(
+                "Debounce thread for %s already exists",
+                TEXT_GPIO_MODE[self._mode].format(pin=self._pin)
+            )
 
     def _debounce(self):
-        end = now().microsecond + self._bouncetime * 1000
         initial = wiringpi.digitalRead(self._pin)
-        while now().microsecond < end:
-            sleep(.001)
+        sleep(float(self._bouncetime) / 1000)
         if initial == wiringpi.digitalRead(self._pin):
             self._callback(self._pin, *self._cbargs, **self._cbkwargs)

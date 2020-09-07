@@ -1,2 +1,1 @@
 Adafruit-PlatformDetect>=1.3.4,<2.0
-mprop>=0.16.0,<1.0

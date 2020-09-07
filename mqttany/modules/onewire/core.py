@@ -25,91 +25,79 @@ Dallas OneWire Core
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections import OrderedDict
+__all__ = ["load", "start", "stop", "device_message", "poll_message"]
+
 from threading import Timer
 
 from config import parse_config
+from common import BusMessage, validate_id
 
-from modules.mqtt import resolve_topic, topic_matches_sub, publish, subscribe
-
-from modules.onewire import bus
-from modules.onewire import device
-from modules.onewire.common import config
-from modules.onewire.common import *
-
-__all__ = []
-
-CONF_OPTIONS = OrderedDict(
-    [  # MUST USE ORDEREDDICT WHEN REGEX KEY MAY MATCH OTHER KEYS
-        (CONF_KEY_BUS, {"default": "w1", "selection": []}),
-        (CONF_KEY_TOPIC, {"default": "{module_name}"}),
-        (CONF_KEY_TOPIC_GETTER, {"default": "poll"}),
-        (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
-        (CONF_KEY_BUS_SCAN, {"type": bool, "default": False}),
-        (
-            "regex:.+",
-            {
-                "type": "section",
-                "required": False,
-                CONF_KEY_ADDRESS: {"type": (str, list)},
-                CONF_KEY_TOPIC: {"type": (str, list), "default": "{device_name}"},
-                CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
-            },
-        ),
-    ]
+from modules.onewire import bus, device
+from modules.onewire.common import (
+    log,
+    CONFIG,
+    nodes,
+    CONF_KEY_POLL_INT,
+    CONF_KEY_BUS,
+    CONF_KEY_BUS_SCAN,
+    CONF_KEY_NAME,
+    CONF_KEY_ADDRESS,
+    CONF_KEY_FIRST_INDEX,
+    CONF_OPTIONS,
 )
 
-TEXT_NAME = TEXT_PACKAGE_NAME
-
 ow_bus = None
-devices = []
-queue = None
+devices = {}
 polling_timer = None
 
 
 def build_device(
-    device_name, ow_bus, device_config={}, topic=None, address=None, index=None
+    device_id, bus, device_config={}, device_name=None, address=None, index=None
 ):
+    if not validate_id(device_id):
+        log.warn("'%s' is not a valid ID and will be ignored", device_id)
+        return None
+
     valid_address = ow_bus.validateAddress(
         address or device_config.get(CONF_KEY_ADDRESS, None)
     )
     device_type = device.getDeviceTypeByFamily(address)
-    if not valid_address:
-        log.warn(
-            "Device '{name}' has an invalid address '{address}'".format(
+    if valid_address:
+        clazz = device.getDevice(valid_address)
+        if clazz:
+            device_id = (
+                device_id
+                if index is None
+                else f"{device_id}-{index + device_config[CONF_KEY_FIRST_INDEX]}"
+            )
+            device_name = (
+                device_name
+                or f"{device_config.get(CONF_KEY_NAME, address)}"  # use address for devices discovered on bus scan
+                f"{'' if index is None else f' {index + device_config[CONF_KEY_FIRST_INDEX]}'}"
+            )
+            log.debug(
+                "Configuring %s '%s' at address '%s'", device_type, device_name, address
+            )
+            return clazz(
+                id=device_id,
                 name=device_name,
-                address=address or device_config.get(CONF_KEY_ADDRESS, ""),
+                device=device_type,
+                address=valid_address,
+                bus=ow_bus,
+                device_config=device_config,
             )
-        )
-        return False
-    clazz = device.getDevice(valid_address)
-    if clazz:
-        log.debug(
-            "Configuring {type} '{name}' at address '{address}'".format(
-                type=device_type, name=device_name, address=address
-            )
-        )
-        return clazz(
-            device_name,
-            valid_address,
-            device_type,
-            ow_bus,
-            topic
-            or device_config.get(CONF_KEY_TOPIC, None)
-            or CONF_OPTIONS["regex:.+"][CONF_KEY_TOPIC]["default"],
-            device_config,
-            index=index,
-        )
+        else:
+            log.warn("%s '%s' is not a supported device", device_type, device_name)
     else:
         log.warn(
-            "{type} '{name}' is not a supported device".format(
-                type=device_type or "Device", name=device_name
-            )
+            "Device '%s' has an invalid address '%s'",
+            device_name,
+            address or device_config.get(CONF_KEY_ADDRESS, ""),
         )
-        return None
+    return None
 
 
-def init(config_data={}):
+def load(config_raw={}):
     """
     Initializes the module
     """
@@ -122,42 +110,64 @@ def init(config_data={}):
     # make sure wildcard regex match is at the end
     CONF_OPTIONS.move_to_end("regex:.+")
 
-    raw_config = parse_config(config_data, CONF_OPTIONS, log)
-    del config_data
-    if raw_config:
+    config_data = parse_config(config_raw, CONF_OPTIONS, log)
+    del config_raw
+    if config_data:
         log.debug("Config loaded")
-        config.update(raw_config)
-        del raw_config
+        CONFIG.update(config_data)
+        del config_data
 
         global ow_bus
-        ow_bus = bus.getBus(config[CONF_KEY_BUS])
+        ow_bus = bus.getBus(CONFIG[CONF_KEY_BUS])
         if not ow_bus.valid:
             log.error("OneWire bus is not available")
             return False
 
-        for device_name in [key for key in config if isinstance(config[key], dict)]:
-            device_config = config.pop(device_name)
+        for device_id in [key for key in CONFIG if isinstance(CONFIG[key], dict)]:
+            device_config = CONFIG.pop(device_id)
 
             if isinstance(device_config[CONF_KEY_ADDRESS], list):
                 for index in range(len(device_config[CONF_KEY_ADDRESS])):
-                    if isinstance(device_config[CONF_KEY_TOPIC], list):
-                        topic = device_config[CONF_KEY_TOPIC][index]
-                    else:
-                        topic = device_config[CONF_KEY_TOPIC]
                     device_object = build_device(
-                        device_name,
-                        ow_bus,
-                        device_config,
-                        topic=topic,
+                        device_id=device_id,
+                        bus=ow_bus,
+                        device_config=device_config,
+                        device_name=device_config[CONF_KEY_NAME][index]
+                        if isinstance(device_config[CONF_KEY_NAME], list)
+                        else None,
                         address=device_config[CONF_KEY_ADDRESS][index],
-                        index=index + device_config[CONF_KEY_FIRST_INDEX],
+                        index=index,
                     )
                     if device_object:
-                        devices.append(device_object)
+                        devices[device_id] = device_object
+                        nodes[device_id] = device_object.get_node()
             else:
-                device_object = build_device(device_name, ow_bus, device_config)
+                device_object = build_device(
+                    device_id=device_id, bus=ow_bus, device_config=device_config
+                )
                 if device_object:
-                    devices.append(device_object)
+                    devices[device_id] = device_object
+                    nodes[device_id] = device_object.get_node()
+
+        if CONFIG[CONF_KEY_BUS_SCAN]:
+            log.info("Scanning OneWire bus for unconfigured devices")
+            scan_results = ow_bus.scan()
+            for address in scan_results:
+                address = ow_bus.validateAddress(address)
+                if address is not None:
+                    if not [id for id in devices if devices[id].address == address]:
+                        log.debug(
+                            "Scan found unconfigured device at address '%s',address"
+                        )
+                        device_object = build_device(address, ow_bus, address=address)
+                        if device_object:
+                            devices[device_object.id] = device_object
+                            nodes[device_object.id] = device_object.get_node()
+                            log.info(
+                                "Scan added '%s' at address '%s'",
+                                device_object.device,
+                                address,
+                            )
 
         return True
     else:
@@ -165,85 +175,32 @@ def init(config_data={}):
         return False
 
 
-def pre_loop():
+def start():
     """
     Actions to be done in the subprocess before the loop starts
     """
-    if config[CONF_KEY_BUS_SCAN]:
-        log.info("Scanning OneWire bus for devices")
-        scan_results = ow_bus.scan()
-        for address in scan_results:
-            address = ow_bus.validateAddress(address)
-            if address is not None:
-                log.trace(
-                    "Scan found device with address '{address}'".format(address=address)
-                )
-                if not [dev for dev in devices if dev.address == address]:
-                    log.debug(
-                        "Scan found unconfigured device at address '{address}'".format(
-                            address=address
-                        )
-                    )
-                    device_object = build_device(address, ow_bus, address=address)
-                    if device_object:
-                        devices.append(device_object)
-                        log.info(
-                            "Scan added '{type}' at address '{address}'".format(
-                                type=device_object.type, address=address
-                            )
-                        )
-                else:
-                    log.trace(
-                        "Scan skipping already configured device at address '{address}'".format(
-                            address=address
-                        )
-                    )
-        if not scan_results:
-            log.debug("Scan found no unconfigured devices")
-
     log.info("Setting up devices")
-    for index, dev in enumerate(devices):
-        if dev.setup():
+    for id in devices:
+        if devices[id].setup():
             log.debug(
-                "Successfully setup {type} '{name}'".format(
-                    type=dev.type, name=dev.name
-                )
-            )
-
-            subscribe(
-                "{}/+/#".format(dev.topic), callback=callback_device_message,
+                "Successfully setup %s '%s'", devices[id].device, devices[id].name
             )
         else:
-            log.warn(
-                "Failed to setup '{name}', it will be ignored".format(name=dev.name)
-            )
-            del devices[index]
+            log.warn("Failed to setup '%s'", devices[id].name)
+            # del devices[id]
 
-    log.debug("Adding MQTT subscription to poll all devices topic")
-    subscribe(
-        config[CONF_KEY_TOPIC_GETTER],
-        callback=callback_poll_all,
-        subtopics=["{module_topic}"],
-        substitutions={
-            "module_topic": config[CONF_KEY_TOPIC],
-            "module_name": TEXT_NAME,
-        },
-    )
-
-    if config[CONF_KEY_POLL_INT] > 0:
+    if CONFIG[CONF_KEY_POLL_INT] > 0:
         log.debug(
-            "Starting polling timer with interval of {interval}s".format(
-                interval=config[CONF_KEY_POLL_INT]
-            )
+            "Starting polling timer with interval of %ds", CONFIG[CONF_KEY_POLL_INT]
         )
         global polling_timer
-        polling_timer = Timer(config[CONF_KEY_POLL_INT], poll_interval)
+        polling_timer = Timer(CONFIG[CONF_KEY_POLL_INT], poll_interval)
         polling_timer.start()
 
     poll_all()
 
 
-def post_loop():
+def stop():
     """
     Actions to be done in the subprocess after the loop is exited
     """
@@ -251,27 +208,30 @@ def post_loop():
         log.debug("Stopping polling timer")
         polling_timer.cancel()
 
+    log.debug("Cleaning up devices")
+    for id in devices:
+        devices[id].cleanup()
 
-def callback_device_message(client, userdata, message):
+
+def device_message(message: BusMessage) -> None:
     """
-    Callback for message on device topic
+    Callback for device messages
     """
-    queue.put_nowait(
-        {"func": "_device_message", "args": [message.topic, message.payload]}
-    )
+    path = message.path.strip("/").split("/")  # strip '/'
+    if path[0] in devices:
+        devices[path[0]].message_callback(message)
+    else:
+        log.debug("Received message on unregistered path: %s", message)
 
 
-def _device_message(topic, payload):
-    for dev in devices:
-        if topic_matches_sub("{}/+/#".format(dev.topic), topic):
-            dev.handle_message(topic, payload)
-
-
-def callback_poll_all(client, userdata, message):
+def poll_message(message: BusMessage) -> None:
     """
     Callback for poll all
     """
-    queue.put_nowait({"func": "poll_all"})
+    if message.path.strip("/") == "onewire/poll-all/set":
+        poll_all()
+    else:
+        log.debug("Received message on unregistered path: %s", message)
 
 
 def poll_all():
@@ -287,6 +247,6 @@ def poll_interval():
     """ Polls all devices and restarts the timer """
     log.debug("Polling timer fired")
     global polling_timer
-    polling_timer = Timer(config[CONF_KEY_POLL_INT], poll_interval)
+    polling_timer = Timer(CONFIG[CONF_KEY_POLL_INT], poll_interval)
     polling_timer.start()
     poll_all()

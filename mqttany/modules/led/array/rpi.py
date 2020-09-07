@@ -25,38 +25,39 @@ LED RPi Array Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ["SUPPORTED_TYPES", "CONF_OPTIONS"]
+
 import os
 
 import logger
-from logger import log_traceback
+from common import DataType, BusMessage, BusNode, BusProperty, lock_gpio
+from modules.led import common
+from modules.led.common import CONF_KEY_OUTPUT, CONF_KEY_BRIGHTNESS
+from modules.led.array.base import baseArray
 
-from common import Mode, acquire_gpio_lock, release_gpio_lock, TEXT_PIN_PREFIX
-from modules.led.common import (
-    config,
-    TEXT_PACKAGE_NAME,
-    CONF_KEY_OUTPUT,
-    CONF_KEY_BRIGHTNESS,
-)
-from modules.led.array.common import baseArray
-
-
-__all__ = ["SUPPORTED_TYPES", "CONF_OPTIONS"]
-
-CONF_KEY_GPIO = "rpi gpio"
-CONF_KEY_CHIP = "rpi chip"
-CONF_KEY_FREQUENCY = "rpi frequency"
-CONF_KEY_INVERT = "rpi invert"
+CONF_KEY_RPI = "rpi"
+CONF_KEY_GPIO = "gpio"
+CONF_KEY_CHIP = "chip"
+CONF_KEY_FREQUENCY = "frequency"
+CONF_KEY_INVERT = "invert"
 
 CONF_OPTIONS = {
     "regex:.+": {
         CONF_KEY_OUTPUT: {"selection": {"rpi": "rpi", "RPi": "rpi"}},
-        CONF_KEY_GPIO: {"type": int, "default": None},
-        CONF_KEY_CHIP: {
-            "default": "WS2812B",
-            "selection": ["WS2811", "WS2812", "WS2812B", "SK6812", "SK6812W"],
+        CONF_KEY_RPI: {
+            "type": "section",
+            "required": False,
+            CONF_KEY_GPIO: {"type": int, "default": None},
+            CONF_KEY_CHIP: {
+                "default": "WS2812B",
+                "selection": ["WS2811", "WS2812", "WS2812B", "SK6812", "SK6812W"],
+            },
+            CONF_KEY_FREQUENCY: {  # in kHz
+                "default": 800,
+                "selection": range(400, 801),
+            },
+            CONF_KEY_INVERT: {"type": bool, "default": False},
         },
-        CONF_KEY_FREQUENCY: {"default": 800, "selection": range(400, 801)},  # in kHz
-        CONF_KEY_INVERT: {"type": bool, "default": False},
     }
 }
 
@@ -103,53 +104,69 @@ PWM_CHANNEL = {  # PWM channel map
     21: 0,
 }
 
-TEXT_NAME = ".".join(
-    [__name__.split(".")[-3], __name__.split(".")[-1]]
-)  # gives led.rpi
-
-log = logger.get_module_logger(module=TEXT_NAME)
-
 
 class rpiArray(baseArray):
-    def __init__(self, name, topic, count, leds_per_pixel, color_order, array_config):
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        count: int,
+        leds_per_pixel: int,
+        color_order: str,
+        init_brightness: int,
+        array_config: dict,
+    ):
         """
         Returns an LED object wrapping ``rpi_ws281x.PixelStrip``
         """
-        super().__init__(name, topic, count, leds_per_pixel, color_order)
-        self._pin = array_config[CONF_KEY_GPIO]
-        self._chip = array_config[CONF_KEY_CHIP]
-        self._init_brightness = array_config[CONF_KEY_BRIGHTNESS]
-        self._frequency = array_config[CONF_KEY_FREQUENCY]
-        self._invert = array_config[CONF_KEY_INVERT]
+        super().__init__(id, name, count, leds_per_pixel, color_order)
+        self._log = logger.get_module_logger(f"led.rpi.{self.id}")
+        self._init_brightness = (
+            255
+            if array_config[CONF_KEY_BRIGHTNESS] > 255
+            else 0
+            if array_config[CONF_KEY_BRIGHTNESS] < 0
+            else array_config[CONF_KEY_BRIGHTNESS]
+        )
+        self._pin = array_config[CONF_KEY_RPI][CONF_KEY_GPIO]
+        self._chip = array_config[CONF_KEY_RPI][CONF_KEY_CHIP]
+        self._frequency = array_config[CONF_KEY_RPI][CONF_KEY_FREQUENCY]
+        self._invert = array_config[CONF_KEY_RPI][CONF_KEY_INVERT]
         self._order = self._order.format(default=DEFAULT_COLOR_ORDER[self._chip])
-        log.debug(
-            "Configured '{name}' on GPIO{pin:02d} with {count} {type} LEDs {leds_per_pixel}".format(
-                name=self._name,
-                pin=self._pin,
-                count=self._count,
-                type=self._chip,
-                leds_per_pixel="{}".format(
-                    "with {num} LEDs per pixel".format(num=self._per_pixel)
-                    if self._per_pixel > 1
-                    else ""
-                ),
-            )
+        self._log.debug(
+            "Configured '%s' on GPIO%02d with %d %s LEDs %s",
+            self._name,
+            self._pin,
+            self._count,
+            self._chip,
+            f"with {self._per_pixel} LEDs per pixel" if self._per_pixel > 1 else "",
         )
 
-    def begin(self):
+    def get_node(self) -> BusNode:
+        """
+        Returns a ``BusNode`` representing this array.
+        """
+        node = super().get_node()
+        node.add_property("gpio", BusProperty(name="GPIO Pin", datatype=DataType.INT))
+        node.add_property("chip", BusProperty(name="LED Chip"))
+        node.add_property(
+            "frequency",
+            BusProperty(name="Frequency", datatype=DataType.INT, unit="kHz"),
+        )
+        node.add_property(
+            "invert", BusProperty(name="Signal Invert", datatype=DataType.BOOL)
+        )
+        return node
+
+    def begin(self) -> bool:
         """Setup the LED array"""
-        log.info(
-            "Setting up '{name}' on GPIO{pin:02d} with {count} {type} LEDS {leds_per_pixel}".format(
-                name=self._name,
-                pin=self._pin,
-                count=self._count,
-                type=self._chip,
-                leds_per_pixel="{}".format(
-                    "with {num} LEDs per pixel".format(num=self._per_pixel)
-                    if self._per_pixel > 1
-                    else ""
-                ),
-            )
+        self._log.info(
+            "Setting up '%s' on GPIO%02d with %d %s LEDS %s",
+            self._name,
+            self._pin,
+            self._count,
+            self._chip,
+            f"with {self._per_pixel} LEDs per pixel" if self._per_pixel > 1 else "",
         )
 
         try:
@@ -160,18 +177,17 @@ class rpiArray(baseArray):
                 "please see the wiki for instructions on how to install requirements"
             )
 
-        if not acquire_gpio_lock(self._pin, self._pin, TEXT_PACKAGE_NAME, timeout=2000):
-            log.error(
-                "Failed to acquire a lock for '{name}' on {pin_prefix}{pin:02d}".format(
-                    name=self._name, pin=self._pin, pin_prefix=TEXT_PIN_PREFIX[Mode.SOC]
-                )
+        if not lock_gpio(self._pin, "led.rpi"):
+            self._log.error(
+                "Failed to acquire a lock for '%s' on GPIO%02d", self._name, self._pin
             )
             return False
 
         if self._pin != 10:
             if not os.access("/dev/mem", os.R_OK | os.W_OK):
-                log.error(
+                self._log.error(
                     "No read/write access to '/dev/mem', try running with root privileges"
+                    "or adding the user trying to run MQTTany to the group 'kmem'"
                 )
                 return False
 
@@ -182,42 +198,54 @@ class rpiArray(baseArray):
                 freq_hz=self._frequency * 1000,
                 dma=DMA_CHANNEL[self._pin],
                 invert=self._invert,
-                brightness=255
-                if self._init_brightness > 255
-                else 0
-                if self._init_brightness < 0
-                else self._init_brightness,
+                brightness=self._init_brightness,
                 channel=PWM_CHANNEL[self._pin],
                 strip_type=LED_COLOR_ORDERS[self._order] + LED_TYPES[self._chip],
             )
             self._array.begin()
         except:
-            log.error(
-                "An error occured while setting up '{name}'".format(name=self._name)
-            )
-            log_traceback(log)
+            self._log.error("An error occured while setting up '%s'", self._name)
+            self._log.traceback(self._log)
             return False
         else:
             super().begin()
+            common.publish_queue.put_nowait(
+                BusMessage(
+                    path=f"{self.id}/gpio", content=self._pin, mqtt_retained=True
+                )
+            )
+            common.publish_queue.put_nowait(
+                BusMessage(
+                    path=f"{self.id}/chip", content=self._chip, mqtt_retained=True
+                )
+            )
+            common.publish_queue.put_nowait(
+                BusMessage(
+                    path=f"{self.id}/frequency",
+                    content=self._frequency,
+                    mqtt_retained=True,
+                )
+            )
+            common.publish_queue.put_nowait(
+                BusMessage(
+                    path=f"{self.id}/invert", content=self._invert, mqtt_retained=True
+                )
+            )
             del self._init_brightness
             del self._chip
             del self._frequency
             del self._invert
             self._setup = True
-            return True
 
-    def cleanup(self):
-        """Cleanup actions when stopping"""
-        super().cleanup()
-        release_gpio_lock(self._pin, self._pin, TEXT_PACKAGE_NAME)
+        return self._setup
 
-    def show(self):
+    def show(self) -> None:
         """Update the LED strip"""
         if not self._setup:
             return
         self._array.show()
 
-    def setPixelColor(self, pixel, color):
+    def setPixelColor(self, pixel: [int, str, list], color: int) -> None:
         """Set LED to 24/32-bit color value"""
         if not self._setup:
             return
@@ -225,7 +253,9 @@ class rpiArray(baseArray):
         for p in range(0, self._per_pixel):
             self._array.setPixelColor(index + p, int(color))
 
-    def setPixelColorRGB(self, pixel, red, green, blue, white=0):
+    def setPixelColorRGB(
+        self, pixel: [int, str, list], red: int, green: int, blue: int, white: int = 0
+    ) -> None:
         """Set LED to RGB(W) values provided"""
         if not self._setup:
             return
@@ -235,14 +265,14 @@ class rpiArray(baseArray):
                 index + p, int(red), int(green), int(blue), int(white)
             )
 
-    def getPixelColor(self, pixel):
+    def getPixelColor(self, pixel: int) -> int:
         """Return the 24/32-bit LED color"""
         if not self._setup:
             return None
         index = int(pixel) * self._per_pixel  # account for multiple chips per "pixel"
         return self._array.getPixelColor(index)
 
-    def getPixelColorRGB(self, pixel):
+    def getPixelColorRGB(self, pixel: int):
         """Return an object with RGB(W) attributes"""
         if not self._setup:
             return None
@@ -257,38 +287,48 @@ class rpiArray(baseArray):
         # fmt: on
         return c
 
-    def getBrightness(self):
+    def getBrightness(self) -> int:
         """Get LED strip brightness"""
         return self._array.getBrightness()
 
-    def setBrightness(self, value):
+    def setBrightness(self, brightness: int) -> None:
         """Set LED strip brightness"""
-        if not self._setup:
-            return
-        value = int(value)
-        self._array.setBrightness(255 if value > 255 else 0 if value < 0 else value)
+        if self._setup:
+            brightness = (
+                255 if brightness > 255 else 0 if brightness < 0 else brightness
+            )
+            if self.brightness != brightness:
+                self._array.setBrightness(brightness)
 
 
-def validateGPIO(name, topic, count, leds_per_pixel, color_order, array_config):
+def validateGPIO(
+    id: str,
+    name: str,
+    count: int,
+    leds_per_pixel: int,
+    color_order: str,
+    init_brightness: int,
+    array_config: dict,
+):
     """
     Validate GPIO pin and return array instance if valid.
     """
     try:
         import adafruit_platformdetect
         import adafruit_platformdetect.board as board
-
-        detector = adafruit_platformdetect.Detector()
-        board_id = detector.board.id
     except ImportError:
         raise ImportError(
             "MQTTany's LED module requires 'Adafruit-PlatformDetect' to be installed, "
             "please see the wiki for instructions on how to install requirements"
         )
 
+    detector = adafruit_platformdetect.Detector()
+    board_id = detector.board.id
+
     if detector.board.any_raspberry_pi:
         pin_ok = False
 
-        if array_config[CONF_KEY_GPIO] in [12, 18] and board_id in [
+        if array_config[CONF_KEY_RPI][CONF_KEY_GPIO] in [12, 18] and board_id in [
             board.RASPBERRY_PI_B_PLUS,
             board.RASPBERRY_PI_2B,
             board.RASPBERRY_PI_3B,
@@ -296,7 +336,7 @@ def validateGPIO(name, topic, count, leds_per_pixel, color_order, array_config):
         ]:
             pin_ok = True  # PWM0
 
-        elif array_config[CONF_KEY_GPIO] in [13] and board_id in [
+        elif array_config[CONF_KEY_RPI][CONF_KEY_GPIO] in [13] and board_id in [
             board.RASPBERRY_PI_B_PLUS,
             board.RASPBERRY_PI_2B,
             board.RASPBERRY_PI_3B,
@@ -306,7 +346,7 @@ def validateGPIO(name, topic, count, leds_per_pixel, color_order, array_config):
         ]:
             pin_ok = True  # PWM1
 
-        elif array_config[CONF_KEY_GPIO] in [21] and board_id in [
+        elif array_config[CONF_KEY_RPI][CONF_KEY_GPIO] in [21] and board_id in [
             board.RASPBERRY_PI_B_PLUS,
             board.RASPBERRY_PI_2B,
             board.RASPBERRY_PI_3B,
@@ -316,20 +356,34 @@ def validateGPIO(name, topic, count, leds_per_pixel, color_order, array_config):
         ]:
             pin_ok = True  # PCM_DOUT
 
-        elif array_config[CONF_KEY_GPIO] in [10]:
+        elif array_config[CONF_KEY_RPI][CONF_KEY_GPIO] in [10]:
             pin_ok = True  # SPI0-MOSI
 
         if not pin_ok:
-            log.error(
-                "GPIO{pin:02d} cannot be used for LED control on {board}".format(
-                    pin=array_config[CONF_KEY_GPIO], board=board_id
-                )
+            logger.get_module_logger("led.rpi").error(
+                "GPIO%02d cannot be used for LED control on %s",
+                array_config[CONF_KEY_RPI][CONF_KEY_GPIO],
+                board_id,
             )
             return None
         else:
             return rpiArray(
-                name, topic, count, leds_per_pixel, color_order, array_config
+                id,
+                name,
+                count,
+                leds_per_pixel,
+                color_order,
+                init_brightness,
+                array_config,
             )
+
+    else:
+        logger.get_module_logger("led.rpi").error(
+            "This module only supports GPIO output on certain Raspberry Pi boards"
+        )
+        logger.get_module_logger("led.rpi").error(
+            "Please see the documentation for supported boards"
+        )
 
 
 SUPPORTED_TYPES = {"rpi": validateGPIO}
