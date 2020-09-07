@@ -25,6 +25,8 @@ GPIO Library Wrapper
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ["getGPIO"]
+
 try:
     import adafruit_platformdetect
     import adafruit_platformdetect.board as board
@@ -39,9 +41,7 @@ except ImportError:
 
 from logger import log_traceback
 
-from modules.gpio.common import log, config, CONF_KEY_MODE
-
-__all__ = ["getGPIO"]
+from modules.gpio.common import log, CONFIG, CONF_KEY_MODE
 
 gpio_mod = None
 
@@ -60,14 +60,14 @@ def getGPIO(**kwargs):
     if not gpio_mod:
         if detector.board.any_raspberry_pi:
             try:
-                from modules.gpio.GPIO.rpi import rpiGPIO
+                from modules.gpio.lib.rpi import rpiGPIO
             except:
                 log.error(
                     "An error occurred while trying to import the Raspberry Pi GPIO library"
                 )
                 log_traceback(log)
             else:
-                gpio_mod = rpiGPIO(mode=config[CONF_KEY_MODE])
+                gpio_mod = rpiGPIO(mode=CONFIG[CONF_KEY_MODE])
 
         elif is_odroid_xu() or board_id in [
             board.ODROID_C1,
@@ -82,14 +82,14 @@ def getGPIO(**kwargs):
                 )
 
             try:
-                from modules.gpio.GPIO.odroid import odroidGPIO
+                from modules.gpio.lib.odroid import odroidGPIO
             except:
                 log.error(
                     "An error occurred while trying to import the Odroid GPIO library"
                 )
                 log_traceback(log)
             else:
-                gpio_mod = odroidGPIO(mode=config[CONF_KEY_MODE])
+                gpio_mod = odroidGPIO(mode=CONFIG[CONF_KEY_MODE])
 
     return gpio_mod
 

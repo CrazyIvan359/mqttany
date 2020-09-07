@@ -29,7 +29,7 @@ import os, sys, errno, inspect, traceback
 from types import MethodType
 import logging
 from logging import handlers
-from logging import DEBUG, INFO, WARNING as WARN, ERROR
+from logging import DEBUG, INFO, WARNING as WARN
 import colorlog
 
 __all__ = ["get_logger", "set_level", "log_traceback", "uninit"]
@@ -136,7 +136,7 @@ def get_module_logger(module=None, level=None):
     """
     if module is None:
         frm = inspect.stack()[1]
-        module = inspect.getmodule(frm[0]).__name__.split(".")[-1]
+        module = ".".join(inspect.getmodule(frm[0]).__name__.split(".")[1:])
     return get_logger("mqttany.{}".format(module), level)
 
 

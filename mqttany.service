@@ -1,5 +1,5 @@
 [Unit]
-Description=MQTTany connects things to MQTT
+Description=MQTTany service
 After=syslog.target network.target
 
 [Service]

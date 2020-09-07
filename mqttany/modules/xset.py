@@ -25,136 +25,107 @@ XSET Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = []
+
 import json, subprocess
+from collections import OrderedDict
 
 import logger
 from config import parse_config
-from modules.mqtt import subscribe, publish
+from common import BusMessage, BusNode, BusProperty
 
-__all__ = ["init", "pre_loop", "post_loop", "queue"]
-
-CONF_KEY_TOPIC = "topic"
 CONF_KEY_DEFAULT_DISPLAY = "default display"
 CONF_KEY_STARTUP_COMMANDS = "startup commands"
 
-CONF_OPTIONS = {
-    CONF_KEY_TOPIC: {"type": str, "default": "{module_name}"},
-    CONF_KEY_DEFAULT_DISPLAY: {"type": str, "default": None},
-    CONF_KEY_STARTUP_COMMANDS: {"type": list},
+CONF_OPTIONS = OrderedDict(
+    [
+        (CONF_KEY_DEFAULT_DISPLAY, {"type": str, "default": None}),
+        (CONF_KEY_STARTUP_COMMANDS, {"type": list}),
+    ]
+)
+
+log = logger.get_module_logger("xset")
+CONFIG = {}
+
+publish_queue = None
+subscribe_queue = None
+nodes = {
+    "xset": BusNode(
+        name="XSET",
+        type="Module",
+        properties={
+            "command": BusProperty(name="XSET Command", settable=True),
+            "stdout": BusProperty(name="stdout"),
+            "stderr": BusProperty(name="stderr"),
+        },
+    )
 }
 
-TEXT_NAME = __name__.split(".")[-1]  # gives xset
 
-log = logger.get_module_logger()
-queue = None
-config = {}
-
-
-def init(config_data={}):
+def load(config_raw={}):
     """
     Initializes the module
     """
-    raw_config = parse_config(config_data, CONF_OPTIONS, log)
-    del config_data
-    if raw_config:
+    config_data = parse_config(config_raw, CONF_OPTIONS, log)
+    del config_raw
+    if config_data:
         log.debug("Config loaded")
-        config.update(raw_config)
-        del raw_config
+        CONFIG.update(config_data)
+        del config_data
         return True
     else:
         log.error("Error loading config")
         return False
 
 
-def pre_loop():
+def start():
     """
     Actions to be done in the subprocess before the loop starts
     """
-    if config[CONF_KEY_STARTUP_COMMANDS]:
+    if CONFIG[CONF_KEY_STARTUP_COMMANDS]:
         log.info("Running startup commands")
-        for cmd in config[CONF_KEY_STARTUP_COMMANDS]:
-            _command(cmd)
-
-    subscribe(
-        config[CONF_KEY_TOPIC],
-        callback=callback_command,
-        subtopics=["{module_topic}"],
-        substitutions={
-            "module_topic": config[CONF_KEY_TOPIC],
-            "module_name": TEXT_NAME,
-        },
-    )
+        for command in CONFIG[CONF_KEY_STARTUP_COMMANDS]:
+            run_xset(command)
 
 
-def post_loop():
-    """
-    Actions to be done in the subprocess after the loop is exited
-    """
-    pass
-
-
-def callback_command(client, userdata, message):
+def message_callback(message: BusMessage):
     """
     Callback for commands
     """
-    queue.put_nowait({"func": "_command", "args": [message.payload.decode("utf-8")]})
+    if message.path.strip("/") == "xset/command/set":
+        run_xset(message.content)
+    else:
+        log.debug("Received message on unregistered path: %s", message)
 
 
-def _command(payload):
+def run_xset(content):
     """
-    Processes a command string
+    Processes a command
     """
-    # JSON payload
-    if "{" in payload:
-        try:
-            payload = json.loads(payload)
-        except ValueError:
-            log.error(
-                "Received malformed JSON payload '{payload}'".format(payload=payload)
+    try:
+        content = json.loads(content)
+    except ValueError:
+        log.error("Received malformed JSON '%s'", content)
+    else:
+        command = content.get("command", None)
+
+        if command:
+            display = content.get("display", CONFIG[CONF_KEY_DEFAULT_DISPLAY])
+            display = f"-display {display}" if display else ""
+            # strip out commands that follow for security
+            command = command.split(";")[0].split("&")[0].split("|")[0].strip()
+            command = f"xset {display} {command}"
+            log.debug("Running command '%s'", command)
+            publish_queue.put_nowait(BusMessage(path="xset/command", content=command))
+            result = subprocess.run(
+                command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
             )
-            return
+            log.trace("Command '%s' result: %s", command, result.stdout)
+            publish_queue.put_nowait(
+                BusMessage(path="xset/stdout", content=result.stdout)
+            )
+            publish_queue.put_nowait(
+                BusMessage(path="xset/stderr", content=result.stderr)
+            )
         else:
-            display = payload.get("display", config[CONF_KEY_DEFAULT_DISPLAY])
-            command = payload.get("command", None)
-
-    # List payload "display, command"
-    elif len(payload.split(",")) > 1:
-        if len(payload.split(",")) != 2:
-            log.error(
-                "Received unrecognized payload '{payload}'".format(payload=payload)
-            )
-            return
-        display, command = payload.split(",", 2)
-
-    # Command only payload
-    else:
-        display = config[CONF_KEY_DEFAULT_DISPLAY]
-        command = payload
-
-    if command:
-        # strip out commands that follow for security
-        command = command.split(";")[0].split("&")[0].split("|")[0].strip()
-        command = "xset{display} {command}".format(
-            display="" if display is None else " -display {}".format(display),
-            command=command,
-        )
-        log.debug("Running command '{command}'".format(command=command))
-        result = subprocess.run(
-            command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        )
-        log.trace(
-            "Command '{command}' result: {result}".format(
-                command=command, result=result.stdout
-            )
-        )
-        publish(
-            "{}/result".format(config[CONF_KEY_TOPIC]),
-            result.stdout,
-            subtopics=["{module_topic}"],
-            substitutions={
-                "module_topic": config[CONF_KEY_TOPIC],
-                "module_name": TEXT_NAME,
-            },
-        )
-    else:
-        log.error("No command provided in payload '{payload}'".format(payload=payload))
+            log.error("No command provided in message '%s'", content)

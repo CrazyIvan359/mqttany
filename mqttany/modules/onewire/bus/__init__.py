@@ -25,12 +25,10 @@ OneWire Bus
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
+__all__ = ["getBus", "getConfBusOptions", "getConfBusTypes"]
 
 from modules.onewire.bus.base import OneWireBus
 from modules.onewire.bus import wire1
-
-__all__ = ["getBus", "getConfBusOptions", "getConfBusTypes"]
 
 
 def getBus(bus_type):
@@ -38,10 +36,9 @@ def getBus(bus_type):
     Returns a class for the bus based on bus type setting or ``None`` if
     one is not available.
     """
-    if bus_type in wire1.CONF_BUS_SELECTION:
-        return wire1.wire1()
-    else:
-        return None
+    buses = {}
+    buses.update(wire1.SUPPORTED_BUS_TYPES)
+    return buses.get(bus_type, None)
 
 
 def getConfBusOptions():

@@ -25,20 +25,17 @@ GPIO Pin Base
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logger
-from common import acquire_gpio_lock, release_gpio_lock, TEXT_PIN_PREFIX
-
-from modules.mqtt import resolve_topic, topic_matches_sub
-
-from modules.gpio.GPIO import getGPIO
-from modules.gpio.common import config
-from modules.gpio.common import *
-
-TEXT_NAME = ".".join(__name__.split(".")[-3:3])  # gives gpio.pin
-
-log = logger.get_module_logger(module=TEXT_NAME)
-
 __all__ = ["Pin"]
+
+from common import BusProperty, lock_gpio
+
+from modules.gpio.lib import getGPIO
+from modules.gpio.common import (
+    CONFIG,
+    CONF_KEY_MODE,
+    CONF_KEY_DIRECTION,
+    TEXT_GPIO_MODE,
+)
 
 
 class Pin(object):
@@ -46,56 +43,39 @@ class Pin(object):
     GPIO Pin base class
     """
 
-    def __init__(self, name, pin, topic, index=None):
+    def __init__(self, pin: int, id: str, name: str, pin_config: dict = {}):
         self._setup = False
-        self._name = name
+        self._log = None  # assigned by subclass
         self._pin = pin
+        self._id = id
+        self._name = name
+        self._path = f"gpio/{id}"
+        self._direction = pin_config[CONF_KEY_DIRECTION]
         self._gpio = getGPIO()
-        self._topic = resolve_topic(
-            topic,
-            subtopics=["{module_topic}"],
-            substitutions={
-                "module_topic": config[CONF_KEY_TOPIC],
-                "module_name": TEXT_PACKAGE_NAME,
-                "pin": pin,
-                "pin_name": name,
-                "index": index if index is not None else "",
-            },
-        )
+
+    def get_property(self) -> BusProperty:
+        """
+        Subclasses MUST override this method.
+        It should return a ``BusProperty`` object descibing the pin.
+        """
+        raise NotImplementedError
 
     def setup(self):
         """
-        Makes sure we have a valid GPIO library and can get a lock on the pin.
-        Returns ``True`` if it succeeds, ``False`` otherwise.
-        Subclasses must override this method and ``super()`` it or acquire
-        their own lock on the pin.
+        Subclasses MUST override AND ``super()`` this method. This method will try to
+        get the pin lock and return the result, which you MUST use to determine if the
+        pin can be used. After getting the lock, pin setup can be done.
         """
-        if not self._gpio:
-            log.error(
-                "No GPIO library available for '{name}' on {pin_prefix}{pin:02d}".format(
-                    name=self._name,
-                    pin=self._pin,
-                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                )
+        locked = lock_gpio(
+            self._gpio.getPinFromMode(self._pin, CONFIG[CONF_KEY_MODE]), "gpio.pin"
+        )
+        if not locked:
+            self._log.error(
+                "Failed to acquire a lock for '%s' on %s",
+                self._name,
+                TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
             )
-            return False
-
-        if not acquire_gpio_lock(
-            self._pin,
-            self._gpio.getPinFromMode(self._pin, config[CONF_KEY_MODE]),
-            TEXT_PACKAGE_NAME,
-            timeout=2000,
-            mode=config[CONF_KEY_MODE],
-        ):
-            log.error(
-                "Failed to acquire a lock for '{name}' on {pin_prefix}{pin:02d}".format(
-                    name=self._name,
-                    pin=self._pin,
-                    pin_prefix=TEXT_PIN_PREFIX[config[CONF_KEY_MODE]],
-                )
-            )
-            return False
-        return True
+        return locked
 
     def cleanup(self):
         """
@@ -104,36 +84,29 @@ class Pin(object):
         self._setup = False
         if self._gpio:
             self._gpio.cleanup(self._pin)
-        release_gpio_lock(
-            self._pin,
-            self._gpio.getPinFromMode(self._pin, config[CONF_KEY_MODE]),
-            TEXT_PACKAGE_NAME,
-            mode=config[CONF_KEY_MODE],
-        )
 
     def publish_state(self):
         """
-        Publishes the current pin state.
-        Subclasses must override this method.
+        Subclasses MUST override this method.
+        Reads and publishes the current pin state.
         """
         raise NotImplementedError
 
-    def handle_message(self, topic, payload):
+    def message_callback(self, path: str, content: str):
         """
-        Handles messages on ``{pin_topic}/#``.
-        Base class function will call ``self.publish_state`` if any message
-        arrives on ``{pin_topic}/{CONF_KEY_TOPIC_GETTER}``.
-        Subclass may override this method.
+        Subclasses MUST override this method.
+        Handles messages received for this pin.
         """
-        if topic_matches_sub(
-            "{}/{}".format(self._topic, config[CONF_KEY_TOPIC_GETTER]), topic
-        ):
-            self.publish_state()
+        raise NotImplementedError
 
     @property
-    def name(self):
+    def id(self) -> str:
+        return self._id
+
+    @property
+    def name(self) -> str:
         return self._name
 
     @property
-    def topic(self):
-        return self._topic
+    def path(self) -> str:
+        return self._path

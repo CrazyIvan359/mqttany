@@ -25,13 +25,11 @@ OneWire Device Base
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from modules.mqtt import resolve_topic, topic_matches_sub
-
-from modules.onewire.bus import getBus, OneWireBus
-from modules.onewire.common import config
-from modules.onewire.common import *
-
 __all__ = ["OneWireDevice"]
+
+from common import BusMessage, BusNode, BusProperty
+from modules.onewire import common
+from modules.onewire.bus import OneWireBus
 
 
 class OneWireDevice:
@@ -39,72 +37,84 @@ class OneWireDevice:
     OneWire Device base class
     """
 
-    def __init__(self, name, address, dev_type, bus, topic, log, index=None):
-        self.log = log
-        self._name = name
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        device: str,
+        address: str,
+        bus: OneWireBus,
+    ):
         self._setup = False
-        self._type = dev_type
-        self._bus = bus if isinstance(bus, OneWireBus) else getBus(bus)
-        self._address = self._bus.validateAddress(address) if self._bus else None
-        self._topic = resolve_topic(
-            topic,
-            subtopics=["{module_topic}"],
-            substitutions={
-                "module_topic": config[CONF_KEY_TOPIC],
-                "module_name": TEXT_PACKAGE_NAME,
-                "device_name": name,
-                "device_type": dev_type,
-                "address": address,
-                "index": index if index is not None else "",
-            },
+        self._id = id
+        self._name = name
+        self._device = device.upper()
+        self._address = address
+        self._bus = bus
+        self._log = None  # must be set by subclass
+
+    def get_node(self) -> BusNode:
+        """
+        Subclasses MUST override and ``super()`` this method.
+        Returns a ``BusNode`` representing the device and all its properties.
+        """
+        return BusNode(
+            name=self.name,
+            type=self.device,
+            properties={"address": BusProperty(name="Address")},
         )
 
-    def setup(self, *args, **kwargs):
+    def setup(self):
         """
         Sets up the device and makes sure it is available on the bus.
         Returns ``True`` if device is available, ``False`` otherwise.
+        Subclasses may override this method but should ``super()`` it.
         """
-        if not self._bus:
-            self.log.error("Bus not available for '{name}'".format(name=self._name))
-            return False
+        if self.address in self._bus.scan():
+            common.publish_queue.put_nowait(
+                BusMessage(
+                    path=f"{self.id}/address", content=self.address, mqtt_retained=True
+                )
+            )
+            return True
+        else:
+            self._log.error(
+                "Device %s '%s' was not found on the bus", self.device, self.name
+            )
+        return False
 
-        if not self._address:
-            self.log.error("Address for '{name}' is invalid".format(name=self._name))
-            return False
-
-        return True
-
-    def publish_state(self):
+    def cleanup(self) -> None:
         """
+        Perform cleanup on module shutdown.
+        Subclasses may override this method.
+        """
+
+    def publish_state(self) -> None:
+        """
+        Subclasses MUST override this method.
         Publishes the current device state.
-        Subclasses must override this method.
         """
         raise NotImplementedError
 
-    def handle_message(self, topic, payload):
+    def message_callback(self, message: BusMessage) -> None:
         """
-        Handles messages on ``{device_topic}/#``.
-        Base class function will call ``self.publish_state`` if any message
-        arrives on ``{device_topic}/{CONF_KEY_TOPIC_GETTER}``.
-        Subclass may override this method.
+        Subclasses MUST override this method.
+        Handles messages received for this device.
         """
-        if topic_matches_sub(
-            "{}/{}".format(self._topic, config[CONF_KEY_TOPIC_GETTER]), topic
-        ):
-            self.publish_state()
+        raise NotImplementedError
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def name(self):
         return self._name
 
     @property
+    def device(self):
+        return self._device
+
+    @property
     def address(self):
         return self._address
-
-    @property
-    def type(self):
-        return self._type
-
-    @property
-    def topic(self):
-        return self._topic

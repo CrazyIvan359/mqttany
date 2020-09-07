@@ -25,19 +25,19 @@ MQTTany
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import time, sys, argparse
+import multiprocessing as mproc
+from queue import Empty as QueueEmptyError
+
+import logger
 import version as mqttanyversion
 
 __version__ = mqttanyversion.__version__
 
-import time, argparse
-import multiprocessing as mproc
-from queue import Empty as QueueEmptyError
-
-import logger, modules
-from common import SignalHook
-
 log = logger.get_logger()
-queue = mproc.Queue()
+queue_core = mproc.Queue()
+
+# pylint: disable=logging-format-interpolation
 
 
 def get_args():
@@ -68,14 +68,27 @@ def get_args():
 
 
 if __name__ == "__main__":
-    signal = SignalHook()
+    if sys.version_info[:2] < (3, 6):
+        log.info(
+            "Detected Python verison {}".format(
+                ".".join([str(i) for i in sys.version_info[:3]])
+            )
+        )
+        log.error("MQTTany requires a minimum Python version of 3.6")
+        exit(126)
+
     args = get_args()
     if args.verbose > 1:
         logger.set_level(logger.TRACE)
     elif args.verbose > 0:
         logger.set_level(logger.DEBUG)
 
-    mproc.current_process().name = "mqttany"
+    import core
+    from common import SignalHook
+
+    signal = SignalHook()
+
+    mproc.current_process().name = "core"
     poison_pill = False
 
     log.info("MQTTany {version} starting".format(version=__version__))
@@ -91,17 +104,15 @@ if __name__ == "__main__":
         log.warn("")
 
     try:
-        if modules.load(args.config_file):
-            while not signal.exit:
-                try:  # to get an item from the queue
-                    message = queue.get_nowait()
-                except QueueEmptyError:
-                    time.sleep(0.1)  # 100ms
-                else:
-                    poison_pill = True
-                    log.debug("Received poison pill")
-        else:
-            poison_pill = True
+        core.start(queue_core, args.config_file)
+        while not poison_pill and not signal.exit:
+            try:  # to get an item from the queue
+                message = queue_core.get_nowait()
+            except QueueEmptyError:
+                time.sleep(0.1)  # 100ms
+            else:
+                poison_pill = True
+                log.debug("Received exit request from {}".format(message))
 
     except:
         logger.log_traceback(log)
@@ -110,8 +121,9 @@ if __name__ == "__main__":
     else:
         if signal.signal == signal.SIGINT:
             print()  # newline after '^C'
-        modules.unload()
+        core.stop()
 
+    finally:
         if poison_pill:
             log.warn("MQTTany exiting with errors")
         else:

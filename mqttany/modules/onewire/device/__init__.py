@@ -25,15 +25,14 @@ OneWire Device
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from modules.onewire.device.base import OneWireDevice
-from modules.onewire.device import ds18x20
-
 __all__ = [
     "getDevice",
     "getConfDeviceOptions",
-    "getConfDeviceTypes",
     "getDeviceTypeByFamily",
 ]
+
+from modules.onewire.device.base import OneWireDevice
+from modules.onewire.device import ds18x20
 
 
 def getDevice(address):
@@ -42,11 +41,9 @@ def getDevice(address):
     one is not available.
     """
     family = int(address[:2], base=16)
-
-    if family in ds18x20.FAMILY_CODES:
-        return ds18x20.DS18x20
-    else:
-        return None
+    dev_classes = {}
+    dev_classes.update(ds18x20.SUPPORTED_DEVICES)
+    return dev_classes.get(family, None)
 
 
 def getConfDeviceOptions():
@@ -66,7 +63,6 @@ def getDeviceTypeByFamily(family):
     if isinstance(family, str):
         family = int(family[:2], base=16)
 
-    if family in ds18x20.FAMILY_CODES:
-        return ds18x20.FAMILY_CODES[family]
-    else:
-        return None
+    family_codes = {}
+    family_codes.update(ds18x20.FAMILY_CODES)
+    return family_codes.get(family, None)

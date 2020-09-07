@@ -25,29 +25,29 @@ LED Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-try:
-    from mprop import mproperty
-except ImportError:
-    raise ImportError(
-        "MQTTany's LED module requires 'mprop' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
+__all__ = []
 
-from modules.led import core
-from modules.led.core import init, pre_loop, post_loop, _anim_message
-from modules.led.common import log
+from mprop import mproperty
 
-__all__ = ["init", "pre_loop", "post_loop", "queue"]
+from modules import ModuleType
 
-_queue = None
+from modules.led.core import load, start, stop
+from modules.led.core import anim_message
+from modules.led import common
+from modules.led.common import log, nodes
+
+
+_module_type = ModuleType.INTERFACE
+_publish_queue = None
+subscribe_queue = None
 
 
 @mproperty
-def queue(module):
-    return _queue
+def publish_queue(module):
+    return _publish_queue
 
 
-@queue.setter
-def queue(module, value):
-    module._queue = value
-    core.queue = value
+@publish_queue.setter
+def publish_queue(module, value):
+    module._publish_queue = value
+    common.publish_queue = value

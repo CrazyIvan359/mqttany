@@ -2,31 +2,25 @@
 
 # All optional values are commented out and default values are shown
 
-### Notes on Topics:
-#
-# RELATIVE topics will have the 'root topic' and 'module topic' prepended.
-#
-# ABSOLUTE topics starting with '/' will be treated as absolute and will not
-# have any other topics prepended.
-#
-# The following substitutions will be applied to all topics, modules may add
-# more (see module for details)
-# - {hostname} = the computer's hostname
-# - {client_id} = the mqtt 'client id'
-# - {root_topic} = the 'root topic'
-# - {module_name} = the name of the module publishing or subscribing
-# - {module_topic} = the main topic of the module pub-ing or sub-ing
-###
+
 
 ######## MQTT Module ########
 mqtt:
 
-  ### Broker
-  host:  # address or hostname
+  ### Broker Host
+  # can be either IPv4 address or hostname
+  host: ''
+
+  ### Broker Port
+  # port to connect to on the host
   #port: 1883
 
-  ### User Data
+  ### Client ID
+  # Substitutions:
+  # - {hostname} = the computer's hostname
   #client id: '{hostname}'
+
+  ### Login
   #username:
   #password:
 
@@ -35,7 +29,12 @@ mqtt:
   #retain: false
 
   ### Topics
+  # Substitutions:
+  # - {hostname} = the computer's hostname
+  # - {client_id} = the mqtt 'client id'
+  # topics are composed as `{root topic}/{node id}/{property id}`
   #root topic: '{client_id}' # Root topic
+  # last will topic becomes `{root topic}/{lwt topic}`
   #lwt topic: 'lwt' # Last Will topic
 
   ### Heartbeat
@@ -49,49 +48,24 @@ mqtt:
   ### Pin Numbering Mode
   #mode: 'SOC'
 
-  ### Module Topic
-  #topic: '{module_name}'
-
-  ### Setter Topic
-  # messages sent here will set a pin if it's configured as an output
-  # default resolves to '{root_topic}/{module_name}/{pin}/set'
-  #topic set: 'set'
-
-  ### Getter Topic
-  # any message here will cause pin states to be published
-  # default for all pins resolves to '{root_topic}/{module_name}/poll'
-  # default for single pin resolves to '{root_topic}/{module_name}/{pin}/get'
-  #topic get: 'poll'
-
-  ### Pulse Topic
-  # pulses a digital pin, see wiki for details
-  # default topics resolve to '{root_topic}/{module_topic}/{pin}/pulse'
-  #topic pulse: 'pulse'
-
-  ### ON Payload
-  #payload on: 'ON' # message for pin ON
-
-  ### OFF Payload
-  #payload off: 'OFF' # message for pin OFF
-
   ### Polling Interval
-  #polling interval: 0.0 # interval in seconds to poll all pins
+  #polling interval: 60 # interval in seconds to poll all pins
 
   ### Interrupt Debounce
   #debounce: 50 # in milliseconds
 
   ### Single Pin Configuration
-  #Friendly Name:
+  #pin-id:
 
     ### Pin Number
     #pin:
 
-    ### Pin Topic
-    # Additional Subsitutions:
+    ### Pin Name
+    # Subsitutions:
     # - {pin} = pin number
     # - {pin:02d} = pin number padded with 0's to always be 2 numbers
-    # - {pin_name} = name of this section
-    #topic: '{pin}'
+    # - {pin_id} = name of this section
+    #name: '{pin_id}'
 
     ### Pin Direction
     #direction: 'input' # can be 'input' or 'output'
@@ -107,29 +81,31 @@ mqtt:
     #invert: false # can be true or false
 
     ### Initial State
-    # must be same as payload-on or payload-off
-    #initial state: '{payload_off}'
+    # must be true/false or 1/0
+    #initial state: 'false'
 
   ### Multiple Pin Configuration
-  # alternatively a list of pins can be given
+  # alternatively a list of pins can be given.
+  # actual id's will be '{batch-id}-{index + first index}'
   # all options from a single pin configuration apply, except those shown below
-  #Batch:
+  #batch-id:
+
+    ### Pin Name
+    # a single name may be given, or a list of names the same length as the
+    # list of pins can be provided. if a single name is given then actual names will
+    # be '{name} {index + first index}'
+    # Subsitutions:
+    # - {pin} = pin number
+    # - {pin:02d} = pin number padded with 0's to always be 2 numbers
+    # - {pin_id} = name of this section
+    # - {index} = the pin's index in the list of pins plus 'first index'
+    #name: '{pin_id}'
 
     ### Pin Numbers
     #pin: []
 
-    ### Pin Topic
-    # a single topic may be given, or a list of topics the same length as the
-    # list of pins can be provided
-    # Additional Subsitutions:
-    # - {pin} = pin number
-    # - {pin:02d} = pin number padded with 0's to always be 2 numbers
-    # - {pin_name} = name of this section
-    # - {index} = the pin's index in the list of pins plus 'first index'
-    #topic: '{pin}'
-
     ### First Index
-    # this number will be added to 'index' when substituting '{index}' in topics
+    # this number will be added to 'index' when substituting '{index}' in id's and names
     #first index: 0
 
 
@@ -137,25 +113,20 @@ mqtt:
 ######## I2C Module ########
 #i2c:
 
-  ### Module Topic
-  #topic: '{module_name}'
-
-  ### Getter Topic
-  # any message here will cause pin states to be published
-  # default for all pins resolves to '{root_topic}/{module_name}/{device_name}/poll'
-  # default for single device resolves to '{root_topic}/{module_name}/{device_name}/poll'
-  # default for single pin resolves to '{root_topic}/{module_name}/{device_name}/{pin}/get'
-  #topic get: 'poll'
-
   ### Polling Interval
-  #polling interval: 0.0 # interval in seconds to poll all pins
-
-  ### Bus Scan
-  # Scan bus for any unconfigured devices and list them
-  #bus scan: false
+  #polling interval: 60 # interval in seconds to poll all pins
 
   ### Device Configuration
-  #Friendly Name:
+  # !! this id is used as the node so it must not match any other node or module name !!
+  #device-id:
+
+    ### Device Friendly Name
+    # Friendly name used in logging etc
+    # Substitutions:
+    # - {device_id} = name of device's section in config file
+    # - {address:02x} = device address in hex (ex. '20')
+    # - {device} = device identifier
+    #name: '{device_id}'
 
     ### Device Type
     # Device identifier, see the wiki for a list of supported devices
@@ -164,21 +135,16 @@ mqtt:
     ### I2C Bus ID
     # ID of the I2C bus to use on your SBC
     # ex. Raspberry Pi 3 this will probably be 1
-    # Can also specify full path
+    # Can also specify full path ex. '/dev/i2c-1'
     #bus:
 
     ### Device Address
     # 7-bit hex address of the device (ex. 0x20)
+    # this can also be a base-10 integer
     #address: 0x
 
-    ### Device Topic
-    # Additional Substitutions:
-    # - {device_name} = friendly name of device's section in config file
-    # - {address:02x} = device address in hex (ex. '20')
-    #topic: '{device_name}'
-
     ### Device Specific Options
-    # Each device type may have some options specific to it
+    # Each device type will have some options specific to it
     # consult the wiki page for the device for details.
 
 
@@ -189,44 +155,57 @@ mqtt:
   ### Bus Interface
   #bus: 'w1'
 
-  ### Module Topic
-  #topic: '{module_name}'
-
-  ### Get Topic
-  # any message here will cause device state to be published
-  # default for all devices resolves to '{root_topic}/{module_name}/poll'
-  # default for single device resolves to '{root_topic}/{module_name}/{device_name}/poll'
-  #topic get: 'poll'
-
   ### Polling Interval
-  #polling interval: 0.0 # interval in seconds to poll all pins
+  #polling interval: 60 # interval in seconds to poll all devices
 
   ### Bus Scan
   # Scan bus for any unconfigured devices and add them
   #bus scan: false
 
   ### Device Configuration
-  #Friendly Name:
+  #device-id:
+
+    ### Device Name
+    # Substitutions:
+    # - {device_id} = will be replaced with the device definition section name
+    # - {device_type} = will be replaced with the device type (ex. `DS18B20`)
+    # - {address} = will be replaced with the device's **FULL 8 BYTE ADDRESS**
+    #name: '{device_id}'
 
     ### Device Address
     # The device's address, can be 7 or 8 bytes, can use w1 style `xx-xxxxxxxxxxxx`
     #address: '' # **MUST BE IN SINGLE QUOTES `''`**
 
-    ### Device Topic
-    # Additional Substitutions:
-    # - {device_name} = will be replaced with the device definition section name
+    ### Device Specific Options
+    # Each device type will have some options specific to it
+    # consult the wiki page for the device for details.
+
+  ### Multiple Device Configuration
+  #batch-id:
+
+    ### Device Name
+    # a single name may be given, or a list of names the same length as the
+    # list of pins can be provided. if a single name is given then actual names will
+    # be '{name} {index + first index}'
+    # Substitutions:
+    # - {device_id} = will be replaced with the device definition section name
     # - {device_type} = will be replaced with the device type (ex. `DS18B20`)
     # - {address} = will be replaced with the device's **FULL 8 BYTE ADDRESS**
     # - {index} = will be replaced with the device's index in the list of addresses
-    #topic: '{device_name}'
+    #name: '{device_id}'
+
+    ### Device Address
+    # List of device addresses, can be 7 or 8 bytes, can use w1 style `xx-xxxxxxxxxxxx`
+    #address: ['', ''] # **MUST BE IN SINGLE QUOTES `''`**
+
+    ### First Index
+    # this number will be added to 'index' when substituting '{index}' in id's and names
+    #first index: 0
 
 
 
 ######## LED Module ########
 #led:
-
-  ### Module Topic
-  #topic: '{module_name}'
 
   ### Animation Directory
   # A directory or list of directories to look for additional animations in
@@ -242,17 +221,17 @@ mqtt:
   #anim fps: 60
 
   ### Array Configuration
-  #array_name:
+  #array-id:
+
+    ### Array Name
+    # Substitutions:
+    # - {array_id} = will be replaced with the array definition section name
+    #name: '{array_id}'
 
     ### Output
     # The interface to use for outputting data
     # Available options are 'rpi' or 'sacn'
     #output: ''
-
-    ### Array Topic
-    # Additional Substitutions:
-    # - {array_name} = will be replaced with the array definition section name
-    #topic: '{array_name}'
 
     ### Pixel Count
     # The number of pixels in your array (not necessarily LEDs, see next option)
@@ -261,7 +240,7 @@ mqtt:
     ### LEDs per Pixel
     # Allows you to have more than one LED handled as a single pixel.
     # Ex. A bulb with 3 LEDs in it can be treated as a single pixel in the array.
-    # Total number of LEDs in the array should be 'count' x 'leds per pixel'
+    # Total number of LEDs in the array should be 'count' times 'leds per pixel'
     #leds per pixel: 1
 
     ### Initial Brightness
@@ -281,9 +260,6 @@ mqtt:
 
 ######## XSET Module ########
 #xset:
-
-  ### Module Topic
-  #topic: '{module_name}'
 
   ### Default Display
   # Display option to use when commands do not specify a display.

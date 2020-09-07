@@ -25,23 +25,21 @@ LED Animations
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time, os, inspect
+__all__ = ["load_animations"]
+
+import time
+import os
+import inspect
 import importlib.util
 
 import logger
 from logger import log_traceback
 
-from modules.led.common import log, config, CONF_KEY_ANIM_DIR, CONF_KEY_ANIM_FPS
+from modules.led.common import log, CONFIG, CONF_KEY_ANIM_DIR, CONF_KEY_ANIM_FPS
 
-__all__ = ["load_animations"]
+log = logger.get_module_logger("led.anim")
 
 DEFAULT_PATH = "/etc/mqttany/led-anim"
-
-TEXT_NAME = ".".join(
-    [__name__.split(".")[-2], __name__.split(".")[-1]]
-)  # gives led.anim
-
-log = logger.get_module_logger(module=TEXT_NAME)
 
 
 def load_animations():
@@ -68,22 +66,21 @@ def load_animations():
 
     animpaths = [DEFAULT_PATH] if os.path.isdir(DEFAULT_PATH) else []
     animpaths += (
-        config[CONF_KEY_ANIM_DIR]
-        if isinstance(config[CONF_KEY_ANIM_DIR], list)
-        else [config[CONF_KEY_ANIM_DIR]]
+        CONFIG[CONF_KEY_ANIM_DIR]
+        if isinstance(CONFIG[CONF_KEY_ANIM_DIR], list)
+        else [CONFIG[CONF_KEY_ANIM_DIR]]
     )
     for animpath in animpaths:
         if os.path.isdir(animpath):
-            log.debug("Checking for animation files in '{path}'".format(path=animpath))
+            log.debug("Checking for animation files in '%s'", animpath)
             for filename in os.listdir(animpath):
                 if (
                     os.path.splitext(filename)[-1] == ".py"
                     and filename != "__init__.py"
                 ):
                     log.trace(
-                        "Attempting to import animation file '{file}'".format(
-                            file=os.path.join(animpath, filename)
-                        )
+                        "Attempting to import animation file '%s'",
+                        os.path.join(animpath, filename),
                     )
                     mod_anims = []
 
@@ -93,21 +90,14 @@ def load_animations():
                         spec.loader.exec_module(module)
                     except:
                         log.error(
-                            "An error occured while importing animation file '{name}'".format(
-                                name=module.__name__
-                            )
+                            "An error occured while importing animation file '%s'",
+                            filename,
                         )
                         log_traceback(log)
-                        log.error(
-                            "Animation file '{name}' was not loaded".format(
-                                name=module.__name__
-                            )
-                        )
+                        log.error("Animation file '%s' was not loaded", filename)
                     else:
                         log.trace(
-                            "Animation file '{name}' imported successfully".format(
-                                name=module.__name__
-                            )
+                            "Animation file '%s' imported successfully", module.__name__
                         )
 
                     # get all functions in module that start with "anim_" and don't have a conflicting name
@@ -116,57 +106,47 @@ def load_animations():
                         if not func.startswith("anim_"):
                             mod_anims.pop(func, None)
                             log.trace(
-                                "Ignoring function '{name}' in '{file}' as it does not start with 'anim_".format(
-                                    name=func, file=os.path.join(animpath, filename)
-                                )
+                                "Ignoring function '%s' in '%s' as it does not start with 'anim_",
+                                func,
+                                os.path.join(animpath, filename),
                             )
                         elif not callable(func):
                             mod_anims.pop(func, None)
                             log.warn(
-                                "Ignoring animation '{name}' in '{file}' as it is not callable".format(
-                                    name="{}_{}".format(module.__name__, func[5:]),
-                                    file=os.path.join(animpath, filename),
-                                )
+                                "Ignoring animation '%s.%s' in '%s' as it is not callable",
+                                module.__name__,
+                                func[5:],
+                                os.path.join(animpath, filename),
                             )
-                        elif "{}_{}".format(module.__name__, func[5:]) in mod_anims:
+                        elif f"{module.__name__}.{func[5:]}" in mod_anims:
                             mod_anims.pop(func, None)
                             log.warn(
-                                "Duplicate animation '{name}' in '{file}' is being ignored".format(
-                                    name="{}_{}".format(module.__name__, func[5:]),
-                                    file=os.path.join(animpath, filename),
-                                )
+                                "Duplicate animation '%s.%s' in '%s' is being ignored",
+                                module.__name__,
+                                func[5:],
+                                os.path.join(animpath, filename),
                             )
 
-                    # add all functions to main anim list, names are "module_funcname" with "anim_" prefix removed
+                    # add all functions to main anim list, names are "module.funcname" with "anim_" prefix removed
                     for func in mod_anims:
-                        anims["{}_{}".format(module.__name__, func[5:])] = mod_anims[
-                            func
-                        ]
-                        log.trace(
-                            "Animation '{name}' added".format(
-                                name="{}_{}".format(module.__name__, func[5:])
-                            )
-                        )
+                        anims[f"{module.__name__}.{func[5:]}"] = mod_anims[func]
+                        log.trace("Animation '%s.%s' added", module.__name__, func[5:])
 
                     log.debug(
-                        "Loaded {count} animations from '{file}'".format(
-                            count=len(mod_anims), file=os.path.join(animpath, filename)
-                        )
+                        "Loaded %d animations from '%s'",
+                        len(mod_anims),
+                        os.path.join(animpath, filename),
                     )
 
                 else:
-                    log.trace(
-                        "Skipping file '{file}'".format(
-                            file=os.path.join(animpath, filename)
-                        )
-                    )
+                    log.trace("Skipping file '%s'", os.path.join(animpath, filename))
         else:
-            log.warn("Animation path '{path}' is not a directory".format(path=animpath))
+            log.warn("Animation path '%s' is not a directory", animpath)
 
     # add utils to anims
     for func in anims:
-        anims[func].__globals__["FRAME_MIN"] = round(1.0 / config[CONF_KEY_ANIM_FPS], 5)
-        anims[func].__globals__["log"] = log
+        anims[func].__globals__["FRAME_MS"] = round(1.0 / CONFIG[CONF_KEY_ANIM_FPS], 5)
+        anims[func].__globals__["log"] = logger.get_module_logger(f"led.anim.{func}")
         for util in utils:
             anims[func].__globals__[util.__name__] = util
 
@@ -220,9 +200,7 @@ def parse_color(array, c=None, r=-1, g=-1, b=-1, w=-1, pixel=None):
             try:
                 c = int.from_bytes(bytearray.fromhex(c), byteorder="big")
             except:
-                log.warn(
-                    "parse_color: Could not parse hex 'color' value '{}'".format(c)
-                )
+                log.warn("Could not parse hex 'color' value 0x%04x", c)
             else:
                 # fmt: off
                 r =  (c >> 16) & 255
@@ -232,7 +210,7 @@ def parse_color(array, c=None, r=-1, g=-1, b=-1, w=-1, pixel=None):
                 # fmt: on
         # unrecognized
         else:
-            log.warn("parse_color: Unrecognized 'color' value '{}'".format(c))
+            log.warn("Unrecognized 'color' value '%s'", c)
 
     if r > -1 or g > -1 or b > -1 or (array.colors == 4 and w > -1):
         # fmt: off
@@ -243,7 +221,7 @@ def parse_color(array, c=None, r=-1, g=-1, b=-1, w=-1, pixel=None):
         # fmt: on
     else:
         log.warn(
-            "parse_color: Must provide 'color' or at least one of 'red', 'green', 'blue', or 'white'"
+            "Must provide 'color' or at least one of 'red', 'green', 'blue', or 'white'"
         )
 
     return color
@@ -280,7 +258,7 @@ def parse_pixel(array, p):
                         parts[0] = int(parts[0])
                         parts[1] = int(parts[1])
                     except:
-                        log.warn("parse_pixel: Invalid pixel range '{}'".format(v))
+                        log.warn("Invalid pixel range '%s'", v)
                         continue  # skip on invalid range
                     pixels.extend([i for i in range(parts[0], parts[1] + 1)])
             # list of (index, count)
@@ -289,20 +267,18 @@ def parse_pixel(array, p):
                     v[0] = int(v[0])
                     v[1] = int(v[1])
                 except:
-                    log.warn("parse_pixel: Invalid pixel range {}".format(v))
+                    log.warn("Invalid pixel range %s", v)
                     continue  # skip on invalid values
                 pixels.extend([i for i in range(v[0], v[0] + v[1])])
             # unrecognized
             else:
-                log.warn("parse_pixel: Unrecognized pixel reference '{}'".format(v))
+                log.warn("Unrecognized pixel reference '%s'", v)
 
     # remove any out-of-range indices
     if pixels:
         for i in range(len(pixels) - 1, -1, -1):
             if not array.count > pixels[i] >= 0:
-                log.warn(
-                    "parse_pixel: Ignoring out of range pixel '{}'".format(pixels[i])
-                )
+                log.warn("Ignoring out of range pixel '%d'", pixels[i])
                 pixels.pop(i)
 
     return pixels
@@ -336,7 +312,7 @@ def anim_set_brightness(array, cancel, **kwargs):
     brightness = kwargs.get("brightness", None)
 
     if brightness is None:
-        log.warn("set.brightness: Missing argument 'brightness'")
+        log.warn("Missing argument 'brightness'")
         return
 
     array.setBrightness(int(brightness))
@@ -419,12 +395,12 @@ def anim_fade_brightness(array, cancel, **kwargs):
     bri_current = float(array.brightness)
     bri_end = float(int(kwargs.get("brightness", -1)))
     duration = float(kwargs.get("duration", 0))
-    frame_time = FRAME_MIN  # frame time, default minimum 16.7ms = ~60fps
+    frame_time = FRAME_MS  # frame time, default minimum 16.7ms = ~60fps
     frame_overrun = 0.0
     frame_count = int(abs(bri_end - bri_current))
 
     if bri_end < 0:
-        log.warn("fade.brightness: Missing argument 'brightness'")
+        log.warn("Missing argument 'brightness'")
         return
 
     # constrain new brightness
@@ -441,11 +417,11 @@ def anim_fade_brightness(array, cancel, **kwargs):
     # calculate step and frame
     else:
         duration = (
-            FRAME_MIN if duration < FRAME_MIN else duration
+            FRAME_MS if duration < FRAME_MS else duration
         )  # enforce minimum 1 frame duration
         frame_time = duration / frame_count
         # get frame time above minimum
-        while frame_time < FRAME_MIN:
+        while frame_time < FRAME_MS:
             frame_count -= 1
             frame_time = duration / frame_count
 
@@ -454,13 +430,13 @@ def anim_fade_brightness(array, cancel, **kwargs):
         bri_step = round((bri_end - bri_current) / frame_count, 6)
 
     log.trace(
-        "fade.brightness: Calculated {frame_count} frames at {step:0.6f} brightness per step with frame length {frame_time:0.6f}ms ({fps:0.2f}fps) and duration {duration}s".format(
-            frame_count=frame_count,
-            step=bri_step,
-            frame_time=frame_time * 1000.0,
-            fps=1.0 / frame_time,
-            duration=duration,
-        )
+        "Calculated %d frames at %0.6f brightness per step with frame length %0.6fms "
+        "(%0.2ffps) and duration %0.3fs",
+        frame_count,
+        bri_step,
+        frame_time * 1000.0,
+        1.0 / frame_time,
+        duration,
     )
 
     # run interruptable fade loop
@@ -473,23 +449,16 @@ def anim_fade_brightness(array, cancel, **kwargs):
         frame_delta = time.perf_counter() - frame_start
 
         if frame_delta > frame_time:
-            log.debug(
-                "fade.brightness: Frame overrun of {overrun:0.2f}ms!".format(
-                    overrun=(frame_delta - frame_time) * 1000
-                )
-            )
+            log.debug("Frame overrun of %0.2fms!", (frame_delta - frame_time) * 1000)
             frame_overrun += frame_delta - frame_time
             if frame_overrun > frame_time:
                 frame_count -= 1
                 bri_step = round((bri_end - bri_current) / frame_count, 6)
                 frame_overrun -= frame_time
-                log.warn(
-                    "fade.brightness: Animation is running too slowly, skipping 1 frame!"
-                )
+                log.warn("Animation is running too slowly, skipping 1 frame!")
                 log.debug(
-                    "fade.brightness: Skipping 1 frame and adjusting brightness step to {step} to make up lost time".format(
-                        step=bri_step
-                    )
+                    "Skipping 1 frame and adjusting brightness step to %0.6f to make up lost time!",
+                    bri_step,
                 )
         else:
             time.sleep(frame_time - frame_delta)
@@ -519,7 +488,7 @@ def anim_fade_pixel(array, cancel, **kwargs):
     b = kwargs.get("blue", -1)
     w = kwargs.get("white", -1)
     duration = float(kwargs.get("duration", 0))
-    frame_time = FRAME_MIN  # frame time, default minimum 16.7ms = ~60fps
+    frame_time = FRAME_MS  # frame time, default minimum 16.7ms = ~60fps
     frame_overrun = 0.0
     pixels = {}
 
@@ -575,11 +544,11 @@ def anim_fade_pixel(array, cancel, **kwargs):
     # calculate frame count and frame
     else:
         duration = (
-            FRAME_MIN if duration < FRAME_MIN else duration
+            FRAME_MS if duration < FRAME_MS else duration
         )  # enforce minimum 1 frame duration
         frame_time = duration / frame_count
         # get frame time above minimum
-        while frame_time < FRAME_MIN:
+        while frame_time < FRAME_MS:
             frame_count -= 1
             frame_time = duration / frame_count
 
@@ -588,33 +557,27 @@ def anim_fade_pixel(array, cancel, **kwargs):
 
     # calculate step for each channel for each pixel
     for pixel in pixels:
-        for ch in ["r", "g", "b", "w"]:
-            pixels[pixel]["{}_step".format(ch)] = round(
-                (
-                    pixels[pixel]["{}_end".format(ch)]
-                    - pixels[pixel]["{}_curr".format(ch)]
-                )
+        for channel in ["r", "g", "b", "w"]:
+            pixels[pixel][f"{channel}_step"] = round(
+                (pixels[pixel][f"{channel}_end"] - pixels[pixel][f"{channel}_curr"])
                 / frame_count,
                 6,
             )
 
     log.trace(
-        "fade.pixel: Calculated {frame_count} frames with frame length {frame_time:0.6f}ms ({fps:0.2f}fps) and duration {duration}s".format(
-            frame_count=frame_count,
-            frame_time=frame_time * 1000.0,
-            fps=1.0 / frame_time,
-            duration=duration,
-        )
+        "Calculated %d frames with frame length %0.6fms (%0.2ffps) and duration %0.3fs",
+        frame_count,
+        frame_time * 1000.0,
+        1.0 / frame_time,
+        duration,
     )
 
     # run interruptable fade loop
     while not cancel.is_set() and frame_count > 0:
         frame_start = time.perf_counter()
         for pixel in pixels:
-            for ch in ["r", "g", "b", "w"]:
-                pixels[pixel]["{}_curr".format(ch)] += pixels[pixel][
-                    "{}_step".format(ch)
-                ]
+            for channel in ["r", "g", "b", "w"]:
+                pixels[pixel][f"{channel}_curr"] += pixels[pixel][f"{channel}_step"]
             array.setPixelColorRGB(
                 pixel,
                 pixels[pixel]["r_curr"],
@@ -627,28 +590,22 @@ def anim_fade_pixel(array, cancel, **kwargs):
         frame_delta = time.perf_counter() - frame_start
 
         if frame_delta > frame_time:
-            log.debug(
-                "fade.pixel: Frame overrun of {overrun:0.2f}ms!".format(
-                    overrun=(frame_delta - frame_time) * 1000
-                )
-            )
+            log.debug("Frame overrun of %0.2fms!", (frame_delta - frame_time) * 1000)
             frame_overrun += frame_delta - frame_time
             if frame_overrun > frame_time:
                 frame_count -= 1
                 frame_overrun -= frame_time
-                log.warn(
-                    "fade.pixel: Animation is running too slowly, skipping 1 frame!"
-                )
+                log.warn("Animation is running too slowly, skipping 1 frame!")
                 log.debug(
-                    "fade.pixel: Skipping 1 frame and adjusting step values to make up lost time"
+                    "Skipping 1 frame and adjusting step values to make up lost time!"
                 )
                 # recalculate steps
                 for pixel in pixels:
-                    for ch in ["r", "g", "b", "w"]:
-                        pixels[pixel]["{}_step".format(ch)] = round(
+                    for channel in ["r", "g", "b", "w"]:
+                        pixels[pixel][f"{channel}_step"] = round(
                             (
-                                pixels[pixel]["{}_end".format(ch)]
-                                - pixels[pixel]["{}_curr".format(ch)]
+                                pixels[pixel][f"{channel}_end"]
+                                - pixels[pixel][f"{channel}_curr"]
                             )
                             / frame_count,
                             6,

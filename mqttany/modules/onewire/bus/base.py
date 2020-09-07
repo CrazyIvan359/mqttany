@@ -25,11 +25,12 @@ OneWire Bus Base
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ["OneWireBus"]
+
 import re
+from typing import List
 
 re_hex_chars = re.compile("[^a-fA-F0-9]")
-
-__all__ = ["OneWireBus"]
 
 
 class OneWireBus:
@@ -41,7 +42,7 @@ class OneWireBus:
         pass
 
     @staticmethod
-    def validateAddress(address):
+    def validateAddress(address) -> str:
         """
         Validates a OneWire device address.
         Will remove any invalid characters and compute CRC if needed.
@@ -56,7 +57,7 @@ class OneWireBus:
             return None
 
     @staticmethod
-    def crc8(data):
+    def crc8(data: [str, bytes]) -> bytes:
         """
         Returns 1 byte CRC-8/MAXIM of the contents of bytes ``data``.
         """
@@ -71,27 +72,35 @@ class OneWireBus:
                 byte >>= 1
         return bytes([crc])
 
-    def scan(self):
+    @staticmethod
+    def get_w1_address(address: str) -> str:
+        """
+        Returns the ``xx-xxxxxxxxxxxx`` style w1 address from the full 8 byte address.
+        """
+        return f"{address[:2]}-{address[2:]}"[:-2].lower()
+
+    @property
+    def valid(self) -> bool:
+        """
+        Returns ``True`` if the bus is available.
+        """
+        raise NotImplementedError
+
+    def scan(self) -> List[str]:
         """
         Scan bus and return list of addresses found.
         """
         raise NotImplementedError
 
-    def read(self, address, length):
+    def read(self, address: str, length: int) -> bytes:
         """
         Read ``length`` bytes from device (not including crc8).
         """
         raise NotImplementedError
 
-    def write(self, address, buffer):
+    def write(self, address: str, buffer: bytes) -> bool:
         """
         Write ``bytes`` to device (not including crc8).
-        """
-        raise NotImplementedError
-
-    @property
-    def valid(self):
-        """
-        Returns ``True`` if the bus is available.
+        Returns ``True`` on success, ``False`` otherwise.
         """
         raise NotImplementedError

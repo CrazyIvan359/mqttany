@@ -25,14 +25,15 @@ OneWire wire1 Bus
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ["CONF_OPTIONS", "CONF_BUS_SELECTION", "SUPPORTED_BUS_TYPES"]
+
 import os
+from typing import List
 
 import logger
-
 from modules.onewire.bus.base import OneWireBus
-from modules.onewire.common import *
 
-all = ["OneWireBus_wire1"]
+log = logger.get_module_logger("onewire.wire1")
 
 CONF_OPTIONS = {}
 CONF_BUS_SELECTION = ["w1", "W1", "wire1", "WIRE1", "Wire1"]
@@ -41,90 +42,77 @@ BUS_PATH = "/sys/bus/w1/devices"
 DEVICE_RAW = "rw"
 DEVICE_SLAVE = "w1_slave"
 
-TEXT_NAME = ".".join(
-    [__name__.split(".")[-3], __name__.split(".")[-1]]
-)  # gives onewire.wire1
 
-log = logger.get_module_logger(module=TEXT_NAME)
-
-__all__ = ["wire1"]
-
-
-class wire1(OneWireBus):
+class Wire1(OneWireBus):
     """
     OneWire Bus wrapping the Kernel wire1 driver
     """
 
-    def __init__(self):
-        super().__init__()
-
-    def scan(self):
+    def scan(self) -> List[str]:
         """
         Scan bus and return list of addresses found
         """
         devices = []
         if os.path.exists(BUS_PATH):
-            for device in os.listdir(BUS_PATH):
-                if "w1" not in device:
-                    device = device.replace("-", "")
-                    device = "{}{}".format(
-                        device, self.crc8(bytes.fromhex(device)).hex()
-                    )
-                    devices.append(device.upper())
+            for filename in os.listdir(BUS_PATH):
+                if "w1" not in filename:
+                    filename = self.validateAddress(filename)
+                    if filename is not None:
+                        devices.append(filename)
         return devices
 
-    def read(self, address, length):
+    @property
+    def valid(self):
+        """
+        Returns ``True`` if the bus is available
+        """
+        return os.path.exists(BUS_PATH)
+
+    def read(self, address: str, length: int) -> bytes:
         """
         Read ``length`` bytes from device (not including crc8).
         """
         buffer = self.read_rw(address, length) or self.read_slave(address, length)
         if buffer is None:
-            log.warn(
-                "Failed to read from device at '{address}'".format(address=address)
-            )
+            log.warn("Failed to read from device at '%s'", address)
         return buffer
 
-    def read_rw(self, address, length):
+    def write(self, address: str, buffer: bytes) -> bool:
+        """
+        Not implemented yet
+        """
+        # TODO
+        raise NotImplementedError
+
+    def read_rw(self, address: str, length: int) -> bytes:
         """
         Read raw bytes from ``rw`` device file.
         Returns ``length`` bytes (not including crc8), will be ``None`` if read fails.
         """
-        addr = "{}-{}".format(address[:2], address[2:])[:-2].lower()
         buffer = None
+        path = os.path.join(BUS_PATH, self.get_w1_address(address), DEVICE_RAW)
+        log.trace("Attempting to read from 'rw' file '%s", path)
 
-        log.trace(
-            "Attempting to read from 'rw' file '{path}'".format(
-                path=os.path.join(BUS_PATH, addr, DEVICE_RAW)
-            )
-        )
-
-        if os.path.exists(os.path.join(BUS_PATH, addr, DEVICE_RAW)):
-            pass  # read raw
+        if os.path.exists(path):
+            pass  # TODO read raw
         else:
             log.trace(
-                "Unable to read from device at address '{address}', no 'rw' file".format(
-                    address=address
-                )
+                "Unable to read from device at address '%s', no 'rw' file", address
             )
         return buffer
 
-    def read_slave(self, address, length):
+    def read_slave(self, address: str, length: int) -> bytes:
         """
         Read raw bytes from ``w1_slave`` file.
         Returns ``length`` bytes (not including crc8), will be ``None`` if read fails.
         """
-        addr = "{}-{}".format(address[:2], address[2:])[:-2].lower()
         buffer = None
+        path = os.path.join(BUS_PATH, self.get_w1_address(address), DEVICE_SLAVE)
+        log.trace("Attempting to read from 'w1_slave' file '%s'", path)
 
-        log.trace(
-            "Attempting to read from 'w1_slave' file '{path}'".format(
-                path=os.path.join(BUS_PATH, addr, DEVICE_SLAVE)
-            )
-        )
-
-        if os.path.exists(os.path.join(BUS_PATH, addr, DEVICE_SLAVE)):
+        if os.path.exists(path):
             try:
-                with open(os.path.join(BUS_PATH, addr, DEVICE_SLAVE)) as fh:
+                with open(path) as fh:
                     lines = fh.readlines()
                 if lines:
                     try:
@@ -133,33 +121,32 @@ class wire1(OneWireBus):
                         )
                     except:
                         log.error(
-                            "Failed to read {length} bytes from '{address}' 'w1_slave' file line 1 '{line}'".format(
-                                length=length, address=address, line=lines[0]
-                            )
+                            "Failed to read %d bytes from '%s' 'w1_slave' file line 1 '%s'",
+                            length,
+                            address,
+                            lines[0],
                         )
                     else:
                         if buffer != bytes(
                             [*buffer[:length], *self.crc8(buffer[:length])]
                         ):
                             log.error(
-                                "Read invalid data from device at address '{address}'".format(
-                                    address=address
-                                )
+                                "Read invalid data from device at address '%s'", address
                             )
                             buffer = None
                         else:
                             buffer = buffer[:length]
-            except Exception as err:
+            except Exception as err:  # pylint: disable=broad-except
                 log.error(
-                    "Failed to read from device at address '{address}', an error occurred when reading 'w1_slave' file: {error}".format(
-                        address=address, error=err
-                    )
+                    "Failed to read from device at address '%s', an error occurred when "
+                    "reading 'w1_slave' file: %s",
+                    address,
+                    err,
                 )
         else:
             log.trace(
-                "Unable to read from device at address '{address}', no 'w1_slave' file".format(
-                    address=address
-                )
+                "Unable to read from device at address '%s', no 'w1_slave' file",
+                address,
             )
         return buffer
 
@@ -167,11 +154,9 @@ class wire1(OneWireBus):
         """
         Write raw bytes to device
         """
-        addr = "{}-{}".format(address[:2], address[2:])
+        # TODO
+        # path = os.path.join(BUS_PATH, self.get_w1_address(address), DEVICE_SLAVE)
+        # log.trace("Attempting to read from 'w1_slave' file '%s'", path)
 
-    @property
-    def valid(self):
-        """
-        Returns ``True`` if the bus is available
-        """
-        return os.path.exists(BUS_PATH)
+
+SUPPORTED_BUS_TYPES = {bus_type: Wire1 for bus_type in CONF_BUS_SELECTION}
