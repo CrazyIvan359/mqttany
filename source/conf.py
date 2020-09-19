@@ -28,7 +28,7 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
     # Override default css
     def setup(app):
         # app.add_javascript("custom.js")
-        app.add_stylesheet("overrides.css")
+        app.add_css_file("overrides.css")
 
 
 else:
