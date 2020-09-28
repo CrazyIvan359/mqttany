@@ -2,9 +2,9 @@
 Raspberry Pi
 ############
 
-The GPIO module has been written to support all Raspberry Pi models up to the
-3B+, but not all models have been tested. If you encounter any problems or
-errors, please open a new issue and post your logs.
+The GPIO module supports all Raspberry Pi models up to the 3B+, but not all models
+have been tested. If you encounter any problems or errors, please open a new issue
+and post your logs.
 
 .. admonition:: Don't forget to install the requirements
 

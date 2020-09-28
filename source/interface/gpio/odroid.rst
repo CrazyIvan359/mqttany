@@ -4,12 +4,12 @@ Odroid
 
 Support for several Odroid boards has been added to the GPIO module.
 
-* :ref:`Odroid C1 <gpio/odroid:odroid c1/c1+>` *(untested)*
-* :ref:`Odroid C1+ <gpio/odroid:odroid c1/c1+>` *(untested)*
-* :ref:`gpio/odroid:odroid c2`
-* :ref:`Odroid XU3 <gpio/odroid:odroid xu3/xu4>` *(untested)*
-* :ref:`Odroid XU4 <gpio/odroid:odroid xu3/xu4>` *(untested)*
-* :ref:`gpio/odroid:odroid n2` *(untested)*
+* :ref:`Odroid C1 <interface/gpio/odroid:odroid c1/c1+>` *(untested)*
+* :ref:`Odroid C1+ <interface/gpio/odroid:odroid c1/c1+>` *(untested)*
+* :ref:`interface/gpio/odroid:odroid c2`
+* :ref:`Odroid XU3 <interface/gpio/odroid:odroid xu3/xu4>` *(untested)*
+* :ref:`Odroid XU4 <interface/gpio/odroid:odroid xu3/xu4>` *(untested)*
+* :ref:`interface/gpio/odroid:odroid n2` *(untested)*
 
 If you encounter any problems or errors, please open a new issue and post your
 logs.

@@ -92,7 +92,7 @@ or the individual components.
 =============
 
 Allows you to set a pixel or range of pixels to the specified color. Color
-arguments are the same as :ref:`led/animations/built-in:\`\`set.array\`\``,
+arguments are the same as :ref:`interface/led/animations/built-in:\`\`set.array\`\``,
 the ``pixel`` argument may be a single pixel index, a range as string, or a
 list of indices, ranges, 2-tuples of *[start, count]*, or any combination
 thereof.
