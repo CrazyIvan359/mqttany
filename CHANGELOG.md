@@ -2,6 +2,9 @@
 
 ## Development
 
+* **Added**
+  * Colorized log output to terminal.
+
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.
   * Fix logger checking if ``TRACE`` logging was enabled for ``WARN`` messages.

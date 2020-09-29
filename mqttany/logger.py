@@ -30,6 +30,7 @@ from types import MethodType
 import logging
 from logging import handlers
 from logging import DEBUG, INFO, WARNING as WARN, ERROR
+import colorlog
 
 __all__ = ["get_logger", "set_level", "log_traceback", "uninit"]
 
@@ -40,6 +41,25 @@ _log_format = "%(asctime)s [%(levelname)-5s] [%(name)-24s] %(message)s"
 _log_format_debug = (
     "%(asctime)s [%(levelname)-5s] [%(processName)-8s] [%(name)-24s] %(message)s"
 )
+_log_format_color = "%(asctime)s [%(log_color)s%(levelname)-5s%(reset)s] [%(name)-24s] %(message_log_color)s%(message)s"
+_log_format_color_debug = "%(asctime)s [%(log_color)s%(levelname)-5s%(reset)s] [%(processName)-8s] [%(name)-24s] %(message_log_color)s%(message)s"
+_log_colors = {
+    "TRACE": "white",
+    "DEBUG": "bold_white",
+    "INFO": "bold_green",
+    "WARN": "bold_yellow",
+    "ERROR": "bold_red",
+    "CRITICAL": "bold_red",
+}
+_secondary_log_colors = {
+    "message": {
+        "DEBUG": "bold",
+        "INFO": "bold_green",
+        "WARN": "bold_yellow",
+        "ERROR": "bold_red",
+        "CRITICAL": "bold_red",
+    }
+}
 
 
 def trace_log(self, msg, *args, **kwargs):
@@ -84,7 +104,13 @@ def _init_logger():
     log.addHandler(handler_file)
 
     handler_stdout = logging.StreamHandler()
-    handler_stdout.setFormatter(logging.Formatter(_log_format))
+    handler_stdout.setFormatter(
+        colorlog.ColoredFormatter(
+            _log_format_color,
+            log_colors=_log_colors,
+            secondary_log_colors=_secondary_log_colors,
+        )
+    )
     log.addHandler(handler_stdout)
 
     return log
@@ -121,10 +147,28 @@ def set_level(level):
     _log.setLevel(level)
     if level <= DEBUG:
         for handler in _log.handlers:
-            handler.setFormatter(logging.Formatter(_log_format_debug))
+            if isinstance(handler, logging.StreamHandler):
+                handler.setFormatter(
+                    colorlog.ColoredFormatter(
+                        _log_format_color_debug,
+                        log_colors=_log_colors,
+                        secondary_log_colors=_secondary_log_colors,
+                    )
+                )
+            else:
+                handler.setFormatter(logging.Formatter(_log_format_debug))
     else:
         for handler in _log.handlers:
-            handler.setFormatter(logging.Formatter(_log_format))
+            if isinstance(handler, logging.StreamHandler):
+                handler.setFormatter(
+                    colorlog.ColoredFormatter(
+                        _log_format_color,
+                        log_colors=_log_colors,
+                        secondary_log_colors=_secondary_log_colors,
+                    )
+                )
+            else:
+                handler.setFormatter(logging.Formatter(_log_format))
 
 
 def log_traceback(log, limit=None):
