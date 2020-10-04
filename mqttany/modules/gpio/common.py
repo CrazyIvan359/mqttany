@@ -50,7 +50,7 @@ from enum import Enum
 import logger
 from common import DataType, BusNode, BusProperty
 
-log = logger.get_module_logger("gpio")
+log = logger.get_logger("gpio")
 CONFIG = {}
 
 publish_queue = None

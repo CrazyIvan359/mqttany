@@ -52,7 +52,7 @@ from modules import (
     ATTR_NODES,
 )
 
-log = logger.get_module_logger("core")
+log = logger.get_logger("core")
 communication_modules = []
 interface_modules = []
 

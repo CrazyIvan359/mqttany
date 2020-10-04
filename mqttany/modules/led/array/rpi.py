@@ -121,7 +121,7 @@ class rpiArray(baseArray):
         Returns an LED object wrapping ``rpi_ws281x.PixelStrip``
         """
         super().__init__(id, name, count, leds_per_pixel, color_order, fps)
-        self._log = logger.get_module_logger(f"led.rpi.{self.id}")
+        self._log = logger.get_logger(f"led.rpi.{self.id}")
         self._init_brightness = (
             255
             if array_config[CONF_KEY_BRIGHTNESS] > 255
@@ -362,7 +362,7 @@ def validateGPIO(
             pin_ok = True  # SPI0-MOSI
 
         if not pin_ok:
-            logger.get_module_logger("led.rpi").error(
+            logger.get_logger("led.rpi").error(
                 "GPIO%02d cannot be used for LED control on %s",
                 array_config[CONF_KEY_RPI][CONF_KEY_GPIO],
                 board_id,
@@ -381,10 +381,10 @@ def validateGPIO(
             )
 
     else:
-        logger.get_module_logger("led.rpi").error(
+        logger.get_logger("led.rpi").error(
             "This module only supports GPIO output on certain Raspberry Pi boards"
         )
-        logger.get_module_logger("led.rpi").error(
+        logger.get_logger("led.rpi").error(
             "Please see the documentation for supported boards"
         )
 

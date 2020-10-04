@@ -42,7 +42,7 @@ from collections import OrderedDict
 import logger
 
 # If you don't specify the logging name you will get `interface_pkg_template.common` here
-log = logger.get_module_logger("interface_pkg_template")
+log = logger.get_logger("interface_pkg_template")
 CONFIG = {}
 
 # If the module publishes messages it must have the `publish_queue` attribute. It will

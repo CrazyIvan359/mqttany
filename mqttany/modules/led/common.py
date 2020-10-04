@@ -49,7 +49,7 @@ from collections import OrderedDict
 
 import logger
 
-log = logger.get_module_logger("led")
+log = logger.get_logger("led")
 CONFIG = {}
 
 publish_queue = None

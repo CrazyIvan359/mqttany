@@ -36,7 +36,7 @@ from modules import ModuleType
 
 _module_type = ModuleType.INTERFACE
 
-log = logger.get_module_logger()
+log = logger.get_logger()
 CONFIG = {}
 
 # If the module publishes messages it must have the `publish_queue` attribute. It will

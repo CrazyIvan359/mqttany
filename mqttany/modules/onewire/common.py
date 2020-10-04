@@ -44,7 +44,7 @@ from collections import OrderedDict
 import logger
 from common import DataType, BusNode, BusProperty
 
-log = logger.get_module_logger("onewire")
+log = logger.get_logger("onewire")
 CONFIG = {}
 
 publish_queue = None

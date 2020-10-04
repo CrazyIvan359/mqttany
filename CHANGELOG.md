@@ -70,11 +70,15 @@ automation setup much in order to interface with this version of MQTTany.
   * Updated Adafruit Platform Detect version from 1.x to 2.x.
   * **GPIO** - Change language for `direction` to `pin mode` to be less specific and lay
     ground work for additional pin modes.
+  * Consolidate `get_module_logger` and `get_logger` into single function and remove
+    leading `mqttany` from all logger names.
 
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.
   * Fix logger checking if ``TRACE`` logging was enabled for ``WARN`` messages.
   * Core not exiting correctly if an exception occurred in the core.
+  * Logging not truncating process name or logger name, this could have resulted in
+    misaligned log entries.
 
 ## 0.11.0
 

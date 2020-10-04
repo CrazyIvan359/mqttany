@@ -46,7 +46,7 @@ from modules import ModuleType
 
 _module_type = ModuleType.COMMUNICATION
 
-log = logger.get_module_logger()
+log = logger.get_logger()
 CONFIG = {}
 
 core_queue = None

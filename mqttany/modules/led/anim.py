@@ -37,7 +37,7 @@ from logger import log_traceback
 
 from modules.led.common import log, CONFIG, CONF_KEY_ANIM_DIR
 
-log = logger.get_module_logger("led.anim")
+log = logger.get_logger("led.anim")
 
 DEFAULT_PATH = "/etc/mqttany/led-anim"
 
@@ -145,7 +145,7 @@ def load_animations():
 
     # add utils to anims
     for func in anims:
-        anims[func].__globals__["log"] = logger.get_module_logger(f"led.anim.{func}")
+        anims[func].__globals__["log"] = logger.get_logger(f"led.anim.{func}")
         for util in utils:
             anims[func].__globals__[util.__name__] = util
 

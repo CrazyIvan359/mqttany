@@ -39,7 +39,7 @@ from modules.led.common import (
 )
 from modules.led.array.base import baseArray
 
-log = logger.get_module_logger("led.sacn")
+log = logger.get_logger("led.sacn")
 
 CONF_KEY_SACN = "sacn"
 CONF_KEY_UNIVERSE = "universe"
@@ -78,7 +78,7 @@ class sacnArray(baseArray):
         Returns an LED object that outputs via sACN
         """
         super().__init__(id, name, count, leds_per_pixel, color_order, fps)
-        self._log = logger.get_module_logger(f"led.sacn.{self.id}")
+        self._log = logger.get_logger(f"led.sacn.{self.id}")
         self._brightness = (
             255
             if array_config[CONF_KEY_BRIGHTNESS] > 255

@@ -33,7 +33,7 @@ from typing import List
 import logger
 from modules.onewire.bus.base import OneWireBus
 
-log = logger.get_module_logger("onewire.wire1")
+log = logger.get_logger("onewire.wire1")
 
 CONF_OPTIONS = {}
 CONF_BUS_SELECTION = ["w1", "W1", "wire1", "WIRE1", "Wire1"]

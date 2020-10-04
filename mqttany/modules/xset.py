@@ -44,7 +44,7 @@ CONF_OPTIONS = OrderedDict(
     ]
 )
 
-log = logger.get_module_logger("xset")
+log = logger.get_logger("xset")
 CONFIG = {}
 
 publish_queue = None

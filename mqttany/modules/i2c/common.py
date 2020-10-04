@@ -47,7 +47,7 @@ import logger
 from config import resolve_type
 from common import DataType, BusNode, BusProperty
 
-log = logger.get_module_logger("i2c")
+log = logger.get_logger("i2c")
 CONFIG = {}
 
 publish_queue = None

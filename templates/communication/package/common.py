@@ -29,7 +29,7 @@ from collections import OrderedDict
 
 import logger
 
-log = logger.get_module_logger("comm_pkg_template")
+log = logger.get_logger("comm_pkg_template")
 CONFIG = {}
 
 # This queue is used to request that MQTTany exit. If a fatal error is encountered put

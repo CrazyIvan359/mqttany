@@ -44,7 +44,7 @@ from modules import (
     ATTR_NODES,
 )
 
-log = logger.get_module_logger("bus")
+log = logger.get_logger("bus")
 
 # Communication module queues
 receive_queue = mproc.Queue()
@@ -70,7 +70,7 @@ class ReceiveThread(threading.Thread):
 
     def __init__(self):
         super().__init__(name="Receive")
-        self.log = logger.get_module_logger("bus.receive")
+        self.log = logger.get_logger("bus.receive")
 
     def run(self):
         self.log.trace("Message Bus Receive thread started successfully")
@@ -115,7 +115,7 @@ class TransmitThread(threading.Thread):
 
     def __init__(self):
         super().__init__(name="Transmit")
-        self.log = logger.get_module_logger("bus.transmit")
+        self.log = logger.get_logger("bus.transmit")
 
     def run(self):
         self.log.trace("Message Bus Transmit thread started successfully")

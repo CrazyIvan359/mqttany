@@ -629,7 +629,7 @@ class MCP23008(MCP230xx):
         device_config: dict,
     ):
         super().__init__(id, name, device, address, bus, bus_path)
-        self._log = logger.get_module_logger("i2c.mcp23008")
+        self._log = logger.get_logger("i2c.mcp23008")
         self._pin_max = 7
         self._pins = [None] * (self._pin_max + 1)
         self._gpio = 0x0000
@@ -724,7 +724,7 @@ class MCP23017(MCP230xx):
         device_config: dict,
     ):
         super().__init__(id, name, device, address, bus, bus_path)
-        self._log = logger.get_module_logger("i2c.mcp23017")
+        self._log = logger.get_logger("i2c.mcp23017")
         self._pin_max = 15
         self._pins = [None] * (self._pin_max + 1)
         self._gpio = 0x0000

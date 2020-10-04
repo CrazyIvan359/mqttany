@@ -57,7 +57,7 @@ from modules.gpio.common import (
     TEXT_GPIO_MODE,
 )
 
-log = logger.get_module_logger("gpio.rpi")
+log = logger.get_logger("gpio.rpi")
 
 
 MAP_WIRINGPI_SETUP = {

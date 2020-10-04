@@ -74,7 +74,7 @@ class DS18x20(OneWireDevice):
         device_config: dict,
     ):
         super().__init__(id, name, device, address, bus)
-        self._log = logger.get_module_logger("onewire.ds18x20")
+        self._log = logger.get_logger("onewire.ds18x20")
         self._unit = (
             device_config.get(CONF_KEY_DS18X20, {}).get(CONF_KEY_UNIT, "C").upper()
         )

@@ -108,7 +108,7 @@ class Digital(Pin):
 
     def __init__(self, pin: int, id: str, name: str, pin_config: dict = {}):
         super().__init__(pin, id, name, pin_config)
-        self._log = logger.get_module_logger("gpio.digital")
+        self._log = logger.get_logger("gpio.digital")
         self._pulse_timer = None
         self._interrupt = pin_config[CONF_KEY_INTERRUPT]
         self._resistor = pin_config[CONF_KEY_RESISTOR]

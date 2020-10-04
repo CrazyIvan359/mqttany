@@ -58,7 +58,7 @@ from modules.gpio.common import (
 )
 
 
-log = logger.get_module_logger("gpio.odroid")
+log = logger.get_logger("gpio.odroid")
 
 
 MAP_WIRINGPI_SETUP = {

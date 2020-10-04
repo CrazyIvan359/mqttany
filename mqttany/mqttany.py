@@ -34,7 +34,7 @@ import version as mqttanyversion
 
 __version__ = mqttanyversion.__version__
 
-log = logger.get_logger()
+log = logger.get_logger("core")
 queue_core = mproc.Queue()
 
 # pylint: disable=logging-format-interpolation

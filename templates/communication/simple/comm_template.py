@@ -37,7 +37,7 @@ from bus import get_property_from_path
 
 _module_type = ModuleType.COMMUNICATION
 
-log = logger.get_module_logger()
+log = logger.get_logger()
 CONFIG = {}
 
 # This queue is used to request that MQTTany exit. If a fatal error is encountered put
