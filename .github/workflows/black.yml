@@ -1,4 +1,4 @@
-name: Black Format
+name: Black
 
 on:
   push:
@@ -32,4 +32,4 @@ jobs:
         pip install black
     - name: Analysing the code with black
       run: |
-        black --check --diff --no-color mqttany/**
+        black --check --diff mqttany/**
