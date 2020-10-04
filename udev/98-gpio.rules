@@ -6,3 +6,5 @@ RUN="/bin/sh -c ' \
                        /sys/${DEVPATH}/uevent \
                        /sys/${DEVPATH}/value \
 '"
+
+KERNEL=="gpiochip*" SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"

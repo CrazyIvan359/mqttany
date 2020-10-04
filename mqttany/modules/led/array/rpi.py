@@ -30,7 +30,8 @@ __all__ = ["SUPPORTED_TYPES", "CONF_OPTIONS"]
 import os
 
 import logger
-from common import DataType, BusMessage, BusNode, BusProperty, lock_gpio
+import gpio
+from common import DataType, BusMessage, BusNode, BusProperty
 from modules.led import common
 from modules.led.common import CONF_KEY_OUTPUT, CONF_KEY_BRIGHTNESS
 from modules.led.array.base import baseArray
@@ -178,12 +179,6 @@ class rpiArray(baseArray):
                 "please see the wiki for instructions on how to install requirements"
             )
 
-        if not lock_gpio(self._pin, "led.rpi"):
-            self._log.error(
-                "Failed to acquire a lock for '%s' on GPIO%02d", self._name, self._pin
-            )
-            return False
-
         if self._pin != 10:
             if not os.access("/dev/mem", os.R_OK | os.W_OK, effective_ids=True):
                 self._log.error(
@@ -191,51 +186,54 @@ class rpiArray(baseArray):
                 )
                 return False
 
-        try:
-            self._array = rpi_ws281x.PixelStrip(
-                num=self._count * self._per_pixel,
-                pin=self._pin,
-                freq_hz=self._frequency * 1000,
-                dma=DMA_CHANNEL[self._pin],
-                invert=self._invert,
-                brightness=self._init_brightness,
-                channel=PWM_CHANNEL[self._pin],
-                strip_type=LED_COLOR_ORDERS[self._order] + LED_TYPES[self._chip],
-            )
-            self._array.begin()
-        except:
-            self._log.error("An error occured while setting up '%s'", self._name)
-            self._log.traceback(self._log)
-            return False
-        else:
-            super().begin()
-            common.publish_queue.put_nowait(
-                BusMessage(
-                    path=f"{self.id}/gpio", content=self._pin, mqtt_retained=True
+        if gpio.board.lock(self._pin, gpio.common.Mode.SOC):
+            try:
+                self._array = rpi_ws281x.PixelStrip(
+                    num=self._count * self._per_pixel,
+                    pin=self._pin,
+                    freq_hz=self._frequency * 1000,
+                    dma=DMA_CHANNEL[self._pin],
+                    invert=self._invert,
+                    brightness=self._init_brightness,
+                    channel=PWM_CHANNEL[self._pin],
+                    strip_type=LED_COLOR_ORDERS[self._order] + LED_TYPES[self._chip],
                 )
-            )
-            common.publish_queue.put_nowait(
-                BusMessage(
-                    path=f"{self.id}/chip", content=self._chip, mqtt_retained=True
+                self._array.begin()
+            except:
+                self._log.error("An error occured while setting up '%s'", self._name)
+                self._log.traceback(self._log)
+                return False
+            else:
+                super().begin()
+                common.publish_queue.put_nowait(
+                    BusMessage(
+                        path=f"{self.id}/gpio", content=self._pin, mqtt_retained=True
+                    )
                 )
-            )
-            common.publish_queue.put_nowait(
-                BusMessage(
-                    path=f"{self.id}/frequency",
-                    content=self._frequency,
-                    mqtt_retained=True,
+                common.publish_queue.put_nowait(
+                    BusMessage(
+                        path=f"{self.id}/chip", content=self._chip, mqtt_retained=True
+                    )
                 )
-            )
-            common.publish_queue.put_nowait(
-                BusMessage(
-                    path=f"{self.id}/invert", content=self._invert, mqtt_retained=True
+                common.publish_queue.put_nowait(
+                    BusMessage(
+                        path=f"{self.id}/frequency",
+                        content=self._frequency,
+                        mqtt_retained=True,
+                    )
                 )
-            )
-            del self._init_brightness
-            del self._chip
-            del self._frequency
-            del self._invert
-            self._setup = True
+                common.publish_queue.put_nowait(
+                    BusMessage(
+                        path=f"{self.id}/invert",
+                        content=self._invert,
+                        mqtt_retained=True,
+                    )
+                )
+                del self._init_brightness
+                del self._chip
+                del self._frequency
+                del self._invert
+                self._setup = True
 
         return self._setup
 

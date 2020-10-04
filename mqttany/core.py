@@ -346,13 +346,17 @@ def start(core_queue, config_file):
             return True
 
     missing_imports = 0
-    for name in ["yaml", "yamlloader", "mprop"]:
+    for name in ["yaml", "yamlloader", "mprop", "adafruit_platformdetect", "periphery"]:
         missing_imports += int(not check_import(name))
 
     if missing_imports > 0:
         log.error("Please see the wiki for instructions on how to install requirements")
         core_queue.put_nowait(__name__)
     else:
+        import gpio
+
+        gpio.init()
+
         if _load_modules(config_file, core_queue):
             _start_modules()
             bus.start()

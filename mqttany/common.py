@@ -35,11 +35,9 @@ __all__ = [
     "validate_id",
     "validate_tag",
     "update_dict",
-    "lock_gpio",
 ]
 
 import collections, signal
-import multiprocessing as mproc
 from enum import Enum
 from typing import Dict, List, Optional, Any
 from types import MappingProxyType
@@ -51,156 +49,6 @@ from logger import log_traceback
 log = logger.get_logger()
 
 POISON_PILL = {"stop": True}
-
-# fmt: off
-_gpio_locks = {  # GPIO pin locks
-      0: mproc.Lock(),  #   0
-      1: mproc.Lock(),  #   1
-      2: mproc.Lock(),  #   2
-      3: mproc.Lock(),  #   3
-      4: mproc.Lock(),  #   4
-      5: mproc.Lock(),  #   5
-      6: mproc.Lock(),  #   6
-      7: mproc.Lock(),  #   7
-      8: mproc.Lock(),  #   8
-      9: mproc.Lock(),  #   9
-     10: mproc.Lock(),  #  10
-     11: mproc.Lock(),  #  11
-     12: mproc.Lock(),  #  12
-     13: mproc.Lock(),  #  13
-     14: mproc.Lock(),  #  14
-     15: mproc.Lock(),  #  15
-     16: mproc.Lock(),  #  16
-     17: mproc.Lock(),  #  17
-     18: mproc.Lock(),  #  18
-     19: mproc.Lock(),  #  19
-     20: mproc.Lock(),  #  20
-     21: mproc.Lock(),  #  21
-     22: mproc.Lock(),  #  22
-     23: mproc.Lock(),  #  23
-     24: mproc.Lock(),  #  24
-     25: mproc.Lock(),  #  25
-     26: mproc.Lock(),  #  26
-     27: mproc.Lock(),  #  27
-     28: mproc.Lock(),  #  28
-     29: mproc.Lock(),  #  29
-     30: mproc.Lock(),  #  30
-     31: mproc.Lock(),  #  31
-     33: mproc.Lock(),  #  33
-     34: mproc.Lock(),  #  34
-
-     74: mproc.Lock(),  #  74
-     75: mproc.Lock(),  #  75
-     76: mproc.Lock(),  #  76
-     77: mproc.Lock(),  #  77
-
-     83: mproc.Lock(),  #  83
-
-     87: mproc.Lock(),  #  87
-     88: mproc.Lock(),  #  88
-
-     97: mproc.Lock(),  #  97
-     98: mproc.Lock(),  #  98
-     99: mproc.Lock(),  #  99
-    100: mproc.Lock(),  # 100
-    101: mproc.Lock(),  # 101
-    102: mproc.Lock(),  # 102
-    103: mproc.Lock(),  # 103
-    104: mproc.Lock(),  # 104
-    105: mproc.Lock(),  # 105
-    106: mproc.Lock(),  # 106
-    107: mproc.Lock(),  # 107
-    108: mproc.Lock(),  # 108
-
-    113: mproc.Lock(),  # 113
-    114: mproc.Lock(),  # 114
-    115: mproc.Lock(),  # 115
-    116: mproc.Lock(),  # 116
-    117: mproc.Lock(),  # 117
-    118: mproc.Lock(),  # 118
-
-    128: mproc.Lock(),  # 128
-
-    130: mproc.Lock(),  # 130
-    131: mproc.Lock(),  # 131
-    132: mproc.Lock(),  # 132
-    133: mproc.Lock(),  # 133
-
-    171: mproc.Lock(),  # 171
-    172: mproc.Lock(),  # 172
-    173: mproc.Lock(),  # 173
-    174: mproc.Lock(),  # 174
-
-    187: mproc.Lock(),  # 187
-    188: mproc.Lock(),  # 188
-    189: mproc.Lock(),  # 189
-    190: mproc.Lock(),  # 190
-    191: mproc.Lock(),  # 191
-    192: mproc.Lock(),  # 192
-
-    205: mproc.Lock(),  # 205
-    206: mproc.Lock(),  # 206
-    207: mproc.Lock(),  # 207
-    208: mproc.Lock(),  # 208
-    209: mproc.Lock(),  # 209
-    210: mproc.Lock(),  # 210
-
-    214: mproc.Lock(),  # 214
-
-    218: mproc.Lock(),  # 218
-    219: mproc.Lock(),  # 219
-
-    224: mproc.Lock(),  # 224
-    225: mproc.Lock(),  # 225
-    226: mproc.Lock(),  # 226
-    227: mproc.Lock(),  # 227
-    228: mproc.Lock(),  # 228
-    229: mproc.Lock(),  # 229
-    230: mproc.Lock(),  # 230
-    231: mproc.Lock(),  # 231
-    232: mproc.Lock(),  # 232
-    233: mproc.Lock(),  # 233
-    234: mproc.Lock(),  # 234
-    235: mproc.Lock(),  # 235
-    236: mproc.Lock(),  # 236
-    237: mproc.Lock(),  # 237
-    238: mproc.Lock(),  # 238
-    239: mproc.Lock(),  # 239
-    240: mproc.Lock(),  # 240
-    241: mproc.Lock(),  # 241
-
-    247: mproc.Lock(),  # 247
-
-    249: mproc.Lock(),  # 249
-
-    464: mproc.Lock(),  # 464
-
-    472: mproc.Lock(),  # 472
-    473: mproc.Lock(),  # 473
-    474: mproc.Lock(),  # 474
-    475: mproc.Lock(),  # 475
-    476: mproc.Lock(),  # 476
-    477: mproc.Lock(),  # 477
-    478: mproc.Lock(),  # 478
-    479: mproc.Lock(),  # 479
-    480: mproc.Lock(),  # 480
-    481: mproc.Lock(),  # 481
-    482: mproc.Lock(),  # 482
-    483: mproc.Lock(),  # 483
-    484: mproc.Lock(),  # 484
-    485: mproc.Lock(),  # 485
-    486: mproc.Lock(),  # 486
-    487: mproc.Lock(),  # 487
-    488: mproc.Lock(),  # 488
-    489: mproc.Lock(),  # 489
-    490: mproc.Lock(),  # 490
-    491: mproc.Lock(),  # 491
-    492: mproc.Lock(),  # 492
-    493: mproc.Lock(),  # 493
-    494: mproc.Lock(),  # 494
-    495: mproc.Lock(),  # 495
-}
-# fmt: on
 
 
 class SignalHook:
@@ -483,23 +331,3 @@ def _call(module, name, **kwargs):
                 # processes would be orphaned and would have to be killed by manually
                 # sending SIG.TERM or SIG.KILL to them.
                 return retval  # pylint: disable=lost-exception
-
-
-def lock_gpio(pin: int, module: str) -> bool:
-    """
-    Modules using GPIO pins **must** call this before interacting with the hardware in
-    order to prevent multiple modules trying to manipulate the hardware. Returns ``True``
-    if the pin is available or ``False`` if it is already in use.
-
-    Args:
-        - pin (int): GPIO number. NOT wiringpi pin, not physical pin!
-        - module (str): name of the module requesting the lock, for logging.
-    """
-    success = _gpio_locks[pin].acquire(False)
-    if success:
-        log.debug("Module %s acquired a lock on GPIO%02d", module, pin)
-    else:
-        log.warn(
-            "Module %s failed to lock GPIO%02d, it is already in use!", module, pin
-        )
-    return success

@@ -77,6 +77,12 @@ automation setup much in order to interface with this version of MQTTany.
     leading `mqttany` from all logger names.
   * `log_traceback` now formats entire traceback into a single log entry on a new line,
     like a standard stack trace.
+  * GPIO access has been moved into the core, allowing all modules access to GPIO pins
+    as needed.
+  * GPIO access is now acheived using the ``periphery`` library via the new ``cdev``
+    interface, with a fallback to the older ``sysfs`` access. This moves MQTTany away
+    from the now depreciated ``wiringpi`` library and opens the door for easy support
+    of any SBC that supports ``cdev`` or ``sysfs`` GPIO access.
 
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.

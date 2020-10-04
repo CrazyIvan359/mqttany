@@ -29,11 +29,6 @@ __all__ = [
     "log",
     "CONFIG",
     "nodes",
-    "Mode",
-    "PinMode",
-    "Resistor",
-    "Interrupt",
-    "TEXT_GPIO_MODE",
     "CONF_KEY_MODE",
     "CONF_KEY_POLL_INT",
     "CONF_KEY_PIN",
@@ -45,10 +40,10 @@ __all__ = [
 ]
 
 from collections import OrderedDict
-from enum import Enum
 
 import logger
 from common import DataType, BusNode, BusProperty
+from gpio import Mode
 
 log = logger.get_logger("gpio")
 CONFIG = {}
@@ -69,37 +64,6 @@ nodes = {
             "pulse": BusProperty(name="Pulse", settable=True, callback="pulse_message"),
         },
     )
-}
-
-
-class Mode(Enum):
-    BOARD = 50
-    SOC = 51
-    WIRINGPI = 52
-
-
-class PinMode(Enum):
-    INPUT = 10
-    OUTPUT = 11
-
-
-class Resistor(Enum):
-    OFF = 20
-    PULL_UP = 21
-    PULL_DOWN = 22
-
-
-class Interrupt(Enum):
-    NONE = 0
-    RISING = 30
-    FALLING = 31
-    BOTH = 32
-
-
-TEXT_GPIO_MODE = {
-    Mode.BOARD: "pin {pin}",
-    Mode.SOC: "GPIO{pin:02d}",
-    Mode.WIRINGPI: "WiringPi pin {pin}",
 }
 
 

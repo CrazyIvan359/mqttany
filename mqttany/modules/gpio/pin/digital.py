@@ -35,19 +35,11 @@ import logger
 from logger import log_traceback
 from config import resolve_type
 from common import BusMessage, BusProperty
+from gpio import board, Mode, PinMode, PinBias, PinEdge
 
 from modules.gpio import common
 from modules.gpio.pin.base import Pin
-from modules.gpio.common import (
-    CONFIG,
-    PinMode,
-    Resistor,
-    Interrupt,
-    TEXT_GPIO_MODE,
-    CONF_KEY_MODE,
-    CONF_KEY_PIN_MODE,
-    CONF_KEY_INVERT,
-)
+from modules.gpio.common import CONFIG, CONF_KEY_PIN_MODE, CONF_KEY_INVERT
 
 CONF_KEY_DEBOUNCE = "debounce"
 CONF_KEY_INTERRUPT = "interrupt"
@@ -67,23 +59,23 @@ CONF_OPTIONS = {
             },
         },
         CONF_KEY_INTERRUPT: {
-            "default": Interrupt.NONE,
+            "default": PinEdge.NONE,
             "selection": {
-                "rising": Interrupt.RISING,
-                "falling": Interrupt.FALLING,
-                "both": Interrupt.BOTH,
-                "none": Interrupt.NONE,
+                "rising": PinEdge.RISING,
+                "falling": PinEdge.FALLING,
+                "both": PinEdge.BOTH,
+                "none": PinEdge.NONE,
             },
         },
         CONF_KEY_RESISTOR: {
-            "default": Resistor.OFF,
+            "default": PinBias.NONE,
             "selection": {
-                "pullup": Resistor.PULL_UP,
-                "up": Resistor.PULL_UP,
-                "pulldown": Resistor.PULL_DOWN,
-                "down": Resistor.PULL_DOWN,
-                "off": Resistor.OFF,
-                "none": Resistor.OFF,
+                "pullup": PinBias.PULL_UP,
+                "up": PinBias.PULL_UP,
+                "pulldown": PinBias.PULL_DOWN,
+                "down": PinBias.PULL_DOWN,
+                "off": PinBias.NONE,
+                "none": PinBias.NONE,
             },
         },
         CONF_KEY_INITIAL: {
@@ -106,31 +98,43 @@ class Digital(Pin):
     GPIO Digital Pin class
     """
 
-    def __init__(self, pin: int, id: str, name: str, pin_config: dict = {}):
-        super().__init__(pin, id, name, pin_config)
+    def __init__(
+        self, pin: int, gpio_mode: Mode, id: str, name: str, pin_config: dict = {}
+    ):
+        super().__init__(pin, gpio_mode, id, name, pin_config)
         self._log = logger.get_logger("gpio.digital")
         self._pulse_timer = None
-        self._interrupt = pin_config[CONF_KEY_INTERRUPT]
-        self._resistor = pin_config[CONF_KEY_RESISTOR]
+        self._edge = pin_config[CONF_KEY_INTERRUPT]
+        self._bias = pin_config[CONF_KEY_RESISTOR]
         self._invert = pin_config[CONF_KEY_INVERT]
         self._initial = pin_config[CONF_KEY_INITIAL]
-        self._log.debug(
-            "Configured '%s' on %s with options: %s",
-            self._name,
-            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
-            {
-                "ID": self._id,
-                CONF_KEY_PIN_MODE: self._mode.name,
-                CONF_KEY_INTERRUPT: self._interrupt.name,
-                CONF_KEY_RESISTOR: self._resistor.name,
-                CONF_KEY_INVERT: self._invert,
-                CONF_KEY_INITIAL: TEXT_STATE[self._initial],
-            },
+        self._handle = board.get_pin(
+            pin=pin,
+            mode=gpio_mode,
+            pin_mode=self._mode,
+            bias=self._bias,
+            edge=self._edge,
+            interrupt_callback=self.interrupt,
+            interrupt_debounce=CONFIG[CONF_KEY_DEBOUNCE],
         )
+        if self._handle:
+            self._log.debug(
+                "Configured '%s' on %s with options: %s",
+                self._name,
+                self.pin_name,
+                {
+                    "ID": self.id,
+                    CONF_KEY_PIN_MODE: self._mode.name,
+                    CONF_KEY_INTERRUPT: self._edge.name,
+                    CONF_KEY_RESISTOR: self._bias.name,
+                    CONF_KEY_INVERT: self._invert,
+                    CONF_KEY_INITIAL: TEXT_STATE[self._initial],
+                },
+            )
 
     def get_property(self) -> BusProperty:
         return BusProperty(
-            name=self._name,
+            name=self.name,
             settable=self._mode == PinMode.OUTPUT,
             callback="pin_message",
         )
@@ -139,49 +143,31 @@ class Digital(Pin):
         """
         Configures the pin in hardware, returns ``True`` on success
         """
-        self._log.info(
-            "Setting up '%s' on %s as %s",
-            self._name,
-            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
-            self._mode.name,
-        )
-        if super().setup():
-            try:
-                self._gpio.setup(self._pin, self._mode, self._resistor)
-            except:
-                self._log.error(
-                    "An exception occured while setting up '%s' on %s",
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
-                )
-                log_traceback(self._log)
-                return False
-
-            if self._mode == PinMode.INPUT and self._interrupt != Interrupt.NONE:
-                self._log.trace(
-                    "Adding interrupt event for '%s' on %s with edge trigger '%s'",
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
-                    self._interrupt.name,
-                )
-                self._gpio.add_event_detect(
-                    self._pin,
-                    self._interrupt,
-                    callback=self.interrupt,
-                    bouncetime=CONFIG[CONF_KEY_DEBOUNCE],
-                )
-
-            self._setup = True
-
-            if self._mode == PinMode.OUTPUT:
-                self._log.trace(
-                    "Setting '%s' on %s to initial state %s logic %s",
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
-                    TEXT_STATE[self._initial],
-                    Logic(self._initial ^ self._invert).name,
-                )
-                self._set(self._initial ^ self._invert)
+        if self._handle:
+            self._log.info(
+                "Setting up '%s' on %s as %s",
+                self.name,
+                self.pin_name,
+                self._mode.name,
+            )
+            if self._handle.setup():
+                self._setup = True
+                if self._mode == PinMode.OUTPUT:
+                    self._log.trace(
+                        "Setting '%s' on %s to initial state %s logic %s",
+                        self.name,
+                        self.pin_name,
+                        TEXT_STATE[self._initial],
+                        Logic(self._initial ^ self._invert).name,
+                    )
+                    self._set(self._initial ^ self._invert)
+                    del self._initial
+        else:
+            self._log.warn(
+                "Unable to setup '%s' as %s, no available pin class",
+                self.name,
+                self._mode.name,
+            )
 
         return self._setup
 
@@ -189,7 +175,7 @@ class Digital(Pin):
         """
         Cleanup actions when stopping
         """
-        if self._setup:
+        if self._setup and self._mode == PinMode.OUTPUT:
             self._set(False)
         super().cleanup()
 
@@ -204,8 +190,8 @@ class Digital(Pin):
                     "Read state %s logic %s from '%s' on %s",
                     TEXT_STATE[state],
                     Logic(int(state ^ self._invert)).name,
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                    self.name,
+                    self.pin_name,
                 )
                 common.publish_queue.put_nowait(
                     BusMessage(path=self.path, content=TEXT_STATE[state])
@@ -225,8 +211,8 @@ class Digital(Pin):
                 self._log.trace(
                     "Received unrecognized message on '%s' for '%s' on %s: %s",
                     path,
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                    self.name,
+                    self.pin_name,
                     content,
                 )
 
@@ -236,12 +222,12 @@ class Digital(Pin):
         """
         if self._setup:
             try:
-                return bool(self._gpio.input(self._pin) ^ self._invert)
+                return bool(self._handle.read() ^ self._invert)
             except:
                 self._log.error(
                     "An exception occurred while reading '%s' on %s",
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                    self.name,
+                    self.pin_name,
                 )
                 log_traceback(self._log)
         return None
@@ -252,11 +238,11 @@ class Digital(Pin):
         """
         if self._setup:
             try:
-                self._gpio.output(self._pin, state ^ self._invert)
+                self._handle.write(state ^ self._invert)
                 self._log.debug(
                     "Set '%s' on %s to %s logic %s",
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                    self.name,
+                    self.pin_name,
                     TEXT_STATE[state],
                     Logic(state ^ self._invert).name,
                 )
@@ -264,10 +250,9 @@ class Digital(Pin):
             except:
                 self._log.error(
                     "An exception occurred while setting '%s' on %s",
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                    self.name,
+                    self.pin_name,
                 )
-                log_traceback(self._log)
         return False
 
     def _pulse(self, time: int, state: bool):
@@ -279,8 +264,8 @@ class Digital(Pin):
         if self._setup:
             self._log.debug(
                 "Pulsing '%s' on %s to %s logic %s for %dms",
-                self._name,
-                TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                self.name,
+                self.pin_name,
                 TEXT_STATE[state],
                 Logic(state ^ self._invert).name,
                 time,
@@ -302,8 +287,8 @@ class Digital(Pin):
             if self._set(state):
                 self._log.debug(
                     "PULSE ended for '%s' on %s set pin to %s logic %s",
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                    self.name,
+                    self.pin_name,
                     TEXT_STATE[state],
                     Logic(state ^ self._invert).name,
                 )
@@ -318,8 +303,8 @@ class Digital(Pin):
             self._pulse_timer = None
             self._log.debug(
                 "Cancelled PULSE timer for '%s' on %s",
-                self._name,
-                TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                self.name,
+                self.pin_name,
             )
 
     def set(self, content: str):
@@ -335,16 +320,16 @@ class Digital(Pin):
                         self.publish_state()
                 else:
                     self._log.warn(
-                        "Received unrecognized SET message for '{}' on %s: %s",
-                        self._name,
-                        TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                        "Received unrecognized SET message for '%s' on %s: %s",
+                        self.name,
+                        self.pin_name,
                         content,
                     )
             else:
                 self._log.warn(
                     "Received SET command for '%s' on %s but it is not configured as an output",
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                    self.name,
+                    self.pin_name,
                 )
 
     def pulse(self, content: str):
@@ -358,8 +343,8 @@ class Digital(Pin):
                 except ValueError:
                     self._log.error(
                         "Received malformed JSON in PULSE command for '%s' on %s: %s",
-                        self._name,
-                        TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                        self.name,
+                        self.pin_name,
                         content,
                     )
                 else:
@@ -368,16 +353,16 @@ class Digital(Pin):
                     if not time:
                         self._log.error(
                             "Received PULSE command missing 'time' argument for '%s' on %s: %s",
-                            self._name,
-                            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                            self.name,
+                            self.pin_name,
                             content,
                         )
                         return
                     if state is None:
                         self._log.error(
                             "PULSE failed, unable to read state for '%s' on %s",
-                            self._name,
-                            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                            self.name,
+                            self.pin_name,
                         )
                         return
 
@@ -387,27 +372,33 @@ class Digital(Pin):
                     else:
                         self._log.warn(
                             "Received unrecognized PULSE state for '%s' on %s: %s",
-                            self._name,
-                            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                            self.name,
+                            self.pin_name,
                             state,
                         )
             else:
                 self._log.warn(
                     "Received PULSE command for '%s' on %s but it is not configured as an output",
-                    self._name,
-                    TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+                    self.name,
+                    self.pin_name,
                 )
 
-    def interrupt(self, pin):
+    def interrupt(self, state: bool):
         """
         Handles pin change interrupts
         """
+        state = state ^ self._invert
         self._log.trace(
-            "Interrupt triggered for '%s' on %s",
-            self._name,
-            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
+            "%s edge trigger fired with state %s logic %s for '%s' on %s",
+            "Rising" if state else "Falling",
+            TEXT_STATE[state],
+            Logic(int(state ^ self._invert)).name,
+            self.name,
+            self.pin_name,
         )
-        self.publish_state()
+        common.publish_queue.put_nowait(
+            BusMessage(path=self.path, content=TEXT_STATE[state])
+        )
 
 
 SUPPORTED_PIN_MODES = {PinMode.INPUT: Digital, PinMode.OUTPUT: Digital}

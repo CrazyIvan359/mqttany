@@ -27,14 +27,6 @@ GPIO Module
 
 __all__ = ["load", "start", "stop", "pin_message", "poll_message", "pulse_message"]
 
-try:
-    import adafruit_platformdetect
-except ImportError:
-    raise ImportError(
-        "MQTTany's GPIO module requires 'Adafruit-PlatformDetect' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
-
 import json
 from threading import Timer
 
@@ -42,7 +34,6 @@ from config import parse_config
 from common import BusMessage, validate_id
 
 from modules.gpio import common
-from modules.gpio.lib import getGPIO
 from modules.gpio.pin import getPin, updateConfOptions
 from modules.gpio.common import (
     log,
@@ -55,7 +46,6 @@ from modules.gpio.common import (
     CONF_KEY_FIRST_INDEX,
     CONF_KEY_PIN_MODE,
     CONF_OPTIONS,
-    TEXT_GPIO_MODE,
 )
 
 pins = {}
@@ -90,13 +80,12 @@ def load(config_raw={}):
                 )
                 id = f"{id}-{index + pin_config[CONF_KEY_FIRST_INDEX]}"
 
-            clazz = clazz(pin, id, name, pin_config)
+            clazz = clazz(pin, CONFIG[CONF_KEY_MODE], id, name, pin_config)
         else:
-            log.warn(
-                "Pin mode '%s' for '%s' on %s is not supported",
-                pin_config[CONF_KEY_PIN_MODE],
+            log.error(
+                "Pin mode %s in '%s' is not supported",
+                pin_config[CONF_KEY_PIN_MODE].name,
                 id,
-                TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
             )
         return clazz
 
@@ -109,31 +98,17 @@ def load(config_raw={}):
         CONFIG.update(config_data)
         del config_data
 
-        detector = adafruit_platformdetect.Detector()
-        if getGPIO() is None:
-            log.error("Unsupported board: %s", detector.board.id)
-            return False
-        log.info("Detected board: %s", detector.board.id)
-
-        pin_valid = getGPIO().pin_valid
-
         for id in [key for key in CONFIG if isinstance(CONFIG[key], dict)]:
             named_config = CONFIG.pop(id)
             pin_object = None
 
             if isinstance(named_config.get(CONF_KEY_PIN), int):
                 pin = named_config[CONF_KEY_PIN]
-                if not pin_valid(pin, named_config[CONF_KEY_PIN_MODE]):
-                    log.warn(
-                        "%s in '%s' is not a valid pin for this board, it will be ignored",
-                        TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
-                        id,
-                    )
-                elif pin in pins:
+                if pin in pins:
                     log.warn(
                         "Duplicate configuration for %s found in '%s' will be ignored, "
                         "pin already configured under '%s'",
-                        TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                        pins[pin].pin_name,
                         id,
                         pins[pin].name,
                     )
@@ -147,17 +122,11 @@ def load(config_raw={}):
             elif isinstance(named_config.get(CONF_KEY_PIN), list):
                 for index in range(len(named_config[CONF_KEY_PIN])):
                     pin = named_config[CONF_KEY_PIN][index]
-                    if not pin_valid(pin, named_config[CONF_KEY_PIN_MODE]):
-                        log.warn(
-                            "%s in '%s' is not a valid pin for this board, it will be ignored",
-                            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
-                            id,
-                        )
-                    elif pin in pins:
+                    if pin in pins:
                         log.warn(
                             "Duplicate configuration for %s found in '%s' will be "
                             "ignored, pin already configured under '%s'",
-                            TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
+                            pins[pin].pin_name,
                             id,
                             pins[pin].name,
                         )
@@ -216,8 +185,8 @@ def stop():
         log.debug("Stopping polling timer")
         polling_timer.cancel()
 
+    log.debug("Running pin cleanup")
     for pin in pins:
-        log.debug("Running pin cleanup")
         pins[pin].cleanup()
 
 

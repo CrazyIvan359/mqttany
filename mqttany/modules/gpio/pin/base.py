@@ -27,15 +27,10 @@ GPIO Pin Base
 
 __all__ = ["Pin"]
 
-from common import BusProperty, lock_gpio
+from common import BusProperty
+from gpio import Mode
 
-from modules.gpio.lib import getGPIO
-from modules.gpio.common import (
-    CONFIG,
-    CONF_KEY_MODE,
-    CONF_KEY_PIN_MODE,
-    TEXT_GPIO_MODE,
-)
+from modules.gpio.common import CONF_KEY_PIN_MODE
 
 
 class Pin(object):
@@ -43,15 +38,18 @@ class Pin(object):
     GPIO Pin base class
     """
 
-    def __init__(self, pin: int, id: str, name: str, pin_config: dict = {}):
+    def __init__(
+        self, pin: int, gpio_mode: Mode, id: str, name: str, pin_config: dict = {}
+    ):
         self._setup = False
         self._log = None  # assigned by subclass
+        self._handle = None  # hardware access, assigned by subclass
         self._pin = pin
+        self._gpio_mode = gpio_mode
         self._id = id
         self._name = name
         self._path = f"gpio/{id}"
         self._mode = pin_config[CONF_KEY_PIN_MODE]
-        self._gpio = getGPIO()
 
     def get_property(self) -> BusProperty:
         """
@@ -62,28 +60,18 @@ class Pin(object):
 
     def setup(self):
         """
-        Subclasses MUST override AND ``super()`` this method. This method will try to
-        get the pin lock and return the result, which you MUST use to determine if the
-        pin can be used. After getting the lock, pin setup can be done.
+        Subclasses MUST override this method.
+        A pin handle should be acquired from ``gpio.board.get_pin``.
         """
-        locked = lock_gpio(
-            self._gpio.getPinFromMode(self._pin, CONFIG[CONF_KEY_MODE]), "gpio.pin"
-        )
-        if not locked:
-            self._log.error(
-                "Failed to acquire a lock for '%s' on %s",
-                self._name,
-                TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
-            )
-        return locked
+        raise NotImplementedError
 
     def cleanup(self):
         """
         Cleanup actions when stopping
         """
         self._setup = False
-        if self._gpio:
-            self._gpio.cleanup(self._pin)
+        if self._handle:
+            self._handle.cleanup()
 
     def publish_state(self):
         """
@@ -110,3 +98,7 @@ class Pin(object):
     @property
     def path(self) -> str:
         return self._path
+
+    @property
+    def pin_name(self) -> str:
+        return self._handle.get_name(self._gpio_mode)

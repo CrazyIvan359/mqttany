@@ -1,2 +1,1 @@
-Adafruit-PlatformDetect>=2.17,<3.0
 rpi-ws281x>=4.2.2,<5.0
