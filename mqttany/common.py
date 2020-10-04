@@ -25,18 +25,6 @@ Common
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import collections, signal
-import multiprocessing as mproc
-from enum import Enum
-from typing import Dict, List, Optional, Any
-from types import MappingProxyType
-import re
-
-import logger
-from logger import log_traceback
-
-log = logger.get_logger()
-
 __all__ = [
     "POISON_PILL",
     "SignalHook",
@@ -49,6 +37,18 @@ __all__ = [
     "update_dict",
     "lock_gpio",
 ]
+
+import collections, signal
+import multiprocessing as mproc
+from enum import Enum
+from typing import Dict, List, Optional, Any
+from types import MappingProxyType
+import re
+
+import logger
+from logger import log_traceback
+
+log = logger.get_logger()
 
 POISON_PILL = {"stop": True}
 

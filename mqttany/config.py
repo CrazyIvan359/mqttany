@@ -25,31 +25,18 @@ Configuration Loader
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-try:
-    import yaml
-except ImportError:
-    raise ImportError(
-        "MQTTany requires 'pyyaml' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
+__all__ = ["load_config", "parse_config", "resolve_type"]
 
-try:
-    import yamlloader
-except ImportError:
-    raise ImportError(
-        "MQTTany requires 'yamlloader' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
 
 import os, re
 from ast import literal_eval
 from collections import OrderedDict
 from typing import Any
+import yaml
+import yamlloader
 
 import logger
 from logger import log_traceback
-
-__all__ = ["load_config", "parse_config"]
 
 log = logger.get_logger()
 
