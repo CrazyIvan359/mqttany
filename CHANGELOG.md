@@ -4,6 +4,8 @@
 
 * **Added**
   * Colorized log output to terminal.
+  * `.pylintrc` file.
+  * GitHub Actions for pylint and black checks.
 
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.
