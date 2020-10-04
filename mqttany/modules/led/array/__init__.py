@@ -37,7 +37,7 @@ from modules.led.common import (
     CONF_KEY_COLOR_ORDER,
     CONF_KEY_BRIGHTNESS,
 )
-from modules.led.array import rpi, sacn
+from modules.led.array import rpi, e131
 
 
 def getArray(array_id, array_config, log):
@@ -46,7 +46,7 @@ def getArray(array_id, array_config, log):
     """
     array_classes = {}
     array_classes.update(rpi.SUPPORTED_TYPES)
-    array_classes.update(sacn.SUPPORTED_TYPES)
+    array_classes.update(e131.SUPPORTED_TYPES)
     clazz = array_classes.get(array_config[CONF_KEY_OUTPUT], None)
 
     if clazz:
@@ -70,5 +70,5 @@ def getConfOptions():
     """
     conf = {}
     conf = update_dict(conf, rpi.CONF_OPTIONS)
-    conf = update_dict(conf, sacn.CONF_OPTIONS)
+    conf = update_dict(conf, e131.CONF_OPTIONS)
     return conf

@@ -148,7 +148,7 @@ class sacnArray(baseArray):
         global sender
         if not sender:
             try:
-                from modules.led.array import libsacn
+                import sacn as libsacn
             except ImportError:
                 raise ImportError(
                     "MQTTany's LED module requires 'sacn' to be installed, "

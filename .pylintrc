@@ -9,8 +9,7 @@ init-hook='import sys, os; from pylint.config import find_pylintrc; sys.path.app
 # ignores
 ignore=
     config,
-    log,
-    libsacn
+    log
 
 
 [MESSAGES CONTROL]
