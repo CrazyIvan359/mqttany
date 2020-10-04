@@ -78,6 +78,7 @@ CONF_OPTIONS = OrderedDict(
                 # if a `default` is given the option is assumed to be optional
                 "type": int,
                 "default": 200,
+                "secret": True,  # This will cause the value to appear as *'s in the log
             },
         ),
         (  # subsections are also possible

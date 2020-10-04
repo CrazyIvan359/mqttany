@@ -140,7 +140,9 @@ def parse_config(
                         if isinstance(value, option.get("type", type(value))):
                             log.trace(
                                 "Got value '%s' for config option '%s'",
-                                "*" * len(value) if "pass" in name.lower() else value,
+                                "*" * len(value)
+                                if option.get("secret", False)
+                                else value,
                                 name,
                             )
                             config[name] = value
@@ -174,7 +176,7 @@ def parse_config(
                     else:
                         log.trace(
                             "Got value '%s' for config option '%s'",
-                            "*" * len(value) if "pass" in name.lower() else value,
+                            "*" * len(value) if option.get("secret", False) else value,
                             name,
                         )
                         config[name] = value

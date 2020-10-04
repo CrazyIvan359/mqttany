@@ -72,7 +72,7 @@ CONF_OPTIONS = OrderedDict(
         (CONF_KEY_PORT, {"type": int, "default": 1883}),
         (CONF_KEY_CLIENTID, {"default": "{hostname}"}),
         (CONF_KEY_USERNAME, {"default": ""}),
-        (CONF_KEY_PASSWORD, {"default": ""}),
+        (CONF_KEY_PASSWORD, {"default": "", "secret": True}),
         (CONF_KEY_QOS, {"type": int, "default": 0}),
         (CONF_KEY_RETAIN, {"type": bool, "default": False}),
         (CONF_KEY_TOPIC_ROOT, {"default": "{client_id}"}),

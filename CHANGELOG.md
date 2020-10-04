@@ -49,6 +49,7 @@ automation setup much in order to interface with this version of MQTTany.
   * Config file version key. This will prevent MQTTany from running with an outdated
     config file that may cause errors or strange behavior. Config version number will
     incriment when incompatible changes occur in the config format.
+  * Config option flag `secret` to obfuscate values in the log for passwords, etc.
 
 * **Changed**
   * Convert all string formatting to use *f-strings*. This change means you must be using
