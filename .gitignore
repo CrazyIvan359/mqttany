@@ -19,3 +19,6 @@ copydocs
 
 # Environments
 .venv*
+
+# GitHub files
+!.github/**
