@@ -219,11 +219,6 @@ mqtt:
   # Animation to play when MQTTany loads
   #anim startup: 'test.array'
 
-  ### Animation Frame Rate
-  # Frame rate for animations, you may need to decrease this for
-  # longer arrays or certain interface types.
-  #anim fps: 60
-
   ### Array Configuration
   #array-id:
 
@@ -255,6 +250,11 @@ mqtt:
     # The byte order for the color data sent to the LEDs.
     # See the 'test.order' animation for how to determine this
     #color order: '{default}'
+
+    ### Animation Frame Rate
+    # Frame rate for animations, you may need to decrease this for
+    # longer arrays or certain interface types.
+    #anim fps: 60
 
     ### Interface Specific Options
     # Each interface may have some options specific to it

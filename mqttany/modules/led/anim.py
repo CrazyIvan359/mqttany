@@ -35,7 +35,7 @@ import importlib.util
 import logger
 from logger import log_traceback
 
-from modules.led.common import log, CONFIG, CONF_KEY_ANIM_DIR, CONF_KEY_ANIM_FPS
+from modules.led.common import log, CONFIG, CONF_KEY_ANIM_DIR
 
 log = logger.get_module_logger("led.anim")
 
@@ -145,7 +145,6 @@ def load_animations():
 
     # add utils to anims
     for func in anims:
-        anims[func].__globals__["FRAME_MS"] = round(1.0 / CONFIG[CONF_KEY_ANIM_FPS], 5)
         anims[func].__globals__["log"] = logger.get_module_logger(f"led.anim.{func}")
         for util in utils:
             anims[func].__globals__[util.__name__] = util

@@ -43,6 +43,7 @@ class baseArray:
         count: int,
         leds_per_pixel: int,
         color_order: str,
+        fps: int,
     ):
         """
         **SUBCLASSES MUST SUPER() THIS METHOD**
@@ -52,6 +53,8 @@ class baseArray:
         self._count = count
         self._per_pixel = leds_per_pixel
         self._order = color_order
+        self._fps = fps
+        self._frame_ms = round(1.0 / fps, 5)
         self._log = None  # subclasses must assign this
         self._setup = False
         self._array = None
@@ -77,6 +80,7 @@ class baseArray:
                 "leds-per-pixel": BusProperty(
                     name="LEDs per Pixel", datatype=DataType.INT
                 ),
+                "fps": BusProperty(name="Frames per second", datatype=DataType.INT),
             },
         )
 
@@ -103,6 +107,9 @@ class baseArray:
                 content=self._per_pixel,
                 mqtt_retained=True,
             )
+        )
+        common.publish_queue.put_nowait(
+            BusMessage(path=f"{self.id}/fps", content=self._fps, mqtt_retained=True)
         )
         return True
 
@@ -356,6 +363,7 @@ class baseArray:
                 common.publish_queue.put_nowait(
                     BusMessage(path=f"{self.id}/animation", content=anim)
                 )
+                self.anims[anim].__globals__["FRAME_MS"] = self._frame_ms
                 self.anims[anim](self, self._anim_cancel, **kwargs)
             except:
                 self._log.debug(

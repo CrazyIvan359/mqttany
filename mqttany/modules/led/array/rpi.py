@@ -113,13 +113,14 @@ class rpiArray(baseArray):
         count: int,
         leds_per_pixel: int,
         color_order: str,
+        fps: int,
         init_brightness: int,
         array_config: dict,
     ):
         """
         Returns an LED object wrapping ``rpi_ws281x.PixelStrip``
         """
-        super().__init__(id, name, count, leds_per_pixel, color_order)
+        super().__init__(id, name, count, leds_per_pixel, color_order, fps)
         self._log = logger.get_module_logger(f"led.rpi.{self.id}")
         self._init_brightness = (
             255
@@ -307,6 +308,7 @@ def validateGPIO(
     count: int,
     leds_per_pixel: int,
     color_order: str,
+    fps: int,
     init_brightness: int,
     array_config: dict,
 ):
@@ -373,6 +375,7 @@ def validateGPIO(
                 count,
                 leds_per_pixel,
                 color_order,
+                fps,
                 init_brightness,
                 array_config,
             )

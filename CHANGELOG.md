@@ -62,8 +62,10 @@ automation setup much in order to interface with this version of MQTTany.
   * **MQTT** - Messages arriving on ``{node}/{property}/+/#`` will match and the callback
     for the property will be called. The callback should further inspect the topic before
     taking action.
-  * Remove the modified version of `libsacn` that was bundled with the LED module. The
-    needed modifications are now available upstream in version 1.4.5.
+  * **LED** - Remove the modified version of `libsacn` that was bundled with the LED module.
+    The needed modifications are now available upstream in version 1.4.5.
+  * **LED** - Move the `fps` option from module config to array config allowing per-array
+    FPS setting. This is now published when the array is setup also.
 
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.

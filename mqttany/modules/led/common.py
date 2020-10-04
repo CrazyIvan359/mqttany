@@ -32,13 +32,13 @@ __all__ = [
     "nodes",
     "CONF_KEY_ANIM_DIR",
     "CONF_KEY_ANIM_STARTUP",
-    "CONF_KEY_ANIM_FPS",
     "CONF_KEY_NAME",
     "CONF_KEY_OUTPUT",
     "CONF_KEY_COUNT",
     "CONF_KEY_PER_PIXEL",
     "CONF_KEY_BRIGHTNESS",
     "CONF_KEY_COLOR_ORDER",
+    "CONF_KEY_ANIM_FPS",
     "CONF_OPTIONS",
     "ANIM_KEY_NAME",
     "ANIM_KEY_REPEAT",
@@ -57,19 +57,18 @@ nodes = {}
 
 CONF_KEY_ANIM_DIR = "anim dir"
 CONF_KEY_ANIM_STARTUP = "anim startup"
-CONF_KEY_ANIM_FPS = "anim fps"
 CONF_KEY_NAME = "name"
 CONF_KEY_OUTPUT = "output"
 CONF_KEY_COUNT = "count"
 CONF_KEY_PER_PIXEL = "leds per pixel"
 CONF_KEY_BRIGHTNESS = "brightness"
 CONF_KEY_COLOR_ORDER = "color order"
+CONF_KEY_ANIM_FPS = "anim fps"
 
 CONF_OPTIONS = OrderedDict(
     [
         (CONF_KEY_ANIM_DIR, {"type": (str, list), "default": []}),
         (CONF_KEY_ANIM_STARTUP, {"type": str, "default": "test.array"}),
-        (CONF_KEY_ANIM_FPS, {"type": int, "default": 60}),
         (
             "regex:.+",
             {
@@ -97,6 +96,7 @@ CONF_OPTIONS = OrderedDict(
                         "BGRW",
                     ],
                 },
+                CONF_KEY_ANIM_FPS: {"type": int, "default": 60},
             },
         ),
     ]

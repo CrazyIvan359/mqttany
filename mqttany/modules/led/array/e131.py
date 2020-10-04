@@ -71,12 +71,13 @@ class sacnArray(baseArray):
         count: int,
         leds_per_pixel: int,
         color_order: str,
+        fps: int,
         array_config: dict,
     ):
         """
         Returns an LED object that outputs via sACN
         """
-        super().__init__(id, name, count, leds_per_pixel, color_order)
+        super().__init__(id, name, count, leds_per_pixel, color_order, fps)
         self._log = logger.get_module_logger(f"led.sacn.{self.id}")
         self._brightness = (
             255

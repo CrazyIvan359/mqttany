@@ -36,6 +36,7 @@ from modules.led.common import (
     CONF_KEY_PER_PIXEL,
     CONF_KEY_COLOR_ORDER,
     CONF_KEY_BRIGHTNESS,
+    CONF_KEY_ANIM_FPS,
 )
 from modules.led.array import rpi, e131
 
@@ -56,6 +57,7 @@ def getArray(array_id, array_config, log):
             count=array_config[CONF_KEY_COUNT],
             leds_per_pixel=array_config[CONF_KEY_PER_PIXEL],
             color_order=array_config[CONF_KEY_COLOR_ORDER],
+            fps=array_config[CONF_KEY_ANIM_FPS],
             init_brightness=array_config[CONF_KEY_BRIGHTNESS],
             array_config=array_config,
         )
