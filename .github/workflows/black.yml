@@ -1,6 +1,15 @@
 name: Black Format
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - v*
+  pull_request:
+    branches-ignore:
+      - docs
+      - gh-pages
 
 jobs:
   black:
@@ -9,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.6]
 
     steps:
     - uses: actions/checkout@v2
