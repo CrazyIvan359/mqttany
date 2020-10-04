@@ -40,6 +40,9 @@ from logger import log_traceback
 
 log = logger.get_logger()
 
+CONF_KEY_VERSION = "version"
+CONFIG_VERSION = [1, 0]
+
 
 def load_config(config_file: str) -> dict:
     """
@@ -67,6 +70,21 @@ def load_config(config_file: str) -> dict:
         except:
             log.error("Config file contains errors")
             log_traceback(log, limit=0)
+
+        if [
+            int(s) for s in config.get(CONF_KEY_VERSION, "0.0").split(".")
+        ] < CONFIG_VERSION:
+            if CONF_KEY_VERSION in config:
+                log.error("Config file version is '%s'", config[CONF_KEY_VERSION])
+            else:
+                log.error("Config file does not specify a version")
+            log.error(
+                "This version of MQTTany requires a minimum config file version of '%s'",
+                ".".join([str(i) for i in CONFIG_VERSION]),
+            )
+            config = None
+        else:
+            config.pop(CONF_KEY_VERSION, None)
     else:
         log.error("Config file does not exist: %s", config_file)
 

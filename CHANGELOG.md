@@ -46,6 +46,9 @@ automation setup much in order to interface with this version of MQTTany.
   * Python version check before importing anything with a minimum version requirement.
   * Import checking for the core requirements with log entries for missing packages.
   * Template modules and documentation to help with creating new modules.
+  * Config file version key. This will prevent MQTTany from running with an outdated
+    config file that may cause errors or strange behavior. Config version number will
+    incriment when incompatible changes occur in the config format.
 
 * **Changed**
   * Convert all string formatting to use *f-strings*. This change means you must be using

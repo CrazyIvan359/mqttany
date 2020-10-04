@@ -4,6 +4,10 @@
 
 
 
+### Config file version
+version: '1.0'
+
+
 ######## MQTT Module ########
 mqtt:
 
