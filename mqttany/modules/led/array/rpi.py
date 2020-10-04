@@ -317,7 +317,7 @@ def validateGPIO(
     """
     try:
         import adafruit_platformdetect
-        import adafruit_platformdetect.board as board
+        import adafruit_platformdetect.constants.boards as boards
     except ImportError:
         raise ImportError(
             "MQTTany's LED module requires 'Adafruit-PlatformDetect' to be installed, "
@@ -331,30 +331,30 @@ def validateGPIO(
         pin_ok = False
 
         if array_config[CONF_KEY_RPI][CONF_KEY_GPIO] in [12, 18] and board_id in [
-            board.RASPBERRY_PI_B_PLUS,
-            board.RASPBERRY_PI_2B,
-            board.RASPBERRY_PI_3B,
-            board.RASPBERRY_PI_3B_PLUS,
+            boards.RASPBERRY_PI_B_PLUS,
+            boards.RASPBERRY_PI_2B,
+            boards.RASPBERRY_PI_3B,
+            boards.RASPBERRY_PI_3B_PLUS,
         ]:
             pin_ok = True  # PWM0
 
         elif array_config[CONF_KEY_RPI][CONF_KEY_GPIO] in [13] and board_id in [
-            board.RASPBERRY_PI_B_PLUS,
-            board.RASPBERRY_PI_2B,
-            board.RASPBERRY_PI_3B,
-            board.RASPBERRY_PI_3B_PLUS,
-            board.RASPBERRY_PI_ZERO,
-            board.RASPBERRY_PI_ZERO_W,
+            boards.RASPBERRY_PI_B_PLUS,
+            boards.RASPBERRY_PI_2B,
+            boards.RASPBERRY_PI_3B,
+            boards.RASPBERRY_PI_3B_PLUS,
+            boards.RASPBERRY_PI_ZERO,
+            boards.RASPBERRY_PI_ZERO_W,
         ]:
             pin_ok = True  # PWM1
 
         elif array_config[CONF_KEY_RPI][CONF_KEY_GPIO] in [21] and board_id in [
-            board.RASPBERRY_PI_B_PLUS,
-            board.RASPBERRY_PI_2B,
-            board.RASPBERRY_PI_3B,
-            board.RASPBERRY_PI_3B_PLUS,
-            board.RASPBERRY_PI_ZERO,
-            board.RASPBERRY_PI_ZERO_W,
+            boards.RASPBERRY_PI_B_PLUS,
+            boards.RASPBERRY_PI_2B,
+            boards.RASPBERRY_PI_3B,
+            boards.RASPBERRY_PI_3B_PLUS,
+            boards.RASPBERRY_PI_ZERO,
+            boards.RASPBERRY_PI_ZERO_W,
         ]:
             pin_ok = True  # PCM_DOUT
 

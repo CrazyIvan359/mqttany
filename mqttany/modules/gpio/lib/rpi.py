@@ -132,8 +132,8 @@ detector = adafruit_platformdetect.Detector()
 board = detector.board.id
 rpi_40 = detector.board.any_raspberry_pi_40_pin
 rpi_26_r1 = detector.board.id in [
-    adafruit_platformdetect.board.RASPBERRY_PI_A,
-    adafruit_platformdetect.board.RASPBERRY_PI_B_REV1
+    adafruit_platformdetect.constants.boards.RASPBERRY_PI_A,
+    adafruit_platformdetect.constants.boards.RASPBERRY_PI_B_REV1
 ]
 MAX_GPIO = 64
 def gpioPinToGpio(pin):

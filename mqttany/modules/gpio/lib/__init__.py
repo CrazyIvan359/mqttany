@@ -29,7 +29,7 @@ __all__ = ["getGPIO"]
 
 try:
     import adafruit_platformdetect
-    import adafruit_platformdetect.board as board
+    import adafruit_platformdetect.constants.boards as boards
 
     detector = adafruit_platformdetect.Detector()
     board_id = detector.board.id
@@ -70,10 +70,10 @@ def getGPIO(**kwargs):
                 gpio_mod = rpiGPIO(mode=CONFIG[CONF_KEY_MODE])
 
         elif is_odroid_xu() or board_id in [
-            board.ODROID_C1,
-            board.ODROID_C1_PLUS,
-            board.ODROID_C2,
-            board.ODROID_N2,
+            boards.ODROID_C1,
+            boards.ODROID_C1_PLUS,
+            boards.ODROID_C2,
+            boards.ODROID_N2,
         ]:
             if is_odroid_xu():
                 log.warn("Detected board Odroid XU3 or XU4 but cannot identify which!")

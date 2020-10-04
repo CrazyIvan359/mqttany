@@ -190,10 +190,10 @@ def is_odroid_xu4():
 
 
 od_xu = is_odroid_xu3() or is_odroid_xu4()
-od_c1 = board == adafruit_platformdetect.board.ODROID_C1
-od_c1p = board == adafruit_platformdetect.board.ODROID_C1_PLUS
-od_c2 = board == adafruit_platformdetect.board.ODROID_C2
-od_n2 = board == adafruit_platformdetect.board.ODROID_N2
+od_c1 = board == adafruit_platformdetect.constants.boards.ODROID_C1
+od_c1p = board == adafruit_platformdetect.constants.boards.ODROID_C1_PLUS
+od_c2 = board == adafruit_platformdetect.constants.boards.ODROID_C2
+od_n2 = board == adafruit_platformdetect.constants.boards.ODROID_N2
 MAX_GPIO = 0
 if od_xu:
     MAX_GPIO = len(PINS_XU)
