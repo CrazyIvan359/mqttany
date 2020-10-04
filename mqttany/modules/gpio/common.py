@@ -30,7 +30,7 @@ __all__ = [
     "CONFIG",
     "nodes",
     "Mode",
-    "Direction",
+    "PinMode",
     "Resistor",
     "Interrupt",
     "TEXT_GPIO_MODE",
@@ -39,7 +39,7 @@ __all__ = [
     "CONF_KEY_PIN",
     "CONF_KEY_NAME",
     "CONF_KEY_FIRST_INDEX",
-    "CONF_KEY_DIRECTION",
+    "CONF_KEY_PIN_MODE",
     "CONF_KEY_INVERT",
     "CONF_OPTIONS",
 ]
@@ -78,7 +78,7 @@ class Mode(Enum):
     WIRINGPI = 52
 
 
-class Direction(Enum):
+class PinMode(Enum):
     INPUT = 10
     OUTPUT = 11
 
@@ -108,7 +108,7 @@ CONF_KEY_POLL_INT = "polling interval"
 CONF_KEY_PIN = "pin"
 CONF_KEY_NAME = "name"
 CONF_KEY_FIRST_INDEX = "first index"
-CONF_KEY_DIRECTION = "direction"
+CONF_KEY_PIN_MODE = "pin mode"
 CONF_KEY_INVERT = "invert"
 
 CONF_OPTIONS = OrderedDict(
@@ -139,7 +139,7 @@ CONF_OPTIONS = OrderedDict(
                 CONF_KEY_PIN: {"type": (int, list)},
                 CONF_KEY_NAME: {"type": (str, list), "default": "{pin_id}"},
                 CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
-                CONF_KEY_DIRECTION: {"default": Direction.INPUT, "selection": {}},
+                CONF_KEY_PIN_MODE: {"selection": {}},
                 CONF_KEY_INVERT: {"type": bool, "default": False},
             },
         ),

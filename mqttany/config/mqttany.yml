@@ -71,8 +71,8 @@ mqtt:
     # - {pin_id} = name of this section
     #name: '{pin_id}'
 
-    ### Pin Direction
-    #direction: 'input' # can be 'input' or 'output'
+    ### Pin Mode
+    #pin mode: 'input' # can be 'input' or 'output'
 
     ### Pin Interrupt
     #interrupt: 'none' # can be 'rising', 'falling', 'both', or 'none'

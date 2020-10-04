@@ -33,7 +33,7 @@ from modules.gpio.lib import getGPIO
 from modules.gpio.common import (
     CONFIG,
     CONF_KEY_MODE,
-    CONF_KEY_DIRECTION,
+    CONF_KEY_PIN_MODE,
     TEXT_GPIO_MODE,
 )
 
@@ -50,7 +50,7 @@ class Pin(object):
         self._id = id
         self._name = name
         self._path = f"gpio/{id}"
-        self._direction = pin_config[CONF_KEY_DIRECTION]
+        self._mode = pin_config[CONF_KEY_PIN_MODE]
         self._gpio = getGPIO()
 
     def get_property(self) -> BusProperty:

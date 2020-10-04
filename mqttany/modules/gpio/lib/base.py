@@ -40,15 +40,15 @@ class baseGPIO:
         """
         raise NotImplementedError
 
-    def pin_valid(self, pin, direction):
+    def pin_valid(self, pin, pin_mode):
         """
-        Return ``True`` if pin can be used for ``direction``
+        Return ``True`` if pin can be used for ``pin_mode``
         """
         raise NotImplementedError
 
-    def setup(self, pin, direction, resistor):
+    def setup(self, pin, pin_mode, resistor):
         """
-        Set the pin direction (input or output).
+        Set the pin mode.
         """
         raise NotImplementedError
 

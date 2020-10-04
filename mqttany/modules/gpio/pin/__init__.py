@@ -32,14 +32,14 @@ from modules.gpio.pin import digital
 __all__ = ["getPin", "updateConfOptions"]
 
 
-def getPin(direction):
+def getPin(pin_mode):
     """
-    Returns a class for the pin based on the direction or ``None`` if one is
+    Returns a class for the pin based on the pin mode or ``None`` if one is
     not available.
     """
     pin_classes = {}
-    pin_classes.update(digital.SUPPORTED_DIRECTIONS)
-    return pin_classes.get(direction, None)
+    pin_classes.update(digital.SUPPORTED_PIN_MODES)
+    return pin_classes.get(pin_mode, None)
 
 
 def updateConfOptions(conf_options):

@@ -53,7 +53,7 @@ from modules.gpio.common import (
     CONF_KEY_PIN,
     CONF_KEY_NAME,
     CONF_KEY_FIRST_INDEX,
-    CONF_KEY_DIRECTION,
+    CONF_KEY_PIN_MODE,
     CONF_OPTIONS,
     TEXT_GPIO_MODE,
 )
@@ -72,7 +72,7 @@ def load(config_raw={}):
         if not validate_id(id):
             log.warn("'%s' is not a valid ID and will be ignored", id)
             return None
-        clazz = getPin(pin_config[CONF_KEY_DIRECTION])
+        clazz = getPin(pin_config[CONF_KEY_PIN_MODE])
         if clazz:
             if index is None:
                 pin = pin_config[CONF_KEY_PIN]
@@ -93,8 +93,8 @@ def load(config_raw={}):
             clazz = clazz(pin, id, name, pin_config)
         else:
             log.warn(
-                "Direction '%s' for '%s' on %s is not supported",
-                pin_config[CONF_KEY_DIRECTION],
+                "Pin mode '%s' for '%s' on %s is not supported",
+                pin_config[CONF_KEY_PIN_MODE],
                 id,
                 TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
             )
@@ -123,7 +123,7 @@ def load(config_raw={}):
 
             if isinstance(named_config.get(CONF_KEY_PIN), int):
                 pin = named_config[CONF_KEY_PIN]
-                if not pin_valid(pin, named_config[CONF_KEY_DIRECTION]):
+                if not pin_valid(pin, named_config[CONF_KEY_PIN_MODE]):
                     log.warn(
                         "%s in '%s' is not a valid pin for this board, it will be ignored",
                         TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
@@ -147,7 +147,7 @@ def load(config_raw={}):
             elif isinstance(named_config.get(CONF_KEY_PIN), list):
                 for index in range(len(named_config[CONF_KEY_PIN])):
                     pin = named_config[CONF_KEY_PIN][index]
-                    if not pin_valid(pin, named_config[CONF_KEY_DIRECTION]):
+                    if not pin_valid(pin, named_config[CONF_KEY_PIN_MODE]):
                         log.warn(
                             "%s in '%s' is not a valid pin for this board, it will be ignored",
                             TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),

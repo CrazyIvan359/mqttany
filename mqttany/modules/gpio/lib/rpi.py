@@ -51,7 +51,7 @@ from modules.gpio.common import CONFIG, CONF_KEY_MODE
 from modules.gpio.lib.base import baseGPIO
 from modules.gpio.common import (
     Mode,
-    Direction,
+    PinMode,
     Resistor,
     Interrupt,
     TEXT_GPIO_MODE,
@@ -65,11 +65,11 @@ MAP_WIRINGPI_SETUP = {
     Mode.SOC: wiringpi.wiringPiSetupGpio,
     Mode.WIRINGPI: wiringpi.wiringPiSetup,
 }
-MAP_DIRECTION = {
-    Direction.INPUT: wiringpi.INPUT,
-    Direction.OUTPUT: wiringpi.OUTPUT,
-    wiringpi.INPUT: Direction.INPUT,
-    wiringpi.OUTPUT: Direction.OUTPUT,
+MAP_PIN_MODE = {
+    PinMode.INPUT: wiringpi.INPUT,
+    PinMode.OUTPUT: wiringpi.OUTPUT,
+    wiringpi.INPUT: PinMode.INPUT,
+    wiringpi.OUTPUT: PinMode.OUTPUT,
 }
 MAP_RESISTOR = {
     Resistor.OFF: wiringpi.PUD_OFF,
@@ -174,19 +174,19 @@ class rpiGPIO(baseGPIO):
         return MAP_PIN_LOOKUP[mode](pin)
 
     @staticmethod
-    def pin_valid(pin, direction):
+    def pin_valid(pin, pin_mode):
         """
-        Return ``True`` if pin can be used for ``direction``
+        Return ``True`` if pin can be used for ``pin_mode``
         """
         if -1 < pin < MAX_GPIO:
             if MAP_PIN_LOOKUP[CONFIG[CONF_KEY_MODE]](pin) > -1:
-                if direction in [Direction.INPUT, Direction.OUTPUT]:
+                if pin_mode in [PinMode.INPUT, PinMode.OUTPUT]:
                     return True
                 else:
                     log.error(
                         "%s cannot be used as %s on %s",
                         TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=pin),
-                        direction,
+                        pin_mode,
                         board
                     )
             else:
@@ -202,12 +202,12 @@ class rpiGPIO(baseGPIO):
             )
         return False
 
-    def setup(self, pin, direction, resistor=Resistor.OFF):
+    def setup(self, pin, pin_mode, resistor=Resistor.OFF):
         """
-        Set the pin direction (input or output).
+        Set the pin mode.
         """
-        wiringpi.pinMode(pin, MAP_DIRECTION[direction])
-        if direction == Direction.INPUT:
+        wiringpi.pinMode(pin, MAP_PIN_MODE[pin_mode])
+        if pin_mode == PinMode.INPUT:
             wiringpi.pullUpDnControl(pin, MAP_RESISTOR[resistor])
 
     def output(self, pin, value):

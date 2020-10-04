@@ -68,6 +68,8 @@ automation setup much in order to interface with this version of MQTTany.
   * **LED** - Move the `fps` option from module config to array config allowing per-array
     FPS setting. This is now published when the array is setup also.
   * Updated Adafruit Platform Detect version from 1.x to 2.x.
+  * **GPIO** - Change language for `direction` to `pin mode` to be less specific and lay
+    ground work for additional pin modes.
 
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.

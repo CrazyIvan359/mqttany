@@ -25,7 +25,7 @@ GPIO Digital Pin
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ["SUPPORTED_DIRECTIONS", "CONF_OPTIONS"]
+__all__ = ["SUPPORTED_PIN_MODES", "CONF_OPTIONS"]
 
 import json
 from threading import Timer
@@ -40,12 +40,12 @@ from modules.gpio import common
 from modules.gpio.pin.base import Pin
 from modules.gpio.common import (
     CONFIG,
-    Direction,
+    PinMode,
     Resistor,
     Interrupt,
     TEXT_GPIO_MODE,
     CONF_KEY_MODE,
-    CONF_KEY_DIRECTION,
+    CONF_KEY_PIN_MODE,
     CONF_KEY_INVERT,
 )
 
@@ -57,13 +57,14 @@ CONF_KEY_INITIAL = "initial state"
 CONF_OPTIONS = {
     CONF_KEY_DEBOUNCE: {"type": int, "default": 50},
     "regex:.+": {
-        CONF_KEY_DIRECTION: {
+        CONF_KEY_PIN_MODE: {
+            "default": PinMode.INPUT,
             "selection": {
-                "input": Direction.INPUT,
-                "in": Direction.INPUT,
-                "output": Direction.OUTPUT,
-                "out": Direction.OUTPUT,
-            }
+                "input": PinMode.INPUT,
+                "in": PinMode.INPUT,
+                "output": PinMode.OUTPUT,
+                "out": PinMode.OUTPUT,
+            },
         },
         CONF_KEY_INTERRUPT: {
             "default": Interrupt.NONE,
@@ -119,7 +120,7 @@ class Digital(Pin):
             TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
             {
                 "ID": self._id,
-                CONF_KEY_DIRECTION: self._direction.name,
+                CONF_KEY_PIN_MODE: self._mode.name,
                 CONF_KEY_INTERRUPT: self._interrupt.name,
                 CONF_KEY_RESISTOR: self._resistor.name,
                 CONF_KEY_INVERT: self._invert,
@@ -130,7 +131,7 @@ class Digital(Pin):
     def get_property(self) -> BusProperty:
         return BusProperty(
             name=self._name,
-            settable=self._direction == Direction.OUTPUT,
+            settable=self._mode == PinMode.OUTPUT,
             callback="pin_message",
         )
 
@@ -142,11 +143,11 @@ class Digital(Pin):
             "Setting up '%s' on %s as %s",
             self._name,
             TEXT_GPIO_MODE[CONFIG[CONF_KEY_MODE]].format(pin=self._pin),
-            self._direction.name,
+            self._mode.name,
         )
         if super().setup():
             try:
-                self._gpio.setup(self._pin, self._direction, self._resistor)
+                self._gpio.setup(self._pin, self._mode, self._resistor)
             except:
                 self._log.error(
                     "An exception occured while setting up '%s' on %s",
@@ -156,7 +157,7 @@ class Digital(Pin):
                 log_traceback(self._log)
                 return False
 
-            if self._direction == Direction.INPUT and self._interrupt != Interrupt.NONE:
+            if self._mode == PinMode.INPUT and self._interrupt != Interrupt.NONE:
                 self._log.trace(
                     "Adding interrupt event for '%s' on %s with edge trigger '%s'",
                     self._name,
@@ -172,7 +173,7 @@ class Digital(Pin):
 
             self._setup = True
 
-            if self._direction == Direction.OUTPUT:
+            if self._mode == PinMode.OUTPUT:
                 self._log.trace(
                     "Setting '%s' on %s to initial state %s logic %s",
                     self._name,
@@ -318,7 +319,7 @@ class Digital(Pin):
         Handle a SET message
         """
         if self._setup:
-            if self._direction == Direction.OUTPUT:
+            if self._mode == PinMode.OUTPUT:
                 state = str(resolve_type(content))
                 if state in TEXT_STATE:
                     self._pulse_cancel()
@@ -343,7 +344,7 @@ class Digital(Pin):
         Handle a PULSE message
         """
         if self._setup:
-            if self._direction == Direction.OUTPUT:
+            if self._mode == PinMode.OUTPUT:
                 try:
                     content = json.loads(content)
                 except ValueError:
@@ -401,4 +402,4 @@ class Digital(Pin):
         self.publish_state()
 
 
-SUPPORTED_DIRECTIONS = {Direction.INPUT: Digital, Direction.OUTPUT: Digital}
+SUPPORTED_PIN_MODES = {PinMode.INPUT: Digital, PinMode.OUTPUT: Digital}
