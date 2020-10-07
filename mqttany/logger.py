@@ -153,8 +153,9 @@ def get_logger(name=None, level=None):
     name = ".".join([s for s in name.split(".") if s not in ["mqttany", "modules"]])
     name = name[len(name) - _LOG_LEN_NAME :] if len(name) > _LOG_LEN_NAME else name
     logger = logging.getLogger(name)
-    for handler in _log_handlers:
-        logger.addHandler(handler)
+    if not logger.hasHandlers():
+        for handler in _log_handlers:
+            logger.addHandler(handler)
     logger.trace = MethodType(trace_log, logger)
     logger.warn = MethodType(warn_log, logger)
     logger.setLevel(level or logging.getLogger("mqttany").level)
