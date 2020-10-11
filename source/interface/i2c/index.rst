@@ -20,6 +20,27 @@ driver.
     system you are using.
 
 
+Permissions
+===========
+
+A ``udev`` rule file is provided to simplify access permissions for I2C buses.
+
+First add the ``i2c`` group if it does not exist:
+
+.. code-block:: shell
+
+    sudo addgroup --system i2c
+
+Then install the ``udev`` rule, add the user running MQTTany to the ``i2c``
+group, and reboot:
+
+.. code-block:: shell
+
+    sudo cp udev/98-i2c.rules /etc/udev/rules.d/
+    sudo usermod -aG i2c mqttany
+    sudo reboot now
+
+
 Devices
 =======
 

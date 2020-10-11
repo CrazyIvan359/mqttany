@@ -15,6 +15,27 @@ See below for a list of supported boards that this module can be used with.
     **You will also need to install requirements for the board you are using.**
 
 
+Permissions
+===========
+
+A ``udev`` rule file is provided to simplify access permissions for GPIO pins.
+
+First add the ``gpio`` group if it does not exist:
+
+.. code-block:: shell
+
+    sudo addgroup --system gpio
+
+Then install the ``udev`` rule, add the user running MQTTany to the ``gpio``
+group, and reboot:
+
+.. code-block:: shell
+
+    sudo cp udev/98-gpio.rules /etc/udev/rules.d/
+    sudo usermod -aG gpio mqttany
+    sudo reboot now
+
+
 Supported Boards
 ================
 

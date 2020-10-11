@@ -18,6 +18,27 @@ The OneWire module provides access to Dallas/Maxim OneWire devices using the
     This process will vary based on the board and operatering system you are using.
 
 
+Permissions
+===========
+
+A ``udev`` rule file is provided to simplify access permissions for ``wire-1`` devices.
+
+First add the ``wire`` group if it does not exist:
+
+.. code-block:: shell
+
+    sudo addgroup --system wire
+
+Then install the ``udev`` rule, add the user running MQTTany to the ``wire``
+group, and reboot:
+
+.. code-block:: shell
+
+    sudo cp udev/98-w1.rules /etc/udev/rules.d/
+    sudo usermod -aG wire mqttany
+    sudo reboot now
+
+
 Devices
 =======
 
