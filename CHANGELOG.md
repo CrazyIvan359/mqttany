@@ -38,6 +38,8 @@ automation setup much in order to interface with this version of MQTTany.
   * **LED** Animations can only be called with JSON on path `{array_id}/animation/set`.
   * **OneWire** Options specific to devices are now in nested sections inside the device
     definition. See the device documentation for details.
+  * **GPIO** - Change language for `direction` to `pin mode` to be less specific and lay
+    ground work for additional pin modes.
 
 * **Added**
   * Colorized log output to terminal.
@@ -68,8 +70,6 @@ automation setup much in order to interface with this version of MQTTany.
   * **LED** - Move the `fps` option from module config to array config allowing per-array
     FPS setting. This is now published when the array is setup also.
   * Updated Adafruit Platform Detect version from 1.x to 2.x.
-  * **GPIO** - Change language for `direction` to `pin mode` to be less specific and lay
-    ground work for additional pin modes.
   * Consolidate `get_module_logger` and `get_logger` into single function and remove
     leading `mqttany` from all logger names.
   * `log_traceback` now formats entire traceback into a single log entry with correct
