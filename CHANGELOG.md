@@ -72,6 +72,8 @@ automation setup much in order to interface with this version of MQTTany.
     ground work for additional pin modes.
   * Consolidate `get_module_logger` and `get_logger` into single function and remove
     leading `mqttany` from all logger names.
+  * `log_traceback` now formats entire traceback into a single log entry with correct
+    indentation to match other log messages.
 
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.
