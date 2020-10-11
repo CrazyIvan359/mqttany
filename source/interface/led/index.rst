@@ -48,9 +48,6 @@ Array IDs are used as the nodes in this module, giving paths like
 |                               | here  with ``retained = True`` when the array is    |
 |                               | started.                                            |
 +-------------------------------+-----------------------------------------------------+
-| ``{array-id}/brightness``     | The current array brightness will be published here |
-|                               | whenever it changes.                                |
-+-------------------------------+-----------------------------------------------------+
 | ``{array-id}/animation``      | The name of the currently running animation will be |
 |                               | published here. An empty message will be published  |
 |                               | if no animation is running.                         |
