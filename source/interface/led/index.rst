@@ -14,11 +14,7 @@ using custom :doc:`animations`.
 
 .. admonition:: Don't forget to install the requirements
 
-    .. code-block:: shell
-
-        pip3 install -r requirements/led.txt
-
-    **You will also need to install requirements for the output method you are using.**
+    You will only need to install requirements for the output method you are using.
 
 
 Supported Outputs
