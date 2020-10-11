@@ -72,7 +72,7 @@ def load_config(config_file: str) -> dict:
             log_traceback(log, limit=0)
 
         if [
-            int(s) for s in config.get(CONF_KEY_VERSION, "0.0").split(".")
+            int(s) for s in str(config.get(CONF_KEY_VERSION, "0.0")).split(".")
         ] < CONFIG_VERSION:
             if CONF_KEY_VERSION in config:
                 log.error("Config file version is '%s'", config[CONF_KEY_VERSION])
