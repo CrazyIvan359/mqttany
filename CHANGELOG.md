@@ -52,6 +52,8 @@ automation setup much in order to interface with this version of MQTTany.
     config file that may cause errors or strange behavior. Config version number will
     incriment when incompatible changes occur in the config format.
   * Config option flag `secret` to obfuscate values in the log for passwords, etc.
+  * **I2C** If `bus` is a number, checks for path `/dev/i2c{bus}` as well as
+    `/dev/i2c-{bus}` now.
 
 * **Changed**
   * Convert all string formatting to use *f-strings*. This change means you must be using

@@ -110,16 +110,18 @@ def validateBus(bus):
     Validates I2C bus ID or full path.
     Returns ``None`` if bus is invalid.
     """
+    path = None
     if isinstance(bus, int):
-        filepath = f"/dev/i2c-{bus}"
+        if os.access(f"/dev/i2c-{bus}", os.F_OK, effective_ids=True):
+            path = f"/dev/i2c-{bus}"
+        elif os.access(f"/dev/i2c{bus}", os.F_OK, effective_ids=True):
+            path = f"/dev/i2c{bus}"
+        else:
+            log.error("Unknown I2C bus specifier '%s'", bus)
     elif isinstance(bus, str):
-        filepath = bus
-    else:
-        log.error("Unknown I2C bus specifier '%s'", bus)
-        return None
+        if os.access(bus, os.F_OK, effective_ids=True):
+            path = bus
+        else:
+            log.error("I2C bus path '%s' does not exist", bus)
 
-    if not os.path.exists(filepath):
-        log.error("I2C bus path '%s' does not exist", filepath)
-        return None
-
-    return filepath
+    return path
