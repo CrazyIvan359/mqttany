@@ -1,0 +1,8 @@
+KERNEL=="gpio*", SUBSYSTEM=="gpio", ACTION=="add", \
+RUN="/bin/sh -c ' \
+    chown -L root:gpio /sys/${DEVPATH}/active_low \
+                       /sys/${DEVPATH}/direction \
+                       /sys/${DEVPATH}/edge \
+                       /sys/${DEVPATH}/uevent \
+                       /sys/${DEVPATH}/value \
+'"

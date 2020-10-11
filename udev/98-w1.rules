@@ -1,0 +1,13 @@
+SUBSYSTEM=="w1", DRIVER=="w1_master_driver", ACTION=="add", \
+RUN="/bin/sh -c ' \
+    chown -L root:wire /sys${DEVPATH}/w1_* \
+                       /sys${DEVPATH}/uevent \
+'"
+SUBSYSTEM=="w1", DRIVER=="w1_slave_driver", ACTION=="add", \
+RUN="/bin/sh -c ' \
+    chown -L root:wire /sys${DEVPATH}/id \
+                       /sys${DEVPATH}/name \
+                       /sys${DEVPATH}/rw \
+                       /sys${DEVPATH}/uevent \
+                       /sys${DEVPATH}/w1_slave \
+'"

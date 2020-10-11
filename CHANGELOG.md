@@ -54,6 +54,7 @@ automation setup much in order to interface with this version of MQTTany.
   * Config option flag `secret` to obfuscate values in the log for passwords, etc.
   * **I2C** If `bus` is a number, checks for path `/dev/i2c{bus}` as well as
     `/dev/i2c-{bus}` now.
+  * `udev` rule files to help with hardware permissions.
 
 * **Changed**
   * Convert all string formatting to use *f-strings*. This change means you must be using
