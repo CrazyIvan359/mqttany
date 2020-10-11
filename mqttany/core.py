@@ -361,5 +361,5 @@ def start(core_queue, config_file):
 
 
 def stop():
-    bus.stop()
     _stop_modules()
+    bus.stop()

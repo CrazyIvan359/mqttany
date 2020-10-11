@@ -408,6 +408,8 @@ class MCP230xx(I2CDevice):
                 if pin is not None:
                     pin.state = 0  # set all pins to configured OFF
             self._write_gpio()
+            self.publish_state()
+            self._setup = False
 
     def publish_state(self):
         """

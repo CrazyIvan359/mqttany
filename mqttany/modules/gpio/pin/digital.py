@@ -185,6 +185,14 @@ class Digital(Pin):
 
         return self._setup
 
+    def cleanup(self):
+        """
+        Cleanup actions when stopping
+        """
+        if self._setup:
+            self._set(False)
+        super().cleanup()
+
     def publish_state(self):
         """
         Read the state from the pin and publish
