@@ -254,7 +254,7 @@ def on_message(client, userdata, message):
         receive_queue.put_nowait(
             BusMessage(
                 "/".join(message.topic.strip("/").split("/")[1:]),
-                message.payload.decode("utf-8"),
+                message.payload.strip(bytes([0])).decode(),
             )
         )
 
