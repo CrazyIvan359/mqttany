@@ -40,7 +40,7 @@ _LOG_FILE = os.path.join(os.path.dirname(__file__), "log", "mqttany.log")
 
 _LOG_LEN_LEVEL = 5
 _LOG_LEN_PROCESS = 8
-_LOG_LEN_NAME = 20
+_LOG_LEN_NAME = 24
 _LOG_FORMAT_FILE = (
     "%(asctime)s [%(levelname)-{level}s] [%(name)-{name}s] %(message)s".format(
         level=_LOG_LEN_LEVEL, name=_LOG_LEN_NAME
