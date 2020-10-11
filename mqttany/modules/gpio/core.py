@@ -245,7 +245,9 @@ def pin_message(message: BusMessage):
     """
     path = message.path.strip("/").split("/")[1:]  # strip '/' and drop node 'gpio'
     if path[0] in pin_from_path:
-        pins[pin_from_path[path[0]]].message_callback("/".join(path[1:]), message)
+        pins[pin_from_path[path[0]]].message_callback(
+            "/".join(path[1:]), message.content
+        )
     else:
         log.debug("Received message on unregistered path: %s", message)
 
