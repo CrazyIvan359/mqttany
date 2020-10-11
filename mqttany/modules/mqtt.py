@@ -250,7 +250,7 @@ def on_message(client, userdata, message):
     """
     Gets called when an MQTT message is received
     """
-    if mqtt.topic_matches_sub(message.topic, f"{CONFIG[CONF_KEY_TOPIC_ROOT]}/+/+/+/#"):
+    if mqtt.topic_matches_sub(f"{CONFIG[CONF_KEY_TOPIC_ROOT]}/+/+/+/#", message.topic):
         receive_queue.put_nowait(
             BusMessage(
                 "/".join(message.topic.strip("/").split("/")[1:]),
