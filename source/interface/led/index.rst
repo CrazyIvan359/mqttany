@@ -64,7 +64,6 @@ Optional settings are commented out with default values shown.
 
       #anim dir: []
       #anim startup: 'test.array'
-      #anim fps: 60
 
       array-id:
         output: ''
@@ -73,6 +72,7 @@ Optional settings are commented out with default values shown.
         #leds per pixel: 1
         #brightness: 255
         #color order: '{default}'
+        #anim fps: 60
 
 
 Module Settings
@@ -94,17 +94,6 @@ Module Settings
 |                  | to ``off``.                                          |
 |                  |                                                      |
 |                  | *Optional, default* ``test.array``.                  |
-+------------------+------------------------------------------------------+
-| ``anim fps``     | Frame rate used by the built-in animations. You may  |
-|                  | need to reduce this value if you see log entries     |
-|                  | indicating frames were skipped.                      |
-|                  |                                                      |
-|                  | This is made available to animations as the global   |
-|                  | variable ``FRAME_MIN`` which is length of each frame |
-|                  | in fractional seconds (*Ex.* 60fps means ``FRAME_MIN |
-|                  | = 0.01667``).                                        |
-|                  |                                                      |
-|                  | *Optional, default* ``60``.                          |
 +------------------+------------------------------------------------------+
 
 
@@ -156,4 +145,14 @@ are used as node IDs. Node IDs can only contain lowercase letters ``a-z``, numbe
 |                    | your LEDs.                                                  |
 |                    |                                                             |
 |                    | *Optional, default* ``{default}``.                          |
++--------------------+-------------------------------------------------------------+
+| ``anim fps``       | Frame rate used by the built-in animations. You may need to |
+|                    | reduce this value if you see log entries indicating frames  |
+|                    | were skipped.                                               |
+|                    |                                                             |
+|                    | This is made available to animations as the global variable |
+|                    | ``FRAME_MIN`` which is length of each frame in fractional   |
+|                    | seconds (*Ex.* 60fps means ``FRAME_MIN = 0.01667``).        |
+|                    |                                                             |
+|                    | *Optional, default* ``60``.                                 |
 +--------------------+-------------------------------------------------------------+
