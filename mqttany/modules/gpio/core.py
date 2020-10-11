@@ -185,7 +185,7 @@ def start():
     """
     log.debug("Setting up hardware")
 
-    for pin in pins:
+    for pin in [k for k in pins]:
         if not pins[pin].setup():
             del pins[pin]
             del pin_from_path[[k for k in pin_from_path if pin_from_path[k] == pin][0]]
