@@ -161,7 +161,7 @@ class baseArray:
         Cleanup actions when stopping
         **SUBCLASSES MUST SUPER() THIS METHOD**
         """
-        if self._anim_manager.is_alive():
+        if self._anim_manager and self._anim_manager.is_alive():
             self._anim_queue.put_nowait(POISON_PILL)
             self._anim_manager.join()
         self._setup = False
