@@ -199,28 +199,9 @@ def log_traceback(log, limit=None):
     """
     Print a traceback to the log
     """
-    message = ""
-    for layer in traceback.format_exception(*sys.exc_info(), limit=limit):
-        for line in layer.split("\n"):
-            message = (
-                message
-                + (
-                    " "
-                    * (
-                        30
-                        + _LOG_LEN_LEVEL
-                        + _LOG_LEN_NAME
-                        + (
-                            0
-                            if logging.getLogger("mqttany").level > DEBUG
-                            else _LOG_LEN_PROCESS + 3
-                        )
-                    )
-                )
-                + line
-                + "\n"
-            )
-    log.error(message.strip() + "\n")
+    log.error(
+        "\n\n" + "".join(traceback.format_exception(*sys.exc_info(), limit=limit))
+    )
 
 
 def uninit():

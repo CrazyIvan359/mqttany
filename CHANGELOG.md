@@ -75,8 +75,8 @@ automation setup much in order to interface with this version of MQTTany.
   * Updated Adafruit Platform Detect version from 1.x to 2.x.
   * Consolidate `get_module_logger` and `get_logger` into single function and remove
     leading `mqttany` from all logger names.
-  * `log_traceback` now formats entire traceback into a single log entry with correct
-    indentation to match other log messages.
+  * `log_traceback` now formats entire traceback into a single log entry on a new line,
+    like a standard stack trace.
 
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.
