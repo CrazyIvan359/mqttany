@@ -185,10 +185,9 @@ class rpiArray(baseArray):
             return False
 
         if self._pin != 10:
-            if not os.access("/dev/mem", os.R_OK | os.W_OK):
+            if not os.access("/dev/mem", os.R_OK | os.W_OK, effective_ids=True):
                 self._log.error(
                     "No read/write access to '/dev/mem', try running with root privileges"
-                    "or adding the user trying to run MQTTany to the group 'kmem'"
                 )
                 return False
 
