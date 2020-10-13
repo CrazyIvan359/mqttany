@@ -90,6 +90,10 @@ class PinAlternate(enum.Flag):
     I2C2_SCL = enum.auto()
     I2C3_SDA = enum.auto()
     I2C3_SCL = enum.auto()
+    I2C4_SDA = enum.auto()
+    I2C4_SCL = enum.auto()
+    I2C5_SDA = enum.auto()
+    I2C5_SCL = enum.auto()
     ANY_I2C = (
         I2C0_SDA
         | I2C0_SCL
@@ -99,4 +103,8 @@ class PinAlternate(enum.Flag):
         | I2C2_SCL
         | I2C3_SDA
         | I2C3_SCL
+        | I2C4_SDA
+        | I2C4_SCL
+        | I2C5_SDA
+        | I2C5_SCL
     )

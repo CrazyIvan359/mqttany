@@ -69,7 +69,7 @@ class structPin:
         if self.alts:
             # Lock pins in use by system
             if self.alts & PinAlternate.ANY_I2C:
-                for i in range(4):
+                for i in range(6):
                     if self.alts & (
                         getattr(PinAlternate, f"I2C{i}_SDA")
                         | getattr(PinAlternate, f"I2C{i}_SCL")

@@ -32,7 +32,7 @@ from adafruit_platformdetect.constants.boards import GENERIC_LINUX_PC
 
 import logger
 from gpio.boards.base import Board
-from gpio.boards import rpi, opi
+from gpio.boards import rpi, odroid
 
 
 class Unknown(Board):
@@ -50,5 +50,5 @@ class Generic(Board):
 def get_board() -> Board:
     all_boards = {GENERIC_LINUX_PC: Generic}
     all_boards.update(rpi.SUPPORTED_BOARDS)
-    all_boards.update(opi.SUPPORTED_BOARDS)
+    all_boards.update(odroid.SUPPORTED_BOARDS)
     return all_boards.get(Detector().board.id, Unknown)()

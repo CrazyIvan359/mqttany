@@ -27,6 +27,7 @@ Core GPIO Odroid Boards
 
 __all__ = ["SUPPORTED_BOARDS"]
 
+import subprocess
 from adafruit_platformdetect.constants.boards import (
     ODROID_C1,
     ODROID_C1_PLUS,
@@ -40,6 +41,7 @@ from gpio.boards.base import Board
 
 DIGITAL = PinMode.DIGITAL
 P_UP = PinBias.PULL_UP
+P_DN = PinBias.PULL_DOWN
 
 
 class OdroidC1(Board):
@@ -65,12 +67,12 @@ class OdroidC1(Board):
         self._add_pin(0, 105, 105, 23, 14, DIGITAL, P_UP)
         self._add_pin(0, 106, 106, 21, 13, DIGITAL, P_UP)
         self._add_pin(0, 107, 107, 19, 12, DIGITAL, P_UP)
-        self._add_pin(0, 108, 108, 33, 23, DIGITAL, P_UP)
+        self._add_pin(0, 108, 108, 33, 23, DIGITAL, P_DN)
         self._add_pin(0, 113, 113, 8, 15, DIGITAL, P_UP)
         self._add_pin(0, 114, 114, 10, 16, DIGITAL, P_UP)
-        self._add_pin(0, 115, 115, 15, 3, DIGITAL, P_UP)
+        self._add_pin(0, 115, 115, 15, 3, DIGITAL, P_DN)
         self._add_pin(0, 116, 116, 13, 2, DIGITAL, P_UP)
-        self._add_pin(0, 117, 117, 24, 10, DIGITAL, P_UP)
+        self._add_pin(0, 117, 117, 24, 10, DIGITAL, P_DN)
 
 
 class OdroidC1p(OdroidC1):
@@ -79,7 +81,7 @@ class OdroidC1p(OdroidC1):
         self._id = ODROID_C1_PLUS
 
         # chip, line, soc, board, wpi, modes, biases, alts
-        self._add_pin(0, 6, 6, -1, -1, DIGITAL, P_UP)
+        self._add_pin(0, 6, 6, -1, -1, DIGITAL, PinBias.NONE)
         self._add_pin(0, 8, 8, -1, -1, DIGITAL, P_UP)
         self._add_pin(0, 9, 9, -1 - 1, DIGITAL, P_UP)
         self._add_pin(0, 10, 10, -1, -1, DIGITAL, P_UP)
@@ -91,12 +93,6 @@ class OdroidC2(Board):
         self._id = ODROID_C2
 
         # chip, line, soc, board, wpi, modes, biases, alts
-        self._add_pin(0, 128, 128, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 130, 130, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 131, 131, -1 - 1, DIGITAL, P_UP)
-        self._add_pin(0, 132, 132, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 133, 133, -1, -1, DIGITAL, P_UP)
-
         self._add_pin(0, 205, 205, 3, 8, DIGITAL, P_UP, PinAlternate.I2C1_SDA)
         self._add_pin(0, 206, 206, 5, 9, DIGITAL, P_UP, PinAlternate.I2C1_SCL)
         self._add_pin(0, 207, 207, 27, 30, DIGITAL, P_UP, PinAlternate.I2C2_SDA)
@@ -105,23 +101,29 @@ class OdroidC2(Board):
         self._add_pin(0, 218, 218, 36, 27, DIGITAL, P_UP)
         self._add_pin(0, 219, 219, 31, 22, DIGITAL, P_UP)
         self._add_pin(0, 224, 224, 32, 26, DIGITAL, P_UP)
-        self._add_pin(0, 225, 225, 26, 11, DIGITAL, P_UP)
+        self._add_pin(0, 225, 225, 26, 11, DIGITAL, P_DN)
         self._add_pin(0, 228, 228, 29, 21, DIGITAL, P_UP)
         self._add_pin(0, 229, 229, 24, 10, DIGITAL, P_UP)
         self._add_pin(0, 230, 230, 23, 14, DIGITAL, P_UP)
         self._add_pin(0, 231, 231, 22, 6, DIGITAL, P_UP)
         self._add_pin(0, 232, 232, 21, 13, DIGITAL, P_UP)
         self._add_pin(0, 233, 233, 18, 5, DIGITAL, P_UP)
-        self._add_pin(0, 234, 234, 33, 23, DIGITAL, P_UP)
+        self._add_pin(0, 234, 234, 33, 23, DIGITAL, P_DN)
         self._add_pin(0, 235, 235, 19, 12, DIGITAL, P_UP)
         self._add_pin(0, 236, 236, 16, 4, DIGITAL, P_UP)
         self._add_pin(0, 237, 237, 15, 3, DIGITAL, P_UP)
-        self._add_pin(0, 238, 238, 12, 1, DIGITAL, P_UP)
+        self._add_pin(0, 238, 238, 12, 1, DIGITAL, P_DN)
         self._add_pin(0, 239, 239, 13, 2, DIGITAL, P_UP)
         self._add_pin(0, 240, 240, 8, 15, DIGITAL, P_UP)
         self._add_pin(0, 241, 241, 10, 16, DIGITAL, P_UP)
         self._add_pin(0, 247, 247, 11, 0, DIGITAL, P_UP)
         self._add_pin(0, 249, 249, 7, 7, DIGITAL, P_UP)
+
+        self._add_pin(0, 128, 128, -1, -1, DIGITAL, P_UP)
+        self._add_pin(0, 130, 130, -1, -1, DIGITAL, P_UP)
+        self._add_pin(0, 131, 131, -1 - 1, DIGITAL, P_UP)
+        self._add_pin(0, 132, 132, -1, -1, DIGITAL, P_UP)
+        self._add_pin(0, 133, 133, -1, -1, DIGITAL, P_UP)
 
 
 class OdroidN2(Board):
@@ -160,37 +162,67 @@ class OdroidXU(Board):
     def __init__(self):
         self._id = ODROID_XU4
 
+        # Untested attempt to check kernel version as /dev/i2c-? assignments
+        # changed in kernel 4.14.37-135
+        try:
+            kernel = [
+                int(s)
+                for s in (
+                    subprocess.run(["uname", "-r"], stdout=subprocess.PIPE)
+                    .stdout.strip(bytes(0))
+                    .decode()
+                    .split("-", 1)[0]
+                    .split(".")
+                )
+            ]
+            if kernel >= [4, 14, 37]:
+                I2C1_SDA = PinAlternate.I2C1_SDA
+                I2C1_SCL = PinAlternate.I2C1_SCL
+                I2C5_SDA = PinAlternate.I2C5_SDA
+                I2C5_SCL = PinAlternate.I2C5_SCL
+            else:
+                I2C1_SDA = PinAlternate.I2C4_SDA
+                I2C1_SCL = PinAlternate.I2C4_SCL
+                I2C5_SDA = PinAlternate.I2C1_SDA
+                I2C5_SCL = PinAlternate.I2C1_SCL
+        except:
+            I2C1_SDA = PinAlternate.I2C1_SDA
+            I2C1_SCL = PinAlternate.I2C1_SCL
+            I2C5_SDA = PinAlternate.I2C5_SDA
+            I2C5_SCL = PinAlternate.I2C5_SCL
+
         # chip, line, soc, board, wpi, modes, biases, alts
-        self._add_pin(0, 18, 18, 7, 7, DIGITAL, P_UP)
-        self._add_pin(0, 19, 19, 16, 4, DIGITAL, P_UP)
-        self._add_pin(0, 21, 21, 13, 2, DIGITAL, P_UP)
-        self._add_pin(0, 22, 22, 15, 3, DIGITAL, P_UP)
-        self._add_pin(0, 23, 23, 18, 5, DIGITAL, P_UP)
-        self._add_pin(0, 24, 24, 22, 6, DIGITAL, P_UP)
-        self._add_pin(0, 25, 25, 26, 11, DIGITAL, P_UP)
-        self._add_pin(0, 28, 28, 29, 21, DIGITAL, P_UP)
-        self._add_pin(0, 29, 29, 32, 26, DIGITAL, P_UP)
-        self._add_pin(0, 30, 30, 31, 22, DIGITAL, P_UP)
-        self._add_pin(0, 31, 31, 33, 23, DIGITAL, P_UP)
-        self._add_pin(0, 33, 33, 36, 27, DIGITAL, P_UP)
-        self._add_pin(0, 34, 34, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 171, 171, 10, 16, DIGITAL, P_UP)
-        self._add_pin(0, 172, 172, 8, 15, DIGITAL, P_UP)
-        self._add_pin(0, 173, 173, 12, 1, DIGITAL, P_UP)
-        self._add_pin(0, 174, 174, 11, 0, DIGITAL, P_UP)
-        self._add_pin(0, 187, 187, 27, 30, DIGITAL, P_UP, PinAlternate.I2C1_SDA)
-        self._add_pin(0, 188, 188, 29, 31, DIGITAL, P_UP, PinAlternate.I2C1_SCL)
-        self._add_pin(0, 189, 189, 23, 14, DIGITAL, P_UP)
-        self._add_pin(0, 190, 190, 24, 10, DIGITAL, P_UP)
-        self._add_pin(0, 191, 191, 21, 13, DIGITAL, P_UP)
-        self._add_pin(0, 192, 192, 19, 12, DIGITAL, P_UP)
-        self._add_pin(0, 209, 209, 3, 8, DIGITAL, P_UP, PinAlternate.I2C0_SDA)
-        self._add_pin(0, 210, 210, 5, 9, DIGITAL, P_UP, PinAlternate.I2C0_SCL)
-        self._add_pin(0, 225, 225, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 226, 226, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 227, 227, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 228, 228, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 229, 229, -1, -1, DIGITAL, P_UP)
+        self._add_pin(0, 18, 18, 7, 7, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 19, 19, 16, 4, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 21, 21, 13, 2, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 22, 22, 15, 3, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 23, 23, 18, 5, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 24, 24, 22, 6, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 25, 25, 26, 11, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 28, 28, 29, 21, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 29, 29, 32, 26, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 30, 30, 31, 22, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 31, 31, 33, 23, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 33, 33, 36, 27, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 34, 34, -1, -1, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 171, 171, 10, 16, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 172, 172, 8, 15, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 173, 173, 12, 1, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 174, 174, 11, 0, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 189, 189, 23, 14, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 190, 190, 24, 10, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 191, 191, 21, 13, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 192, 192, 19, 12, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 209, 209, 3, 8, DIGITAL, P_UP | P_DN, I2C1_SDA)
+        self._add_pin(0, 210, 210, 5, 9, DIGITAL, P_UP | P_DN, I2C1_SCL)
+
+        self._add_pin(0, 187, 187, 27, 30, DIGITAL, P_UP | P_DN, I2C5_SDA)
+        self._add_pin(0, 188, 188, 29, 31, DIGITAL, P_UP | P_DN, I2C5_SCL)
+        self._add_pin(0, 225, 225, -1, -1, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 226, 226, -1, -1, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 227, 227, -1, -1, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 228, 228, -1, -1, DIGITAL, P_UP | P_DN)
+        self._add_pin(0, 229, 229, -1, -1, DIGITAL, P_UP | P_DN)
 
 
 SUPPORTED_BOARDS = {
