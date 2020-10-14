@@ -266,6 +266,18 @@ class Board:
         """
         if self.valid(pin, mode, pin_mode):
             pin = self._pin_lookup[mode][pin]
+            if (
+                kwargs.get("bias", PinBias.NONE) != PinBias.NONE
+                and not pin.biases & kwargs["bias"]
+            ):
+                self.log.warn(
+                    "%s does not support bias %s, defaulting to %s",
+                    pin.name,
+                    kwargs["bias"].name,
+                    PinBias.NONE.name,  # pylint: disable=no-member
+                )
+                kwargs["bias"] = PinBias.NONE
+
             if pin.lock(self.log, mode):
                 return SUPPORTED_PIN_MODES.get(pin_mode)(
                     gpio_mode=mode,
