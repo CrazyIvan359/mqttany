@@ -61,7 +61,7 @@ class PinMode(enum.Flag):
     DIGITAL = INPUT | OUTPUT
 
 
-class PinBias(enum.Enum):
+class PinBias(enum.Flag):
     """ Pin bias resistor setting """
 
     NONE = 0
