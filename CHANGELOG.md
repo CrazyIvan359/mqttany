@@ -27,69 +27,105 @@ automation setup much in order to interface with this version of MQTTany.
 * ***BREAKING CHANGE***
   * Absolute and custom topic support removed. This means all `topic` options in config
     will now be ignored. **See the documentation for each module to see how paths work.**
-  * **GPIO** Digital pins now report their state as `ON` or `OFF`.
-  * **GPIO** Digital pins no longer support time only or comma separated messages for
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
+  * **GPIO** - Digital pins now report their state as `ON` or `OFF`.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
+  * **GPIO** - Digital pins no longer support time only or comma separated messages for
     pulse commands, only JSON is supported now.
-  * **I2C** MCP230xx pins now report their state as `ON` or `OFF`.
-  * **I2C** MCP230xx pins no longer support time only or comma separated messages for
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
+  * **I2C** - MCP230xx pins now report their state as `ON` or `OFF`.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
+  * **I2C** - MCP230xx pins no longer support time only or comma separated messages for
     pulse commands, only JSON is supported now.
-  * **LED** Options specific to output methods are now in a nested section inside the
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
+  * **LED** - Options specific to output methods are now in a nested section inside the
     array definition. See the documentation for details.
-  * **LED** Animations can only be called with JSON on path `{array_id}/animation/set`.
-  * **OneWire** Options specific to devices are now in nested sections inside the device
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
+  * **LED** - Animations can only be called with JSON on path `{array_id}/animation/set`.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
+  * **OneWire** - Options specific to devices are now in nested sections inside the device
     definition. See the device documentation for details.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
+  * **LED** - Move the `fps` option from module config to array config allowing per-array
+    FPS setting. This is now published when the array is setup also.
+    [#52](https://github.com/CrazyIvan359/mqttany/pull/52)
   * **GPIO** - Change language for `direction` to `pin mode` to be less specific and lay
     ground work for additional pin modes.
+    [#55](https://github.com/CrazyIvan359/mqttany/pull/55)
 
 * **Added**
   * Colorized log output to terminal.
   * `.pylintrc` file.
   * GitHub Actions for pylint and black checks.
   * Python version check before importing anything with a minimum version requirement.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
   * Import checking for the core requirements with log entries for missing packages.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
   * Template modules and documentation to help with creating new modules.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
   * Config file version key. This will prevent MQTTany from running with an outdated
     config file that may cause errors or strange behavior. Config version number will
     incriment when incompatible changes occur in the config format.
+    [#50](https://github.com/CrazyIvan359/mqttany/pull/50)
   * Config option flag `secret` to obfuscate values in the log for passwords, etc.
-  * **I2C** If `bus` is a number, checks for path `/dev/i2c{bus}` as well as
+    [#53](https://github.com/CrazyIvan359/mqttany/pull/53)
+  * **I2C** - If `bus` is a number, checks for path `/dev/i2c{bus}` as well as
     `/dev/i2c-{bus}` now.
+    [#62](https://github.com/CrazyIvan359/mqttany/pull/62)
   * `udev` rule files to help with hardware permissions.
+    [#63](https://github.com/CrazyIvan359/mqttany/pull/63)
+  * **GPIO** - support for OrangePi Zero boards.
+    [#71](https://github.com/CrazyIvan359/mqttany/pull/71)
 
 * **Changed**
   * Convert all string formatting to use *f-strings*. This change means you must be using
     a minimum Python version of 3.6.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
   * Convert all logging to use lazy formatting. This should save some time building log
     messages for disabled log levels.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
   * Logger `get_module_logger` now uses entire module name after `modules` instead of
     only selecting the element after the last period.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
   * Move `mprop` requirement up into core, now modules don't need to make sure it is
     installed.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
   * **MQTT** - Messages arriving on ``{node}/{property}/+/#`` will match and the callback
     for the property will be called. The callback should further inspect the topic before
     taking action.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
   * **LED** - Remove the modified version of `libsacn` that was bundled with the LED module.
     The needed modifications are now available upstream in version 1.4.5.
-  * **LED** - Move the `fps` option from module config to array config allowing per-array
-    FPS setting. This is now published when the array is setup also.
+    [#51](https://github.com/CrazyIvan359/mqttany/pull/51)
   * Updated Adafruit Platform Detect version from 1.x to 2.x.
+    [#54](https://github.com/CrazyIvan359/mqttany/pull/54)
   * Consolidate `get_module_logger` and `get_logger` into single function and remove
     leading `mqttany` from all logger names.
+    [#56](https://github.com/CrazyIvan359/mqttany/pull/56)
   * `log_traceback` now formats entire traceback into a single log entry on a new line,
     like a standard stack trace.
+    [#66](https://github.com/CrazyIvan359/mqttany/pull/66)
   * GPIO access has been moved into the core, allowing all modules access to GPIO pins
     as needed.
+    [#64](https://github.com/CrazyIvan359/mqttany/pull/64)
   * GPIO access is now acheived using the ``periphery`` library via the new ``cdev``
     interface, with a fallback to the older ``sysfs`` access. This moves MQTTany away
     from the now depreciated ``wiringpi`` library and opens the door for easy support
     of any SBC that supports ``cdev`` or ``sysfs`` GPIO access.
+    [#64](https://github.com/CrazyIvan359/mqttany/pull/64)
 
 * **Fixed**
   * Remove requirements file for old MCP230xx module that was removed in v0.10.0.
   * Fix logger checking if ``TRACE`` logging was enabled for ``WARN`` messages.
   * Core not exiting correctly if an exception occurred in the core.
+    [#49](https://github.com/CrazyIvan359/mqttany/pull/49)
   * Logging not truncating process name or logger name, this could have resulted in
     misaligned log entries.
+    [#56](https://github.com/CrazyIvan359/mqttany/pull/56)
+  * **LED** - fix error on unload if array animation manager was never started.
+    [#67](https://github.com/CrazyIvan359/mqttany/pull/67)
+  * **LED** - fix permission check for non-SPI outputs on Raspberry Pi arrays.
+    [#68](https://github.com/CrazyIvan359/mqttany/pull/68)
 
 ## 0.11.0
 

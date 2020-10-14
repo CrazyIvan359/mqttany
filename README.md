@@ -27,6 +27,7 @@ Supported boards:
 
 - Raspberry Pi - all up to 3B+ should work, but not all have been tested.
 - Odroid C1, C1+, C2, XU3, XU4, and N2. Not all have been tested.
+- OrangePi Zero boards.
 
 ### I2C
 
