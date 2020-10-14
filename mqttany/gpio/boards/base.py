@@ -198,8 +198,10 @@ class Board:
             structPin(chip, line, pin_soc, pin_board, pin_wpi, modes, biases, alts)
         )
         self._pin_lookup[Mode.SOC][pin_soc] = self._pins[-1]
-        self._pin_lookup[Mode.BOARD][pin_board] = self._pins[-1]
-        self._pin_lookup[Mode.WIRINGPI][pin_wpi] = self._pins[-1]
+        if pin_board > -1:
+            self._pin_lookup[Mode.BOARD][pin_board] = self._pins[-1]
+        if pin_wpi > -1:
+            self._pin_lookup[Mode.WIRINGPI][pin_wpi] = self._pins[-1]
 
     def valid(self, pin: int, mode: Mode, pin_mode: PinMode) -> bool:
         """
