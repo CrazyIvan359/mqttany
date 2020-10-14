@@ -45,6 +45,7 @@ Supported Boards
 
     raspi
     odroid
+    orangepi
 
 .. rubric:: :doc:`Raspberry Pi <raspi>`
 
@@ -58,6 +59,10 @@ Supported Boards
 * :ref:`Odroid XU3 <interface/gpio/odroid:odroid xu3/xu4>` *(untested)*
 * :ref:`Odroid XU4 <interface/gpio/odroid:odroid xu3/xu4>` *(untested)*
 * :ref:`interface/gpio/odroid:odroid n2` *(untested)*
+
+.. rubric:: :doc:`Orange Pi <orangepi>`
+
+* :ref:`Orange Pi Zero <interface/gpio/orangepi:zero>`
 
 
 Paths
