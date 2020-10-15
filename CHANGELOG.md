@@ -76,6 +76,8 @@ automation setup much in order to interface with this version of MQTTany.
     [#63](https://github.com/CrazyIvan359/mqttany/pull/63)
   * **GPIO** - support for OrangePi Zero boards.
     [#71](https://github.com/CrazyIvan359/mqttany/pull/71)
+  * **GPIO** - support for counter pins.
+    [#74](https://github.com/CrazyIvan359/mqttany/pull/74)
 
 * **Changed**
   * Convert all string formatting to use *f-strings*. This change means you must be using
