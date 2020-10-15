@@ -27,7 +27,7 @@ GPIO Pin
 
 from common import update_dict
 
-from modules.gpio.pin import digital
+from modules.gpio.pin import digital, counter
 
 __all__ = ["getPin", "updateConfOptions"]
 
@@ -39,6 +39,7 @@ def getPin(pin_mode):
     """
     pin_classes = {}
     pin_classes.update(digital.SUPPORTED_PIN_MODES)
+    pin_classes.update(counter.SUPPORTED_PIN_MODES)
     return pin_classes.get(pin_mode, None)
 
 
@@ -47,4 +48,5 @@ def updateConfOptions(conf_options):
     Returns a copy of ``conf_options`` updated with options from each pin type.
     """
     conf_options = update_dict(conf_options, digital.CONF_OPTIONS)
+    conf_options = update_dict(conf_options, counter.CONF_OPTIONS)
     return conf_options
