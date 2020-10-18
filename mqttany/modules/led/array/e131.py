@@ -31,12 +31,7 @@ import logger
 
 from common import BusMessage, BusNode, BusProperty
 from modules.led import common
-from modules.led.common import (
-    CONFIG,
-    CONF_KEY_OUTPUT,
-    CONF_KEY_BRIGHTNESS,
-    CONF_KEY_ANIM_FPS,
-)
+from modules.led.common import CONF_KEY_OUTPUT
 from modules.led.array.base import baseArray
 
 log = logger.get_logger("led.sacn")
@@ -73,6 +68,7 @@ class sacnArray(baseArray):
         leds_per_pixel: int,
         color_order: str,
         fps: int,
+        init_brightness: int,
         array_config: dict,
     ):
         """
@@ -82,10 +78,10 @@ class sacnArray(baseArray):
         self._log = logger.get_logger(f"led.sacn.{self.id}")
         self._brightness = (
             255
-            if array_config[CONF_KEY_BRIGHTNESS] > 255
+            if init_brightness > 255
             else 0
-            if array_config[CONF_KEY_BRIGHTNESS] < 0
-            else array_config[CONF_KEY_BRIGHTNESS]
+            if init_brightness < 0
+            else init_brightness
         )
         self._order = self._order.format(default="RGB")
         self._address = array_config[CONF_KEY_SACN][CONF_KEY_ADDRESS]
@@ -159,7 +155,7 @@ class sacnArray(baseArray):
             else:
                 sender = libsacn.sACNsender(
                     source_name="MQTTany",
-                    fps=CONFIG[CONF_KEY_ANIM_FPS],
+                    fps=self._fps,
                     sync_universe=self._sync if self._sync is not None else 63999,
                 )
                 self._log.trace("Loaded sACNsender")

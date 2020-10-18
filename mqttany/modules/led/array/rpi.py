@@ -33,7 +33,7 @@ import logger
 import gpio
 from common import DataType, BusMessage, BusNode, BusProperty
 from modules.led import common
-from modules.led.common import CONF_KEY_OUTPUT, CONF_KEY_BRIGHTNESS
+from modules.led.common import CONF_KEY_OUTPUT
 from modules.led.array.base import baseArray
 
 CONF_KEY_RPI = "rpi"
@@ -126,10 +126,10 @@ class rpiArray(baseArray):
         self._log = logger.get_logger(f"led.rpi.{self.id}")
         self._init_brightness = (
             255
-            if array_config[CONF_KEY_BRIGHTNESS] > 255
+            if init_brightness > 255
             else 0
-            if array_config[CONF_KEY_BRIGHTNESS] < 0
-            else array_config[CONF_KEY_BRIGHTNESS]
+            if init_brightness < 0
+            else init_brightness
         )
         self._pin = array_config[CONF_KEY_RPI][CONF_KEY_GPIO]
         self._chip = array_config[CONF_KEY_RPI][CONF_KEY_CHIP]
