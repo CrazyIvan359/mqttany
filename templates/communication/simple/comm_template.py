@@ -89,6 +89,13 @@ CONF_OPTIONS = OrderedDict(
                 # if a subsection is optional you must specify this, if this
                 # is omitted the subsection is assumed to be required.
                 "required": False,
+                # conditions allows you to match a key at the same level (where CONF_KEY_SUBSECTION
+                # is in this example) to a specific value. Must provide a list of tuples
+                # where the first element is the key and the second is the value to match.
+                # If any of the conditions match the option will be parsed. This can be
+                # used ex. to have required sections only if an option is set to a specific
+                # value. Can also be used on regular options.
+                "conditions": [(CONF_KEY_FIXED_TYPE, 200)],
                 CONF_KEY_SELECTION: {
                     # you can limit the possible values by providing a list or dict of
                     # possibilities. The config will be invalid if the value is not in

@@ -78,6 +78,9 @@ automation setup much in order to interface with this version of MQTTany.
     [#71](https://github.com/CrazyIvan359/mqttany/pull/71)
   * **GPIO** - support for counter pins.
     [#75](https://github.com/CrazyIvan359/mqttany/pull/75)
+  * Config option `conditions` allows matching a key at the same level to a value.
+    Useful for sections or options that are required only for certain modes.
+    [#77](https://github.com/CrazyIvan359/mqttany/pull/77)
 
 * **Changed**
   * Convert all string formatting to use *f-strings*. This change means you must be using

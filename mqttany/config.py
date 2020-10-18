@@ -100,44 +100,115 @@ def parse_config(
 
     def parse_dict(data, options):
         def process_option(name, value, option, config):
-            if value == "**NO DATA**" and option.get("type", None) == "section":
-                if option.get("required", True):
-                    log.error("No section in config named '%s'", name)
-                    return False
+            condition_matched = None
+            if option.get("conditions", False):
+                condition_matched = False
+                for condition in option["conditions"]:
+                    if len(condition) == 2:
+                        if (
+                            condition[0] in config
+                            and config[condition[0]] == condition[1]
+                        ):
+                            log.trace(
+                                "Condition '%s' matched for '%s'",
+                                "==".join([str(v) for v in condition]),
+                                name,
+                            )
+                            condition_matched = True
+                            break
+                    else:
+                        log.error(
+                            "Invalid condition '%s' for '%s'",
+                            condition,
+                            name,
+                        )
+                        return False
 
-            elif isinstance(value, dict):
-                section_valid, section_config = parse_dict(value, option)
-                if not section_valid and option.get("required", True):
-                    log.error("Required section '%s' is not valid", name)
-                    return False
-                elif not section_valid:
-                    log.warn(
-                        "Optional section '%s' is not valid, it will be ignored", name
-                    )
+            if condition_matched != False:
+                if value == "**NO DATA**" and option.get("type", None) == "section":
+                    if option.get("required", True):
+                        log.error("Missing required section '%s'", name)
+                        return False
+                    elif condition_matched:
+                        log.trace("Descending into section '%s'", name)
+                        section_valid, config[name] = parse_dict({}, option)
+                        return True
+
+                elif isinstance(value, dict):
+                    log.trace("Descending into section '%s'", name)
+                    section_valid, section_config = parse_dict(value, option)
+                    if not section_valid and option.get("required", True):
+                        log.error("Required section '%s' is not valid", name)
+                        return False
+                    elif not section_valid:
+                        log.warn(
+                            "Optional section '%s' is not valid, it will be ignored",
+                            name,
+                        )
+                    else:
+                        config[name] = section_config
+
                 else:
-                    config[name] = section_config
+                    if value == "**NO DATA**" and "default" not in option:
+                        log.error("Missing config option '%s'", name)
+                        return False
+                    elif value == "**NO DATA**":
+                        value = option["default"]
+                        log.trace(
+                            "Using default value '%s' for config option '%s'",
+                            value,
+                            name,
+                        )
+                        config[name] = value
+                    else:
+                        if "type" in option:
+                            if not isinstance(value, option["type"]):
+                                value = resolve_type(value)
+                            if not isinstance(value, option["type"]):
+                                try:
+                                    value = option["type"](value)
+                                except:
+                                    pass
 
-            else:
-                if value == "**NO DATA**" and "default" not in option:
-                    log.error("Missing config option '%s'", name)
-                    return False
-                elif value == "**NO DATA**":
-                    value = option["default"]
-                    log.trace(
-                        "Using default value '%s' for config option '%s'", value, name
-                    )
-                    config[name] = value
-                else:
-                    if "type" in option:
-                        if not isinstance(value, option["type"]):
-                            value = resolve_type(value)
-                        if not isinstance(value, option["type"]):
-                            try:
-                                value = option["type"](value)
-                            except:
-                                pass
+                            if isinstance(value, option.get("type", type(value))):
+                                log.trace(
+                                    "Got value '%s' for config option '%s'",
+                                    "*" * len(value)
+                                    if option.get("secret", False)
+                                    else value,
+                                    name,
+                                )
+                                config[name] = value
+                            else:
+                                log.error(
+                                    "Value '%s' for config option '%s' is not type '%s'",
+                                    value,
+                                    name,
+                                    option["type"],
+                                )
+                                return False
 
-                        if isinstance(value, option.get("type", type(value))):
+                        elif "selection" in option:
+                            if str(value) in option["selection"]:
+                                log.trace(
+                                    "Got selection '%s' for config option '%s'",
+                                    value,
+                                    name,
+                                )
+                                if isinstance(option["selection"], dict):
+                                    config[name] = option["selection"][str(value)]
+                                else:
+                                    config[name] = str(value)
+                            else:
+                                log.error(
+                                    "Value '%s' for config option '%s' is not one of %s",
+                                    value,
+                                    name,
+                                    [key for key in option["selection"]],
+                                )
+                                return False
+
+                        else:
                             log.trace(
                                 "Got value '%s' for config option '%s'",
                                 "*" * len(value)
@@ -146,40 +217,10 @@ def parse_config(
                                 name,
                             )
                             config[name] = value
-                        else:
-                            log.error(
-                                "Value '%s' for config option '%s' is not type '%s'",
-                                value,
-                                name,
-                                option["type"],
-                            )
-                            return False
 
-                    elif "selection" in option:
-                        if str(value) in option["selection"]:
-                            log.trace(
-                                "Got selection '%s' for config option '%s'", value, name
-                            )
-                            if isinstance(option["selection"], dict):
-                                config[name] = option["selection"][str(value)]
-                            else:
-                                config[name] = str(value)
-                        else:
-                            log.error(
-                                "Value '%s' for config option '%s' is not one of %s",
-                                value,
-                                name,
-                                [key for key in option["selection"]],
-                            )
-                            return False
+            else:
+                log.trace("Skipping '%s' as no conditions matched", name)
 
-                    else:
-                        log.trace(
-                            "Got value '%s' for config option '%s'",
-                            "*" * len(value) if option.get("secret", False) else value,
-                            name,
-                        )
-                        config[name] = value
             return True
 
         valid = True
