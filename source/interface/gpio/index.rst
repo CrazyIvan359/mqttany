@@ -12,19 +12,19 @@ Permissions
 
 A ``udev`` rule file is provided to simplify access permissions for GPIO pins.
 
-First add the ``gpio`` group if it does not exist:
+First add the ``gpio`` group if it does not exist, then add the user running
+MQTTany to the ``gpio`` group:
 
 .. code-block:: shell
 
     sudo addgroup --system gpio
+    sudo usermod -aG gpio mqttany
 
-Then install the ``udev`` rule, add the user running MQTTany to the ``gpio``
-group, and reboot:
+Then install the ``udev`` rule and reboot:
 
 .. code-block:: shell
 
     sudo cp udev/98-gpio.rules /etc/udev/rules.d/
-    sudo usermod -aG gpio mqttany
     sudo reboot now
 
 

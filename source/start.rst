@@ -47,7 +47,7 @@ exposed data structure. For example a GPIO pin with an ID of ``my-pin`` would ha
 path of ``gpio/my-pin`` for its state, where ``gpio`` is the node provided by the GPIO
 module and ``my-pin`` is the property. The MQTT module requires a root topic be
 specified, let's use ``my-host`` in our example. Our pin would have it's state
-publishud by the MQTT module on the topic ``my-host/gpio/my-pin``. In order to change
+published by the MQTT module on the topic ``my-host/gpio/my-pin``. In order to change
 this pin you would add ``set`` to the path, resulting in the MQTT topic
 ``my-host/gpio/my-pin/set`` to send your command to.
 
@@ -100,8 +100,8 @@ GitHub repository. The recommended location to clone the repo to is
         python3 --version
 
     Make sure the version that was installed is at least Python |pyversion|. If it is
-    less you will need to install a newer version manually,
-    `this document <https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python>`_
+    less you will need to install a newer version manually.
+    `This document <https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python>`_
     from the Python documentation provides instructions.
 
 #.  Now we will change to the download directory and clone the repo. Replace

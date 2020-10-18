@@ -130,8 +130,9 @@ Functions
 -------
 
 The raw function will publish a JSON payload containing an array of all of
-the intervals in ``unit``s between events during the last ``interval``. This
-function ignores the ``divider`` option.
+the intervals in ``unit``
+s between events during the last ``interval``. This function ignores the
+``divider`` option.
 
 The first interval will be the time between the last event before this
 interval and the first event in the current interval. The first recorded
@@ -154,22 +155,24 @@ by the ``divider`` factor.
 ``average``
 -----------
 
-The average function will calculate the average time in integer ``unit``s of all
-events during the last interval. The result will be multiplied by ``divider``
-and then published.
+The average function will calculate the average time in integer ``unit``
+s of all events during the last interval. The result will be multiplied by
+``divider`` and then published.
 
 ``median``
 ----------
 
 The median function will calculate the mathmatical median of all times in
-integer ``unit``s of all events during the last interval. The result will be
-multiplied by ``divider`` and then published.
+integer ``unit``
+s of all events during the last interval. The result will be multiplied by
+``divider`` and then published.
 
 ``min`` and ``max``
 -------------------
 
 The min and max functions will select the lowest or highest time and convert it
-to integer ``unit``s. The result will be multiplied by ``divider`` and published.
+to integer ``unit``
+s. The result will be multiplied by ``divider`` and published.
 
 ``frequency``
 -------------
