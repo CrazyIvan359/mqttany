@@ -1,0 +1,523 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Counter Pin &mdash; MQTTany v0.12.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="I2C" href="../../i2c/index.html" />
+    <link rel="prev" title="Digital Pin" href="digital.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.12.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../start.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#modules">Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#paths">Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#ids">IDs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../launch.html">Launching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../communication/index.html">Communication Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../communication/mqtt/index.html">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../communication/mqtt/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../communication/mqtt/index.html#configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Interface Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">GPIO</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#single-pin-definition">Single Pin Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#multiple-pin-definition">Multiple Pin Definition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#supported-boards">Supported Boards</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../board/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../board/odroid.html">Odroid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../board/orangepi.html">Orange Pi</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#supported-pin-types">Supported Pin Types</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="digital.html">Digital Pin</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Counter Pin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../i2c/index.html">I2C</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/devices/mcp230xx.html">MCP230xx</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/index.html#device-definition">Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../onewire/index.html">OneWire</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/devices/ds18x20.html">DS18x20</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#single-device-definition">Single Device Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../led/index.html">LED</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../led/animations.html">Animations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../led/animations/built-in.html">Built-in</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../led/animations/custom.html">Custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../led/animations.html#triggering">Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../led/index.html#supported-outputs">Supported Outputs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../led/outputs/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../led/outputs/sacn.html">Streaming ACN</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../led/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../led/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../led/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../led/index.html#array-definition">Array Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../xset/index.html">XSET</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../xset/index.html#module-settings">Module Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#useful-xset-commands">Useful <code class="docutils literal notranslate"><span class="pre">xset</span></code> Commands</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/releases">Releases</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MQTTany</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Interface Modules</a> &raquo;</li>
+        
+          <li><a href="../index.html">GPIO</a> &raquo;</li>
+        
+      <li>Counter Pin</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/interface/gpio/pin/counter.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="counter-pin">
+<h1>Counter Pin<a class="headerlink" href="#counter-pin" title="Permalink to this headline">¶</a></h1>
+<p>Counter pins allow you to count pulses in various ways. You can simply count
+the number of pulses in a given period, apply a function to the pulses, or
+output the raw intervals. There is the option to scale the results up if you
+are using a clock divider on the input. You can also specify the time unit to
+use when returning intervals.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Counter pins <strong>do not</strong> publish their initial states or when the polling
+interval timer fires. They publish only when the <code class="docutils literal notranslate"><span class="pre">interval</span></code> timer fires
+due to the precise timing nature of pulse counting.</p>
+</div>
+<div class="section" id="paths">
+<h2>Paths<a class="headerlink" href="#paths" title="Permalink to this headline">¶</a></h2>
+<p>The report of a counter pin is available on the path <code class="docutils literal notranslate"><span class="pre">gpio/{pin-id}</span></code>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Path</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gpio/{pin-id}</span></code></p></td>
+<td><p>Counter event report will be published here,
+see the Functions section for more details.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>The following additional options are added to the configuration. Optional
+settings are commented out with default values shown.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">gpio</span><span class="p">:</span>
+
+  <span class="c1">#debounce: 50</span>
+
+  <span class="nt">pin-id</span><span class="p">:</span>
+    <span class="c1">#pin mode: &#39;counter&#39;</span>
+    <span class="c1">#resistor: &#39;off&#39;</span>
+
+    <span class="nt">counter</span><span class="p">:</span>
+      <span class="c1">#interval: 60</span>
+      <span class="c1">#interrupt: &#39;rising&#39;</span>
+      <span class="c1">#function: &#39;count&#39;</span>
+      <span class="c1">#unit: &#39;ms&#39;</span>
+      <span class="c1">#divider: 1</span>
+
+  <span class="nt">batch-id</span><span class="p">:</span>
+    <span class="c1">#pin mode: &#39;counter&#39;</span>
+    <span class="c1">#resistor: &#39;off&#39;</span>
+
+    <span class="nt">counter</span><span class="p">:</span>
+      <span class="c1">#interval: 60</span>
+      <span class="c1">#interrupt: &#39;rising&#39;</span>
+      <span class="c1">#function: &#39;count&#39;</span>
+      <span class="c1">#unit: &#39;ms&#39;</span>
+      <span class="c1">#divider: 1</span>
+</pre></div>
+</div>
+<div class="section" id="module-settings">
+<h3>Module Settings<a class="headerlink" href="#module-settings" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">debounce</span></code></p></td>
+<td><p>Pin change interrupt debounce time in milliseconds.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">50</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="single-and-multiple-pin-definitions">
+<h3>Single and Multiple Pin Definitions<a class="headerlink" href="#single-and-multiple-pin-definitions" title="Permalink to this headline">¶</a></h3>
+<p>Pin configuration section names must be unique as they are used as property IDs.
+Property IDs can only contain lowercase letters <code class="docutils literal notranslate"><span class="pre">a-z</span></code>, numbers <code class="docutils literal notranslate"><span class="pre">0-9</span></code>, and
+hyphens <code class="docutils literal notranslate"><span class="pre">-</span></code>. The following settings apply to both single and multiple pin
+definitions:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 81%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pin</span> <span class="pre">mode</span></code></p></td>
+<td><p>Pin mode, must be <code class="docutils literal notranslate"><span class="pre">counter</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">resistor</span></code></p></td>
+<td><p>Pin pull resistor, can be <code class="docutils literal notranslate"><span class="pre">pullup</span></code>, <code class="docutils literal notranslate"><span class="pre">pulldown</span></code>
+(if supported), or <code class="docutils literal notranslate"><span class="pre">off</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">off</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">interval</span></code></p></td>
+<td><p>Pin report interval in whole seconds. Events will be cached
+during this period and a report will be published at the end.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">60</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">interrupt</span></code></p></td>
+<td><p>Pin change interrupt, can be <code class="docutils literal notranslate"><span class="pre">rising</span></code>, <code class="docutils literal notranslate"><span class="pre">falling</span></code>,
+or <code class="docutils literal notranslate"><span class="pre">both</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">rising</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">function</span></code></p></td>
+<td><p>Counter report function, see below for details. Available
+options are <code class="docutils literal notranslate"><span class="pre">raw</span></code>, <code class="docutils literal notranslate"><span class="pre">count</span></code>, <code class="docutils literal notranslate"><span class="pre">average</span></code>, <code class="docutils literal notranslate"><span class="pre">median</span></code>,
+<code class="docutils literal notranslate"><span class="pre">min</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span></code>, <code class="docutils literal notranslate"><span class="pre">frequency</span></code>, <code class="docutils literal notranslate"><span class="pre">frequency</span> <span class="pre">min</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">frequency</span> <span class="pre">max</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">count</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">unit</span></code></p></td>
+<td><p>Time unit to report in for functions that return intervals.
+Available options are <code class="docutils literal notranslate"><span class="pre">s</span></code>, <code class="docutils literal notranslate"><span class="pre">ms</span></code>, and <code class="docutils literal notranslate"><span class="pre">ns</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">ms</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">divider</span></code></p></td>
+<td><p>Clock divider factor used on the input. The report will
+be multiplied by this amount before publishing.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="raw">
+<h3><code class="docutils literal notranslate"><span class="pre">raw</span></code><a class="headerlink" href="#raw" title="Permalink to this headline">¶</a></h3>
+<p>The raw function will publish a JSON payload containing an array of all of
+the intervals in <code class="docutils literal notranslate"><span class="pre">unit</span></code>
+s between events during the last <code class="docutils literal notranslate"><span class="pre">interval</span></code>. This function ignores the
+<code class="docutils literal notranslate"><span class="pre">divider</span></code> option.</p>
+<p>The first interval will be the time between the last event before this
+interval and the first event in the current interval. The first recorded
+event after the pin is setup may have strange values due to lack of a
+previous event to measure from.</p>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;pulses&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="count">
+<h3><code class="docutils literal notranslate"><span class="pre">count</span></code><a class="headerlink" href="#count" title="Permalink to this headline">¶</a></h3>
+<p>The count function is the simplest and will publish an integer representing the
+number of pulses recorded during the last interval. The count will be multiplied
+by the <code class="docutils literal notranslate"><span class="pre">divider</span></code> factor.</p>
+</div>
+<div class="section" id="average">
+<h3><code class="docutils literal notranslate"><span class="pre">average</span></code><a class="headerlink" href="#average" title="Permalink to this headline">¶</a></h3>
+<p>The average function will calculate the average time in integer <code class="docutils literal notranslate"><span class="pre">unit</span></code>
+s of all events during the last interval. The result will be multiplied by
+<code class="docutils literal notranslate"><span class="pre">divider</span></code> and then published.</p>
+</div>
+<div class="section" id="median">
+<h3><code class="docutils literal notranslate"><span class="pre">median</span></code><a class="headerlink" href="#median" title="Permalink to this headline">¶</a></h3>
+<p>The median function will calculate the mathmatical median of all times in
+integer <code class="docutils literal notranslate"><span class="pre">unit</span></code>
+s of all events during the last interval. The result will be multiplied by
+<code class="docutils literal notranslate"><span class="pre">divider</span></code> and then published.</p>
+</div>
+<div class="section" id="min-and-max">
+<h3><code class="docutils literal notranslate"><span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">max</span></code><a class="headerlink" href="#min-and-max" title="Permalink to this headline">¶</a></h3>
+<p>The min and max functions will select the lowest or highest time and convert it
+to integer <code class="docutils literal notranslate"><span class="pre">unit</span></code>
+s. The result will be multiplied by <code class="docutils literal notranslate"><span class="pre">divider</span></code> and published.</p>
+</div>
+<div class="section" id="frequency">
+<h3><code class="docutils literal notranslate"><span class="pre">frequency</span></code><a class="headerlink" href="#frequency" title="Permalink to this headline">¶</a></h3>
+<p>The average will be taken of all events in the last interval and the frequency
+will be calculated from this in hertz. The result will be multiplied by
+<code class="docutils literal notranslate"><span class="pre">divider</span></code>, rounded to 3 decimal places and published.</p>
+</div>
+<div class="section" id="frequency-min-and-frequency-max">
+<h3><code class="docutils literal notranslate"><span class="pre">frequency</span> <span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">frequency</span> <span class="pre">max</span></code><a class="headerlink" href="#frequency-min-and-frequency-max" title="Permalink to this headline">¶</a></h3>
+<p>These functions work like <code class="docutils literal notranslate"><span class="pre">frequency</span></code> but will select the lowest or highest
+time between events for the calculation.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../i2c/index.html" class="btn btn-neutral float-right" title="I2C" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="digital.html" class="btn btn-neutral float-left" title="Digital Pin" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, MQTTany Contributors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

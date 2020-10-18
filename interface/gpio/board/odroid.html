@@ -1,0 +1,1831 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Odroid &mdash; MQTTany v0.12.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Orange Pi" href="orangepi.html" />
+    <link rel="prev" title="Raspberry Pi" href="raspi.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.12.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../start.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#modules">Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#paths">Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#ids">IDs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../launch.html">Launching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../communication/index.html">Communication Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../communication/mqtt/index.html">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../communication/mqtt/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../communication/mqtt/index.html#configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Interface Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">GPIO</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#single-pin-definition">Single Pin Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#multiple-pin-definition">Multiple Pin Definition</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#supported-boards">Supported Boards</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Odroid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="orangepi.html">Orange Pi</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#supported-pin-types">Supported Pin Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../pin/digital.html">Digital Pin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pin/counter.html">Counter Pin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../i2c/index.html">I2C</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/devices/mcp230xx.html">MCP230xx</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/index.html#device-definition">Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../onewire/index.html">OneWire</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/devices/ds18x20.html">DS18x20</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#single-device-definition">Single Device Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../led/index.html">LED</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../led/animations.html">Animations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../led/animations/built-in.html">Built-in</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../led/animations/custom.html">Custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../led/animations.html#triggering">Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../led/index.html#supported-outputs">Supported Outputs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../led/outputs/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../led/outputs/sacn.html">Streaming ACN</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../led/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../led/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../led/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../led/index.html#array-definition">Array Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../xset/index.html">XSET</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../xset/index.html#module-settings">Module Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#useful-xset-commands">Useful <code class="docutils literal notranslate"><span class="pre">xset</span></code> Commands</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/releases">Releases</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MQTTany</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Interface Modules</a> &raquo;</li>
+        
+          <li><a href="../index.html">GPIO</a> &raquo;</li>
+        
+      <li>Odroid</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/interface/gpio/board/odroid.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="odroid">
+<h1>Odroid<a class="headerlink" href="#odroid" title="Permalink to this headline">¶</a></h1>
+<p>Support for several Odroid boards has been added to the GPIO module.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#odroid-c1-c1"><span class="std std-ref">Odroid C1</span></a> <em>(untested)</em></p></li>
+<li><p><a class="reference internal" href="#odroid-c1-c1"><span class="std std-ref">Odroid C1+</span></a> <em>(untested)</em></p></li>
+<li><p><a class="reference internal" href="#odroid-c2"><span class="std std-ref">Odroid C2</span></a></p></li>
+<li><p><a class="reference internal" href="#odroid-xu3-xu4"><span class="std std-ref">Odroid XU3</span></a> <em>(untested)</em></p></li>
+<li><p><a class="reference internal" href="#odroid-xu3-xu4"><span class="std std-ref">Odroid XU4</span></a> <em>(untested)</em></p></li>
+<li><p><a class="reference internal" href="#odroid-n2"><span class="std std-ref">Odroid N2</span></a> <em>(untested)</em></p></li>
+</ul>
+<p>If you encounter any problems or errors, please open a new issue and post your
+logs.</p>
+<div class="section" id="odroid-c1-c1">
+<h2>Odroid C1/C1+<a class="headerlink" href="#odroid-c1-c1" title="Permalink to this headline">¶</a></h2>
+<table class="pinout docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 12%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+<col style="width: 10%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>WiringPi</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head" colspan="4"><p>Odroid C1/C1+ 40-pin</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>WiringPi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>3.3V</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>5V</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>74</p></td>
+<td><p>3</p></td>
+<td><p>SDA1</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>5V</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>75</p></td>
+<td><p>5</p></td>
+<td><p>SCL1</p></td>
+<td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>83</p></td>
+<td><p>7</p></td>
+<td></td>
+<td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>TXD1</p></td>
+<td><p>8</p></td>
+<td><p>113</p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>9</p></td>
+<td><p>10</p></td>
+<td><p>RXD1</p></td>
+<td><p>10</p></td>
+<td><p>114</p></td>
+<td><p>16</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>88</p></td>
+<td><p>11</p></td>
+<td></td>
+<td><p>11</p></td>
+<td><p>12</p></td>
+<td></td>
+<td><p>12</p></td>
+<td><p>87</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>116</p></td>
+<td><p>13</p></td>
+<td></td>
+<td><p>13</p></td>
+<td><p>14</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>115</p></td>
+<td><p>15</p></td>
+<td></td>
+<td><p>15</p></td>
+<td><p>16</p></td>
+<td></td>
+<td><p>16</p></td>
+<td><p>104</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>3.3V</p></td>
+<td><p>17</p></td>
+<td><p>18</p></td>
+<td></td>
+<td><p>18</p></td>
+<td><p>102</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>107</p></td>
+<td><p>19</p></td>
+<td><p>MOSI
+PWM1</p></td>
+<td><p>19</p></td>
+<td><p>20</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>106</p></td>
+<td><p>21</p></td>
+<td><p>MISO</p></td>
+<td><p>21</p></td>
+<td><p>22</p></td>
+<td></td>
+<td><p>22</p></td>
+<td><p>103</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>105</p></td>
+<td><p>23</p></td>
+<td><p>SCLK</p></td>
+<td><p>23</p></td>
+<td><p>24</p></td>
+<td></td>
+<td><p>24</p></td>
+<td><p>117</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>25</p></td>
+<td><p>26</p></td>
+<td></td>
+<td><p>26</p></td>
+<td><p>118</p></td>
+<td><p>11</p></td>
+</tr>
+<tr class="row-odd"><td><p>30</p></td>
+<td><p>76</p></td>
+<td><p>27</p></td>
+<td><p>SDA2</p></td>
+<td><p>27</p></td>
+<td><p>28</p></td>
+<td><p>SCL2</p></td>
+<td><p>28</p></td>
+<td><p>77</p></td>
+<td><p>31</p></td>
+</tr>
+<tr class="row-even"><td><p>21</p></td>
+<td><p>101</p></td>
+<td><p>29</p></td>
+<td></td>
+<td><p>29</p></td>
+<td><p>30</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>22</p></td>
+<td><p>100</p></td>
+<td><p>31</p></td>
+<td></td>
+<td><p>31</p></td>
+<td><p>32</p></td>
+<td></td>
+<td><p>32</p></td>
+<td><p>99</p></td>
+<td><p>26</p></td>
+</tr>
+<tr class="row-even"><td><p>23</p></td>
+<td><p>108</p></td>
+<td><p>33</p></td>
+<td><p>PWM0</p></td>
+<td><p>33</p></td>
+<td><p>34</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>24</p></td>
+<td><p>97</p></td>
+<td><p>35</p></td>
+<td></td>
+<td><p>35</p></td>
+<td><p>36</p></td>
+<td></td>
+<td><p>36</p></td>
+<td><p>98</p></td>
+<td><p>27</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>AIN1</p></td>
+<td><p>37</p></td>
+<td><p>38</p></td>
+<td><p>1.8V Ref</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>39</p></td>
+<td><p>40</p></td>
+<td><p>AIN0</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table class="pinout docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 16%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>WiringPi</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head" colspan="4"><p>Odroid C1+ J7 Header</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>WiringPi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>1</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>6</p></td>
+<td></td>
+<td><p>SPDIF</p></td>
+<td><p>2</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>5V</p></td>
+<td><p>3</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>8</p></td>
+<td></td>
+<td><p>I2S-MCLK</p></td>
+<td><p>4</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>10</p></td>
+<td></td>
+<td><p>I2S-LRCLK</p></td>
+<td><p>5</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>9</p></td>
+<td></td>
+<td><p>I2S-SCLK</p></td>
+<td><p>6</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>11</p></td>
+<td></td>
+<td><p>I2S-DO</p></td>
+<td><p>7</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="odroid-c2">
+<h2>Odroid C2<a class="headerlink" href="#odroid-c2" title="Permalink to this headline">¶</a></h2>
+<table class="pinout docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 12%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+<col style="width: 10%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>WiringPi</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head" colspan="4"><p>Odroid C2 40-pin</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>WiringPi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>3.3V</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>5V</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>205</p></td>
+<td><p>3</p></td>
+<td><p>SDA1</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>5V</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>206</p></td>
+<td><p>5</p></td>
+<td><p>SCL1</p></td>
+<td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>249</p></td>
+<td><p>7</p></td>
+<td></td>
+<td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>TXD1</p></td>
+<td><p>8</p></td>
+<td><p>240</p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>9</p></td>
+<td><p>10</p></td>
+<td><p>RXD1</p></td>
+<td><p>10</p></td>
+<td><p>241</p></td>
+<td><p>16</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>247</p></td>
+<td><p>11</p></td>
+<td></td>
+<td><p>11</p></td>
+<td><p>12</p></td>
+<td></td>
+<td><p>12</p></td>
+<td><p>238</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>239</p></td>
+<td><p>13</p></td>
+<td></td>
+<td><p>13</p></td>
+<td><p>14</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>237</p></td>
+<td><p>15</p></td>
+<td></td>
+<td><p>15</p></td>
+<td><p>16</p></td>
+<td></td>
+<td><p>16</p></td>
+<td><p>236</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>3.3V</p></td>
+<td><p>17</p></td>
+<td><p>18</p></td>
+<td></td>
+<td><p>18</p></td>
+<td><p>233</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>235</p></td>
+<td><p>19</p></td>
+<td><p>PWM1</p></td>
+<td><p>19</p></td>
+<td><p>20</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>232</p></td>
+<td><p>21</p></td>
+<td></td>
+<td><p>21</p></td>
+<td><p>22</p></td>
+<td></td>
+<td><p>22</p></td>
+<td><p>231</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>230</p></td>
+<td><p>23</p></td>
+<td></td>
+<td><p>23</p></td>
+<td><p>24</p></td>
+<td></td>
+<td><p>24</p></td>
+<td><p>229</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>25</p></td>
+<td><p>26</p></td>
+<td></td>
+<td><p>26</p></td>
+<td><p>225</p></td>
+<td><p>11</p></td>
+</tr>
+<tr class="row-odd"><td><p>30</p></td>
+<td><p>207</p></td>
+<td><p>27</p></td>
+<td><p>SDA2</p></td>
+<td><p>27</p></td>
+<td><p>28</p></td>
+<td><p>SCL2</p></td>
+<td><p>28</p></td>
+<td><p>208</p></td>
+<td><p>31</p></td>
+</tr>
+<tr class="row-even"><td><p>21</p></td>
+<td><p>228</p></td>
+<td><p>29</p></td>
+<td></td>
+<td><p>29</p></td>
+<td><p>30</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>22</p></td>
+<td><p>219</p></td>
+<td><p>31</p></td>
+<td></td>
+<td><p>31</p></td>
+<td><p>32</p></td>
+<td></td>
+<td><p>32</p></td>
+<td><p>224</p></td>
+<td><p>26</p></td>
+</tr>
+<tr class="row-even"><td><p>23</p></td>
+<td><p>234</p></td>
+<td><p>33</p></td>
+<td><p>PWM0</p></td>
+<td><p>33</p></td>
+<td><p>34</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>24</p></td>
+<td><p>214</p></td>
+<td><p>35</p></td>
+<td></td>
+<td><p>35</p></td>
+<td><p>36</p></td>
+<td></td>
+<td><p>36</p></td>
+<td><p>218</p></td>
+<td><p>27</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>AIN1</p></td>
+<td><p>37</p></td>
+<td><p>38</p></td>
+<td><p>1.8V Ref</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>39</p></td>
+<td><p>40</p></td>
+<td><p>AIN0</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table class="pinout docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 16%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>WiringPi</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head" colspan="4"><p>Odroid C2 J7 Header</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>WiringPi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>1</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>128</p></td>
+<td></td>
+<td><p>SPDIF</p></td>
+<td><p>2</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>5V</p></td>
+<td><p>3</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>130</p></td>
+<td></td>
+<td><p>I2S MCLK</p></td>
+<td><p>4</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>132</p></td>
+<td></td>
+<td><p>I2S LRCLK</p></td>
+<td><p>5</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>131</p></td>
+<td></td>
+<td><p>I2S SCLK</p></td>
+<td><p>6</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>133</p></td>
+<td></td>
+<td><p>I2S DO</p></td>
+<td><p>7</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="odroid-n2">
+<h2>Odroid N2<a class="headerlink" href="#odroid-n2" title="Permalink to this headline">¶</a></h2>
+<table class="pinout docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 12%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+<col style="width: 10%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>WiringPi</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head" colspan="4"><p>Odroid N2 40-pin</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>WiringPi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>3.3V</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>5V</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>493</p></td>
+<td><p>3</p></td>
+<td><p>SDA0</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>5V</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>494</p></td>
+<td><p>5</p></td>
+<td><p>SCL0</p></td>
+<td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>473</p></td>
+<td><p>7</p></td>
+<td><p>SPDIF O</p></td>
+<td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>TXD1</p></td>
+<td><p>8</p></td>
+<td><p>488</p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>9</p></td>
+<td><p>10</p></td>
+<td><p>RXD1</p></td>
+<td><p>10</p></td>
+<td><p>489</p></td>
+<td><p>16</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>479</p></td>
+<td><p>11</p></td>
+<td><p>PWM D</p></td>
+<td><p>11</p></td>
+<td><p>12</p></td>
+<td><p>PWM E</p></td>
+<td><p>12</p></td>
+<td><p>492</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>480</p></td>
+<td><p>13</p></td>
+<td><p>PWM B
+PWM F</p></td>
+<td><p>13</p></td>
+<td><p>14</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>483</p></td>
+<td><p>15</p></td>
+<td></td>
+<td><p>15</p></td>
+<td><p>16</p></td>
+<td></td>
+<td><p>16</p></td>
+<td><p>476</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>3.3V</p></td>
+<td><p>17</p></td>
+<td><p>18</p></td>
+<td></td>
+<td><p>18</p></td>
+<td><p>477</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>484</p></td>
+<td><p>19</p></td>
+<td><p>MOSI0</p></td>
+<td><p>19</p></td>
+<td><p>20</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>485</p></td>
+<td><p>21</p></td>
+<td><p>MISO0</p></td>
+<td><p>21</p></td>
+<td><p>22</p></td>
+<td></td>
+<td><p>22</p></td>
+<td><p>478</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>487</p></td>
+<td><p>23</p></td>
+<td><p>SCLK0</p></td>
+<td><p>23</p></td>
+<td><p>24</p></td>
+<td><p>CS00</p></td>
+<td><p>24</p></td>
+<td><p>486</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>25</p></td>
+<td><p>26</p></td>
+<td><p>CS01</p></td>
+<td><p>26</p></td>
+<td><p>464</p></td>
+<td><p>11</p></td>
+</tr>
+<tr class="row-odd"><td><p>30</p></td>
+<td><p>474</p></td>
+<td><p>27</p></td>
+<td><p>SDA1</p></td>
+<td><p>27</p></td>
+<td><p>28</p></td>
+<td><p>SCL1</p></td>
+<td><p>28</p></td>
+<td><p>475</p></td>
+<td><p>31</p></td>
+</tr>
+<tr class="row-even"><td><p>21</p></td>
+<td><p>490</p></td>
+<td><p>29</p></td>
+<td><p>CTS1</p></td>
+<td><p>29</p></td>
+<td><p>30</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>22</p></td>
+<td><p>491</p></td>
+<td><p>31</p></td>
+<td><p>RTS1</p></td>
+<td><p>31</p></td>
+<td><p>32</p></td>
+<td></td>
+<td><p>32</p></td>
+<td><p>472</p></td>
+<td><p>26</p></td>
+</tr>
+<tr class="row-even"><td><p>23</p></td>
+<td><p>481</p></td>
+<td><p>33</p></td>
+<td><p>PWM C</p></td>
+<td><p>33</p></td>
+<td><p>34</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>24</p></td>
+<td><p>482</p></td>
+<td><p>35</p></td>
+<td><p>PWM D</p></td>
+<td><p>35</p></td>
+<td><p>36</p></td>
+<td><p>PWM B</p></td>
+<td><p>36</p></td>
+<td><p>495</p></td>
+<td><p>27</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>AIN3</p></td>
+<td><p>37</p></td>
+<td><p>38</p></td>
+<td><p>1.8V Ref</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>39</p></td>
+<td><p>40</p></td>
+<td><p>AIN2</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="odroid-xu3-xu4">
+<h2>Odroid XU3/XU4<a class="headerlink" href="#odroid-xu3-xu4" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Without an XU3 to test I cannot identify whether you have an XU3 or XU4
+board. The XU3 model does not have the CON11 header. You must not attempt
+to use any of the GPIO pins on that header if you have an XU3.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">BOARD</span></code> pin numbering for the XU3 and XU4 is based on the Shifter
+Shield 40-pin connector and not the CON10 and CON11 headers.</p>
+</div>
+<table class="pinout docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 12%" />
+<col style="width: 10%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>WiringPi</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head" colspan="4"><p>Odroid XU3/XU4 Con 10</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>WiringPi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>5V</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+<td><p>AIN0</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>CTS0</p></td>
+<td><p>12</p></td>
+<td><p>173</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>174</p></td>
+<td><p>11</p></td>
+<td><p>RTS0</p></td>
+<td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>RXD0</p></td>
+<td><p>10</p></td>
+<td><p>171</p></td>
+<td><p>16</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>192</p></td>
+<td><p>19</p></td>
+<td><p>MOSI1</p></td>
+<td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>TXD0</p></td>
+<td><p>8</p></td>
+<td><p>172</p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>191</p></td>
+<td><p>21</p></td>
+<td><p>MISO1</p></td>
+<td><p>9</p></td>
+<td><p>10</p></td>
+<td><p>SCLK1</p></td>
+<td><p>23</p></td>
+<td><p>189</p></td>
+<td><p>14</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>190</p></td>
+<td><p>24</p></td>
+<td><p>CS10</p></td>
+<td><p>12</p></td>
+<td><p>12</p></td>
+<td><p>PWRON</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>21</p></td>
+<td><p>13</p></td>
+<td></td>
+<td><p>13</p></td>
+<td><p>14</p></td>
+<td><p>SCL1</p></td>
+<td><p>5</p></td>
+<td><p>210</p></td>
+<td><p>9</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>18</p></td>
+<td><p>7</p></td>
+<td></td>
+<td><p>15</p></td>
+<td><p>16</p></td>
+<td><p>SDA1</p></td>
+<td><p>3</p></td>
+<td><p>209</p></td>
+<td><p>8</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>22</p></td>
+<td><p>15</p></td>
+<td></td>
+<td><p>17</p></td>
+<td><p>18</p></td>
+<td></td>
+<td><p>16</p></td>
+<td><p>19</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p>22</p></td>
+<td><p>30</p></td>
+<td><p>31</p></td>
+<td></td>
+<td><p>19</p></td>
+<td><p>20</p></td>
+<td></td>
+<td><p>29</p></td>
+<td><p>28</p></td>
+<td><p>21</p></td>
+</tr>
+<tr class="row-even"><td><p>26</p></td>
+<td><p>29</p></td>
+<td><p>32</p></td>
+<td></td>
+<td><p>21</p></td>
+<td><p>22</p></td>
+<td></td>
+<td><p>33</p></td>
+<td><p>31</p></td>
+<td><p>23</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+<td><p>AIN3</p></td>
+<td><p>23</p></td>
+<td><p>24</p></td>
+<td></td>
+<td><p>26</p></td>
+<td><p>25</p></td>
+<td><p>11</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>23</p></td>
+<td><p>18</p></td>
+<td></td>
+<td><p>25</p></td>
+<td><p>26</p></td>
+<td></td>
+<td><p>22</p></td>
+<td><p>24</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>27</p></td>
+<td><p>33</p></td>
+<td><p>36</p></td>
+<td></td>
+<td><p>27</p></td>
+<td><p>28</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>1.8V</p></td>
+<td><p>29</p></td>
+<td><p>30</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table class="pinout docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 7%" />
+<col style="width: 9%" />
+<col style="width: 15%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 12%" />
+<col style="width: 9%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>WiringPi</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head" colspan="4"><p>Odroid XU3/XU4 Con 11</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>WiringPi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>5V</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+<td><p>1.8V</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>SDA5</p></td>
+<td><p>27</p></td>
+<td><p>187</p></td>
+<td><p>30</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>34</p></td>
+<td></td>
+<td></td>
+<td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>SCL5</p></td>
+<td><p>29</p></td>
+<td><p>188</p></td>
+<td><p>31</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>225</p></td>
+<td></td>
+<td><p>I2S SCLK</p></td>
+<td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>226</p></td>
+<td></td>
+<td><p>I2S CDCLK</p></td>
+<td><p>9</p></td>
+<td><p>10</p></td>
+<td><p>I2S SDO</p></td>
+<td></td>
+<td><p>229</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>227</p></td>
+<td></td>
+<td><p>I2S LRCLK</p></td>
+<td><p>11</p></td>
+<td><p>12</p></td>
+<td><p>I2S SDI</p></td>
+<td></td>
+<td><p>228</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table class="pinout docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 12%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+<col style="width: 10%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>WiringPi</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head" colspan="4"><p>Odroid XU3/XU4 Shifter Shield</p></th>
+<th class="head"><p>Board</p></th>
+<th class="head"><p>SoC</p></th>
+<th class="head"><p>WiringPi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>3.3V</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>5V</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>209</p></td>
+<td><p>3</p></td>
+<td><p>SDA1</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>5V</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>210</p></td>
+<td><p>5</p></td>
+<td><p>SCL1</p></td>
+<td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>18</p></td>
+<td><p>7</p></td>
+<td></td>
+<td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>TXD0</p></td>
+<td><p>8</p></td>
+<td><p>172</p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>9</p></td>
+<td><p>10</p></td>
+<td><p>RXD0</p></td>
+<td><p>10</p></td>
+<td><p>171</p></td>
+<td><p>16</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>174</p></td>
+<td><p>11</p></td>
+<td><p>RTS0</p></td>
+<td><p>11</p></td>
+<td><p>12</p></td>
+<td><p>CTS0</p></td>
+<td><p>12</p></td>
+<td><p>173</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>21</p></td>
+<td><p>13</p></td>
+<td></td>
+<td><p>13</p></td>
+<td><p>14</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>22</p></td>
+<td><p>15</p></td>
+<td></td>
+<td><p>15</p></td>
+<td><p>16</p></td>
+<td></td>
+<td><p>16</p></td>
+<td><p>19</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>3.3V</p></td>
+<td><p>17</p></td>
+<td><p>18</p></td>
+<td></td>
+<td><p>18</p></td>
+<td><p>23</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>192</p></td>
+<td><p>19</p></td>
+<td><p>MOSI1</p></td>
+<td><p>19</p></td>
+<td><p>20</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>191</p></td>
+<td><p>21</p></td>
+<td><p>MISO1</p></td>
+<td><p>21</p></td>
+<td><p>22</p></td>
+<td></td>
+<td><p>22</p></td>
+<td><p>24</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>189</p></td>
+<td><p>23</p></td>
+<td><p>SCLK1</p></td>
+<td><p>23</p></td>
+<td><p>24</p></td>
+<td><p>CS10</p></td>
+<td><p>24</p></td>
+<td><p>190</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>25</p></td>
+<td><p>26</p></td>
+<td></td>
+<td><p>26</p></td>
+<td><p>25</p></td>
+<td><p>11</p></td>
+</tr>
+<tr class="row-odd"><td><p>30</p></td>
+<td><p>187</p></td>
+<td><p>27</p></td>
+<td><p>SDA5</p></td>
+<td><p>27</p></td>
+<td><p>28</p></td>
+<td><p>SCL5</p></td>
+<td><p>28</p></td>
+<td><p>188</p></td>
+<td><p>31</p></td>
+</tr>
+<tr class="row-even"><td><p>21</p></td>
+<td><p>28</p></td>
+<td><p>29</p></td>
+<td></td>
+<td><p>29</p></td>
+<td><p>30</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>22</p></td>
+<td><p>30</p></td>
+<td><p>31</p></td>
+<td></td>
+<td><p>31</p></td>
+<td><p>32</p></td>
+<td></td>
+<td><p>32</p></td>
+<td><p>29</p></td>
+<td><p>26</p></td>
+</tr>
+<tr class="row-even"><td><p>23</p></td>
+<td><p>31</p></td>
+<td><p>33</p></td>
+<td></td>
+<td><p>33</p></td>
+<td><p>34</p></td>
+<td><p>Ground</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+<td><p>PWRON</p></td>
+<td><p>35</p></td>
+<td><p>36</p></td>
+<td></td>
+<td><p>36</p></td>
+<td><p>33</p></td>
+<td><p>27</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td><p>AIN0</p></td>
+<td><p>37</p></td>
+<td><p>38</p></td>
+<td><p>1.8V Ref</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td></td>
+<td><p>Ground</p></td>
+<td><p>39</p></td>
+<td><p>40</p></td>
+<td><p>AIN3</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="orangepi.html" class="btn btn-neutral float-right" title="Orange Pi" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raspi.html" class="btn btn-neutral float-left" title="Raspberry Pi" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, MQTTany Contributors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

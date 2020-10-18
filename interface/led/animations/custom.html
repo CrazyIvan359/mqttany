@@ -1,0 +1,539 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Custom &mdash; MQTTany v0.12.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Raspberry Pi" href="../outputs/raspi.html" />
+    <link rel="prev" title="Built-in" href="built-in.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.12.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../start.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#modules">Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#paths">Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#ids">IDs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../launch.html">Launching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../communication/index.html">Communication Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../communication/mqtt/index.html">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../communication/mqtt/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../communication/mqtt/index.html#configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Interface Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../gpio/index.html">GPIO</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/index.html#single-pin-definition">Single Pin Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/index.html#multiple-pin-definition">Multiple Pin Definition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#supported-boards">Supported Boards</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/board/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/board/odroid.html">Odroid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/board/orangepi.html">Orange Pi</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#supported-pin-types">Supported Pin Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/pin/digital.html">Digital Pin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/pin/counter.html">Counter Pin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../i2c/index.html">I2C</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/devices/mcp230xx.html">MCP230xx</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/index.html#device-definition">Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../onewire/index.html">OneWire</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/devices/ds18x20.html">DS18x20</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#single-device-definition">Single Device Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">LED</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../animations.html">Animations</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="built-in.html">Built-in</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../animations.html#triggering">Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#supported-outputs">Supported Outputs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../outputs/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../outputs/sacn.html">Streaming ACN</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#array-definition">Array Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../xset/index.html">XSET</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../xset/index.html#module-settings">Module Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#useful-xset-commands">Useful <code class="docutils literal notranslate"><span class="pre">xset</span></code> Commands</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/releases">Releases</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MQTTany</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Interface Modules</a> &raquo;</li>
+        
+          <li><a href="../index.html">LED</a> &raquo;</li>
+        
+          <li><a href="../animations.html">Animations</a> &raquo;</li>
+        
+      <li>Custom</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/interface/led/animations/custom.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="custom">
+<h1>Custom<a class="headerlink" href="#custom" title="Permalink to this headline">¶</a></h1>
+<p>Custom animations are just Python functions, but they allow you to do
+limitless things with your LEDs.</p>
+<div class="section" id="file-location">
+<h2>File Location<a class="headerlink" href="#file-location" title="Permalink to this headline">¶</a></h2>
+<p>The default location for custom animation files is <code class="docutils literal notranslate"><span class="pre">/etc/mqttany/led-anim/</span></code>,
+but you can specify multiple other locations using the <code class="docutils literal notranslate"><span class="pre">anim</span> <span class="pre">dir</span></code> option in
+the config file.</p>
+</div>
+<div class="section" id="function-naming">
+<h2>Function Naming<a class="headerlink" href="#function-naming" title="Permalink to this headline">¶</a></h2>
+<p>Only functions with names starting with <code class="docutils literal notranslate"><span class="pre">anim_</span></code> will be imported as
+animations. They will be added to the animation dictionary as
+<code class="docutils literal notranslate"><span class="pre">filename.func_name</span></code>, <code class="docutils literal notranslate"><span class="pre">func_name</span></code> will have the <code class="docutils literal notranslate"><span class="pre">anim_</span></code> prefix removed.</p>
+<p><em>Ex.</em> An animation function called <code class="docutils literal notranslate"><span class="pre">anim_blink</span></code> in a file named
+<code class="docutils literal notranslate"><span class="pre">example.py</span></code> will be known as <code class="docutils literal notranslate"><span class="pre">example.blink</span></code> when triggering via MQTT or
+from other animations.</p>
+</div>
+<div class="section" id="looping">
+<h2>Looping<a class="headerlink" href="#looping" title="Permalink to this headline">¶</a></h2>
+<p>Animation functions should not loop to repeat the same action themselves, this
+is done by the animation manager for the array based on the <code class="docutils literal notranslate"><span class="pre">repeat</span></code>
+parameter. Animation functions should <strong>NEVER</strong> run an infinite loop, always
+use <code class="docutils literal notranslate"><span class="pre">repeat:</span> <span class="pre">0</span></code> to accomplish this.</p>
+</div>
+<div class="section" id="function-signature">
+<h2>Function Signature<a class="headerlink" href="#function-signature" title="Permalink to this headline">¶</a></h2>
+<p>Your animation function must have the following signature for it to work
+reliably:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">anim_blink</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">cancel</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 82%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">array</span></code></p></td>
+<td><p>This is the LED array object subclassed from
+<code class="docutils literal notranslate"><span class="pre">led.array.baseLED</span></code>. All operations to change the LEDs are
+done using this object. See
+<a class="reference internal" href="#array-object"><span class="std std-ref">array Object</span></a>
+for details.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cancel</span></code></p></td>
+<td><p>This is a <code class="docutils literal notranslate"><span class="pre">threading.Event</span></code> object that is used to signal
+to a running animation that it should stop what it is doing
+and return as soon as possible.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">**kwargs</span></code></p></td>
+<td><p>You should always use <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> instead of specific keyword
+arguments because no introspection is done by the LED module
+to see if all arguments have been provided.</p>
+<p>Arguments can be pulled from <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> without errors if they
+don’t exist using <code class="docutils literal notranslate"><span class="pre">get(key,</span> <span class="pre">default)</span></code>. You can provide
+defaults or later check if all required arguments have been
+provided.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># sets &#39;value&#39; to None if &#39;key&#39; is not in &#39;kwargs&#39;</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="array-object">
+<h2><code class="docutils literal notranslate"><span class="pre">array</span></code> Object<a class="headerlink" href="#array-object" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">array</span></code> object provides methods to get information about the array and
+set LED colors. The <code class="docutils literal notranslate"><span class="pre">array</span></code> object received will be subclassed from
+<code class="docutils literal notranslate"><span class="pre">modules.led.array.baseArray</span></code>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 43%" />
+<col style="width: 57%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method / Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">show()</span></code></p></td>
+<td><p>Outputs the current state of LEDs in memory.
+This should be called when you are done setting LEDs
+and want to display those changes on the physical
+array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setPixelColorRGB</span></code>
+<code class="docutils literal notranslate"><span class="pre">(pixel,</span> <span class="pre">red,</span> <span class="pre">green,</span> <span class="pre">blue,</span> <span class="pre">white=0)</span></code></p></td>
+<td><p>Sets the specified <code class="docutils literal notranslate"><span class="pre">pixel</span></code> to the provided
+<code class="docutils literal notranslate"><span class="pre">red</span></code>, <code class="docutils literal notranslate"><span class="pre">green</span></code>, <code class="docutils literal notranslate"><span class="pre">blue</span></code>, and <code class="docutils literal notranslate"><span class="pre">white</span></code> values.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getPixelColorRGB(pixel)</span></code></p></td>
+<td><p>Returns an object with <code class="docutils literal notranslate"><span class="pre">red</span></code>, <code class="docutils literal notranslate"><span class="pre">green</span></code>, <code class="docutils literal notranslate"><span class="pre">blue</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">white</span></code> properties representing the pixel
+color.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setPixelColor(pixel,</span> <span class="pre">color)</span></code></p></td>
+<td><p>Sets the specified <code class="docutils literal notranslate"><span class="pre">pixel</span></code> to a 24-bit <code class="docutils literal notranslate"><span class="pre">RRGGBB</span></code>
+or 32-bit <code class="docutils literal notranslate"><span class="pre">WWRRGGBB</span></code> value.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getPixelColor(pixel)</span></code></p></td>
+<td><p>Returns a 24-bit <code class="docutils literal notranslate"><span class="pre">RRGGBB</span></code> or 32-bit <code class="docutils literal notranslate"><span class="pre">WWRRGGBB</span></code>
+value representing the pixel color.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setBrightness(brightness)</span></code></p></td>
+<td><p>Sets the brightness for the array. Also available
+as the property <code class="docutils literal notranslate"><span class="pre">brightness</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getBrightness()</span></code></p></td>
+<td><p>Returns the current brightness for the array. Also
+available as the property <code class="docutils literal notranslate"><span class="pre">brightness</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">numPixels()</span></code></p></td>
+<td><p>Returns the number of pixels in the array. Also
+available as the property <code class="docutils literal notranslate"><span class="pre">count</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">numColors()</span></code></p></td>
+<td><p>Returns the number of color channels (3 for RGB or
+4 for RGBW). Also available as the property
+<code class="docutils literal notranslate"><span class="pre">colors</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">brightness</span></code></p></td>
+<td><p>Can be use to get or set the array brightness.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">count</span></code></p></td>
+<td><p>Returns the number of pixels in the array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">colors</span></code></p></td>
+<td><p>Returns the number of color channels.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">anims</span></code></p></td>
+<td><p>Is a dictionary containing all known animations. You
+can use this to run other animations by name from
+within your animation function. For example setting
+the array off after your animation finishes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="o">.</span><span class="n">anims</span><span class="p">[</span><span class="s2">&quot;off&quot;</span><span class="p">](</span><span class="n">array</span><span class="p">,</span> <span class="n">cancel</span><span class="p">)</span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="globals">
+<h2>Globals<a class="headerlink" href="#globals" title="Permalink to this headline">¶</a></h2>
+<p>Some useful values and functions are inserted into the globals for all
+animations and can be used as if they had been defined or imported in your
+animation file.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 63%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">log</span></code></p></td>
+<td><p>This gives you a logger that logs to
+<code class="docutils literal notranslate"><span class="pre">mqttany.led.anim.{anim</span> <span class="pre">name}</span></code> for outputting log messages.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">FRAME_MIN</span></code></p></td>
+<td><p>The configuration value <code class="docutils literal notranslate"><span class="pre">anim</span> <span class="pre">fps</span></code> is used to calulate the
+duration of each frame in milliseconds and is made available
+as <code class="docutils literal notranslate"><span class="pre">FRAME_MS</span></code> to help with the frame timing of animations.
+See the built in fade animations to see how you might use this
+value.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">parse_color(array,</span> <span class="pre">c=None,</span> <span class="pre">r=-1,</span></code>
+<code class="docutils literal notranslate"><span class="pre">g=-1,</span> <span class="pre">b=-1,</span> <span class="pre">w=-1,</span> <span class="pre">pixel=None)</span></code></p></td>
+<td><p>This function can be used to determine a 24/32-bit color from
+the animation arguments <code class="docutils literal notranslate"><span class="pre">color</span></code>, <code class="docutils literal notranslate"><span class="pre">red</span></code>, <code class="docutils literal notranslate"><span class="pre">green</span></code>,
+<code class="docutils literal notranslate"><span class="pre">blue</span></code>, <code class="docutils literal notranslate"><span class="pre">white</span></code> as used in the
+<a class="reference internal" href="built-in.html#set-array"><span class="std std-ref">set.array</span></a>
+animation. If <code class="docutils literal notranslate"><span class="pre">pixel</span></code> is provided, any component with a
+value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> (must provide at least 1 new value) will use
+the current channel value from the specified pixel. It will
+return <code class="docutils literal notranslate"><span class="pre">None</span></code> if it cannot determine a color from the values
+provided.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">parse_pixel(array,</span> <span class="pre">p)</span></code></p></td>
+<td><p>This can be used to parse various pixel range arguments as
+used with the <code class="docutils literal notranslate"><span class="pre">pixel</span></code> argument for the
+<a class="reference internal" href="built-in.html#set-pixel"><span class="std std-ref">set.pixel</span></a>
+animation. It will return a list of all pixel indices
+specified or an empty list if it is unable to parse the input.</p>
+<p>Pixels may be specified in any of the following ways:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># single index</span>
+    <span class="s2">&quot;pixel&quot;</span><span class="p">:</span> <span class="mi">2</span>
+
+<span class="c1"># range string</span>
+    <span class="s2">&quot;pixel&quot;</span><span class="p">:</span> <span class="s2">&quot;4-6&quot;</span>
+
+<span class="c1"># list</span>
+    <span class="s2">&quot;pixel&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="mi">2</span><span class="p">,</span>      <span class="c1"># pixel 2</span>
+        <span class="s2">&quot;4-6&quot;</span><span class="p">,</span>  <span class="c1"># pixels 4, 5 and 6</span>
+        <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span> <span class="c1"># pixels 10, 11, 12, 13, and 14</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../outputs/raspi.html" class="btn btn-neutral float-right" title="Raspberry Pi" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="built-in.html" class="btn btn-neutral float-left" title="Built-in" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, MQTTany Contributors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

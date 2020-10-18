@@ -1,0 +1,426 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Streaming ACN &mdash; MQTTany v0.12.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="XSET" href="../../xset/index.html" />
+    <link rel="prev" title="Raspberry Pi" href="raspi.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.12.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../start.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#modules">Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#paths">Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#ids">IDs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../start.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../launch.html">Launching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../communication/index.html">Communication Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../communication/mqtt/index.html">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../communication/mqtt/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../communication/mqtt/index.html#configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Interface Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../gpio/index.html">GPIO</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/index.html#single-pin-definition">Single Pin Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/index.html#multiple-pin-definition">Multiple Pin Definition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#supported-boards">Supported Boards</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/board/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/board/odroid.html">Odroid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/board/orangepi.html">Orange Pi</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../gpio/index.html#supported-pin-types">Supported Pin Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/pin/digital.html">Digital Pin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../gpio/pin/counter.html">Counter Pin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../i2c/index.html">I2C</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/devices/mcp230xx.html">MCP230xx</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../i2c/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../i2c/index.html#device-definition">Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../onewire/index.html">OneWire</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/devices/ds18x20.html">DS18x20</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../onewire/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#single-device-definition">Single Device Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">LED</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../animations.html">Animations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../animations/built-in.html">Built-in</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../animations/custom.html">Custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../animations.html#triggering">Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#supported-outputs">Supported Outputs</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Streaming ACN</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#array-definition">Array Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../xset/index.html">XSET</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../xset/index.html#module-settings">Module Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../xset/index.html#useful-xset-commands">Useful <code class="docutils literal notranslate"><span class="pre">xset</span></code> Commands</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/releases">Releases</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MQTTany</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Interface Modules</a> &raquo;</li>
+        
+          <li><a href="../index.html">LED</a> &raquo;</li>
+        
+      <li>Streaming ACN</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/interface/led/outputs/sacn.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="streaming-acn">
+<h1>Streaming ACN<a class="headerlink" href="#streaming-acn" title="Permalink to this headline">¶</a></h1>
+<p>Lights can be controlled via ESTA E1.31, also known as sACN, over your local
+network.</p>
+<div class="admonition-don-t-forget-to-install-the-requirements admonition">
+<p class="admonition-title">Don’t forget to install the requirements</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip3 install -r requirements/led-sacn.txt
+</pre></div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>It is recommended you reduce <code class="docutils literal notranslate"><span class="pre">anim</span> <span class="pre">fps</span></code> to 24fps or even lower depending
+on your network conditions. sACN receivers may have trouble keeping up otherwise.</p>
+<p>Setting this value will limit the frame rate for the animations running on
+MQTTany, but there is no guarantee that the receiver will be able to keep
+up.</p>
+</div>
+<div class="section" id="paths">
+<h2>Paths<a class="headerlink" href="#paths" title="Permalink to this headline">¶</a></h2>
+<p>Some additional statistics are published when using this output mode.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 34%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Path</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">{array-id}/universe</span></code></p></td>
+<td><p>The universe or range of universes used by this
+array will be published here with
+<code class="docutils literal notranslate"><span class="pre">retained</span> <span class="pre">=</span> <span class="pre">True</span></code> when the array is started.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">{array-id}/mode</span></code></p></td>
+<td><p>The network transmission mode, unicast or
+multicast, will be published here with
+<code class="docutils literal notranslate"><span class="pre">retained</span> <span class="pre">=</span> <span class="pre">True</span></code> when the array is started.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">{array-id}/address</span></code></p></td>
+<td><p>If using unicast the target address will be
+published here with <code class="docutils literal notranslate"><span class="pre">retained</span> <span class="pre">=</span> <span class="pre">True</span></code> when
+the array is started.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">{array-id}/sync</span></code></p></td>
+<td><p>If a sync universe was specified it will be
+published here with <code class="docutils literal notranslate"><span class="pre">retained</span> <span class="pre">=</span> <span class="pre">True</span></code> when
+the array is started.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">led</span><span class="p">:</span>
+
+  <span class="nt">array_name</span><span class="p">:</span>
+    <span class="nt">sacn</span><span class="p">:</span>
+      <span class="nt">universe</span><span class="p">:</span>
+      <span class="c1">#address: &#39;&#39;</span>
+      <span class="c1">#sync universe:</span>
+</pre></div>
+</div>
+<div class="section" id="array-definition">
+<h3>Array Definition<a class="headerlink" href="#array-definition" title="Permalink to this headline">¶</a></h3>
+<p>The following additional options are added to array definitions when using
+this interface.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 74%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">universe</span></code></p></td>
+<td><p>Universe number, more universes may be controlled
+depending on the number of LEDs and channels in the
+array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">address</span></code></p></td>
+<td><p>Unicast address or hostname. If not provided then
+multicast will be used</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sync</span> <span class="pre">universe</span></code></p></td>
+<td><p>Universe to send sync packets to. If not provided
+data packets will be sent immediately and no sync
+packets will be sent.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Using sync results in a <strong>LOT</strong> more network
+traffic. Use with care.</p>
+</div>
+<p><em>This has not yet been tested</em></p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../xset/index.html" class="btn btn-neutral float-right" title="XSET" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raspi.html" class="btn btn-neutral float-left" title="Raspberry Pi" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, MQTTany Contributors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+#######
+DS18x20
+#######
+
+This device class supports the following OneWire temperature sensors:
+
++--------+----------+
+| Family |  Device  |
++========+==========+
+| ``10`` | DS18S20  |
++--------+----------+
+| ``22`` | DS1822   |
++--------+----------+
+| ``28`` | DS18B20  |
++--------+----------+
+| ``3B`` | DS1825   |
++--------+----------+
+| ``42`` | DS28EA00 |
++--------+----------+
+
+
+Paths
+=====
+
+Temperature values are published on the path ``{device-id}/temperature`` and the
+unit will be published on ``{device-id}/unit`` at the same time.
+
++-----------------------------+---------------------------------------+
+|            Path             |              Description              |
++=============================+=======================================+
+| ``{device-id}/temperature`` | Last temperature reading from device. |
++-----------------------------+---------------------------------------+
+| ``{device-id}/unit``        | The temperature unit for the reading. |
++-----------------------------+---------------------------------------+
+
+
+Configuration
+=============
+
+The following additional options are added to the configuration. Optional
+settings are commented out, default values are shown.
+
+.. code-block:: yaml
+
+    onewire:
+
+      device-id:
+
+        ds18x20:
+          #unit: 'C'
+
+
+Device Options
+--------------
+
+The following additional options can be used in a device configuration section:
+
++----------+-----------------------------------------------------+
+|  Option  |                     Description                     |
++==========+=====================================================+
+| ``unit`` | Unit to use for temperature readings, can be ``C``  |
+|          | for celsius or ``F`` for fahrenheit. This unit will |
+|          | be published every time a reading is published.     |
+|          |                                                     |
+|          | *Optional, default* ``C``.                          |
++----------+-----------------------------------------------------+

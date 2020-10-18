@@ -1,0 +1,422 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MQTT &mdash; MQTTany v0.12.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Interface Modules" href="../../interface/index.html" />
+    <link rel="prev" title="Communication Modules" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.12.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../start.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../start.html#modules">Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../start.html#paths">Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../start.html#ids">IDs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../start.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../start.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../launch.html">Launching</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Communication Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../interface/index.html">Interface Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../interface/gpio/index.html">GPIO</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/gpio/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/gpio/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/gpio/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/gpio/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/gpio/index.html#single-pin-definition">Single Pin Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/gpio/index.html#multiple-pin-definition">Multiple Pin Definition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/gpio/index.html#supported-boards">Supported Boards</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/gpio/board/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/gpio/board/odroid.html">Odroid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/gpio/board/orangepi.html">Orange Pi</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/gpio/index.html#supported-pin-types">Supported Pin Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/gpio/pin/digital.html">Digital Pin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/gpio/pin/counter.html">Counter Pin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../interface/i2c/index.html">I2C</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/i2c/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/i2c/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/i2c/devices/mcp230xx.html">MCP230xx</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/i2c/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/i2c/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/i2c/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/i2c/index.html#device-definition">Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../interface/onewire/index.html">OneWire</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/onewire/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/onewire/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/onewire/devices/ds18x20.html">DS18x20</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/onewire/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/onewire/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/onewire/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/onewire/index.html#single-device-definition">Single Device Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../interface/led/index.html">LED</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/led/animations.html">Animations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/led/animations/built-in.html">Built-in</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/led/animations/custom.html">Custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/led/animations.html#triggering">Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/led/index.html#supported-outputs">Supported Outputs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/led/outputs/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/led/outputs/sacn.html">Streaming ACN</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/led/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/led/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/led/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/led/index.html#array-definition">Array Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../interface/xset/index.html">XSET</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/xset/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/xset/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../interface/xset/index.html#module-settings">Module Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../interface/xset/index.html#useful-xset-commands">Useful <code class="docutils literal notranslate"><span class="pre">xset</span></code> Commands</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/releases">Releases</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MQTTany</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Communication Modules</a> &raquo;</li>
+        
+      <li>MQTT</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/communication/mqtt/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="mqtt">
+<h1>MQTT<a class="headerlink" href="#mqtt" title="Permalink to this headline">¶</a></h1>
+<p>The MQTT module wraps the Paho MQTT Client library and connects to a broker to
+allow communication with home automation solutions or other controllers.</p>
+<div class="section" id="paths">
+<h2>Paths<a class="headerlink" href="#paths" title="Permalink to this headline">¶</a></h2>
+<p>MQTT topics are composed of the <code class="docutils literal notranslate"><span class="pre">root</span> <span class="pre">topic</span></code> plus the path. Ex.
+<code class="docutils literal notranslate"><span class="pre">{root</span> <span class="pre">topic}/{node-id}/{property-id}</span></code></p>
+<p>The MQTT module subscribes to <code class="docutils literal notranslate"><span class="pre">{root</span> <span class="pre">topic}/+/+/+/#</span></code> and will pass any message matching
+<code class="docutils literal notranslate"><span class="pre">{root</span> <span class="pre">topic}/{node-id}/{property-id}/+/#</span></code> to the interface module that registered the
+node, provided a callback was given.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>The following options are available in the configuration file. Optional settings are
+commented out with their default values shown.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">mqtt</span><span class="p">:</span>
+
+  <span class="nt">host</span><span class="p">:</span>
+  <span class="c1">#port: 1883</span>
+
+  <span class="c1">#client id: &#39;{hostname}&#39;</span>
+  <span class="c1">#username: &#39;&#39;</span>
+  <span class="c1">#password: &#39;&#39;</span>
+
+  <span class="c1">#qos: 0</span>
+  <span class="c1">#retain: false</span>
+
+  <span class="c1">#root topic: &#39;{client_id}&#39;</span>
+  <span class="c1">#lwt topic: &#39;lwt&#39;</span>
+
+  <span class="c1">#heartbeat interval: 300</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 80%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">host</span></code></p></td>
+<td><p>The IPv4 address or hostname of your MQTT broker.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">port</span></code></p></td>
+<td><p>The port your MQTT broker is running on.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">1883</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">client</span> <span class="pre">id</span></code></p></td>
+<td><p>MQTT Client ID used when connecting to the broker.</p>
+<p><code class="docutils literal notranslate"><span class="pre">{hostname}</span></code> will be replaced with the computer’s hostname.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">{hostname}</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">username</span></code></p></td>
+<td><p>Username to use when authenticating with the MQTT broker.</p>
+<p><em>Optional</em>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">password</span></code></p></td>
+<td><p>Password to use when authenticating with the MQTT broker.</p>
+<p><em>Optional</em>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">qos</span></code></p></td>
+<td><p>Quality of Service setting to use when publishing to MQTT.
+<em>Modules can specify a QoS when publishing.</em></p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">retain</span></code></p></td>
+<td><p>Default retain flag to use when publishing to MQTT.
+<em>Modules can specify the retain flag when publishing.</em></p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">root</span> <span class="pre">topic</span></code></p></td>
+<td><p>The root topic to use for all other topics.</p>
+<p>Substitutions:</p>
+<p><code class="docutils literal notranslate"><span class="pre">{hostname}</span></code> will be replaced with the computer’s hostname.</p>
+<p><code class="docutils literal notranslate"><span class="pre">{client_id}</span></code> will be replaced with the MQTT Client ID.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">{client_id}</span></code>.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lwt</span> <span class="pre">topic</span></code></p></td>
+<td><p>Last Will topic to publish online/offline messages. Full
+topic is <code class="docutils literal notranslate"><span class="pre">{root</span> <span class="pre">topic}/{lwt</span> <span class="pre">topic}</span></code>.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">lwt</span></code>.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">heartbeat</span>
+<span class="pre">interval</span></code></p></td>
+<td><p>Interval in seconds to publish status messages.</p>
+<p><em>Optional, default</em> <code class="docutils literal notranslate"><span class="pre">300</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../interface/index.html" class="btn btn-neutral float-right" title="Interface Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral float-left" title="Communication Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, MQTTany Contributors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

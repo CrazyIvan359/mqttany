@@ -1,63 +1,27 @@
-#####################
-MQTTany Documentation
-#####################
+#######
+MQTTany
+#######
 
 .. toctree::
     :maxdepth: 2
-    :caption: MQTTany
     :name: mastertoc
     :hidden:
+    :glob:
 
-    install
+    start
     launch
+    communication/index
+    interface/index
     Releases <https://github.com/CrazyIvan359/mqttany/releases>
-    Change Log <https://github.com/CrazyIvan359/mqttany/blob/dev/CHANGELOG.md>
-
-    MQTT Module <mqtt/index>
-    GPIO Module <gpio/index>
-    I2C Module <i2c/index>
-    OneWire Module <onewire/index>
-    LED Module <led/index>
-    XSET Module <xset/index>
+    Change Log <https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md>
 
 
-MQTTany aims to make it easier to connect things to an MQTT broker. It is a
-collection of modules that each provide support for connecting something.
+MQTTany is designed to make it easy to connect hardware on single board computers to
+your home automation solution. It is built around the concept of *modules*, each with a
+specific purpose, so that only the components that are needed for your use case are
+loaded. *Communication Modules* are responsible for connections to the outside, like
+an MQTT broker, to allow publishing states and receiving commands. *Interface Modules*
+provide access to hardware on or connected to the platform that MQTTany is running on.
 
-Get started on the :doc:`install` page or download the latest
-`Release <https://github.com/CrazyIvan359/mqttany/releases>`_.
-
-Modules
-=======
-
-+----------------------+------------------------------------------------------+
-| :doc:`mqtt/index`    | Connects to a broker for control and output.         |
-+----------------------+------------------------------------------------------+
-| :doc:`gpio/index`    | Allows you to control GPIO pins on single board      |
-|                      | computers.                                           |
-+----------------------+------------------------------------------------------+
-| :doc:`i2c/index`     | Provides access to devices over I2C using the Linux  |
-|                      | kernel drivers.                                      |
-+----------------------+------------------------------------------------------+
-| :doc:`onewire/index` | Provides access to Dallas OneWire devices using the  |
-|                      | ``w1`` kernel module. OWFS support is planned.       |
-+----------------------+------------------------------------------------------+
-| :doc:`led/index`     | Provides control of WS281x and similar LEDs through  |
-|                      | animation scripts.                                   |
-+----------------------+------------------------------------------------------+
-| :doc:`xset/index`    | Allows ``xset`` commands to be executed to set       |
-|                      | screensaver and display power options.               |
-+----------------------+------------------------------------------------------+
-
-.. note::
-
-    If you are using a Python version older than ``3.5.4`` you may see errors
-    like the one shown below. This is a Python bug that can be fixed by
-    upgrading to Python ``3.5.4`` or higher.
-
-    .. code-block:: text
-
-        Exception ignored in: <function WeakValueDictionary.__init__.<locals>.remove at 0x7fc874a876a8>
-        Traceback (most recent call last):
-        File "/usr/lib/python3.5/weakref.py", line 117, in remove
-        TypeError: 'NoneType' object is not callable
+Head over to the :doc:`start` page next or download the latest
+`Release <https://github.com/CrazyIvan359/mqttany/releases>`_ from GitHub.

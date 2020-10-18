@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Interface Modules &mdash; MQTTany v0.12.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GPIO" href="gpio/index.html" />
+    <link rel="prev" title="MQTT" href="../communication/mqtt/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v0.12.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../start.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../start.html#modules">Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../start.html#paths">Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../start.html#ids">IDs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../start.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../start.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../launch.html">Launching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../communication/index.html">Communication Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../communication/mqtt/index.html">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../communication/mqtt/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../communication/mqtt/index.html#configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Interface Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gpio/index.html">GPIO</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gpio/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gpio/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gpio/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="gpio/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gpio/index.html#single-pin-definition">Single Pin Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gpio/index.html#multiple-pin-definition">Multiple Pin Definition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gpio/index.html#supported-boards">Supported Boards</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="gpio/board/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gpio/board/odroid.html">Odroid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gpio/board/orangepi.html">Orange Pi</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gpio/index.html#supported-pin-types">Supported Pin Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="gpio/pin/digital.html">Digital Pin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gpio/pin/counter.html">Counter Pin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="i2c/index.html">I2C</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="i2c/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="i2c/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="i2c/devices/mcp230xx.html">MCP230xx</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="i2c/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="i2c/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="i2c/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="i2c/index.html#device-definition">Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="onewire/index.html">OneWire</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="onewire/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="onewire/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="onewire/devices/ds18x20.html">DS18x20</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="onewire/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="onewire/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="onewire/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="onewire/index.html#single-device-definition">Single Device Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="led/index.html">LED</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="led/animations.html">Animations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="led/animations/built-in.html">Built-in</a></li>
+<li class="toctree-l4"><a class="reference internal" href="led/animations/custom.html">Custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="led/animations.html#triggering">Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="led/index.html#supported-outputs">Supported Outputs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="led/outputs/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="led/outputs/sacn.html">Streaming ACN</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="led/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="led/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="led/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="led/index.html#array-definition">Array Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="xset/index.html">XSET</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="xset/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xset/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="xset/index.html#module-settings">Module Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="xset/index.html#useful-xset-commands">Useful <code class="docutils literal notranslate"><span class="pre">xset</span></code> Commands</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/releases">Releases</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MQTTany</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Interface Modules</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/interface/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="interface-modules">
+<h1>Interface Modules<a class="headerlink" href="#interface-modules" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>Interface modules provide access to hardware on or connected to the platform that
+MQTTany is running on.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="gpio/index.html"><span class="doc">GPIO</span></a></p></td>
+<td><p>Allows you to control GPIO pins on single board
+computers.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="i2c/index.html"><span class="doc">I2C</span></a></p></td>
+<td><p>Provides access to devices over I2C using the Linux
+kernel drivers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="onewire/index.html"><span class="doc">OneWire</span></a></p></td>
+<td><p>Provides access to Dallas OneWire devices using the
+<code class="docutils literal notranslate"><span class="pre">w1</span></code> kernel module.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="led/index.html"><span class="doc">LED</span></a></p></td>
+<td><p>Provides control of WS281x and similar LEDs through
+animation scripts.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="xset/index.html"><span class="doc">XSET</span></a></p></td>
+<td><p>Allows <code class="docutils literal notranslate"><span class="pre">xset</span></code> commands to be executed to set
+screensaver and display power options.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="gpio/index.html" class="btn btn-neutral float-right" title="GPIO" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../communication/mqtt/index.html" class="btn btn-neutral float-left" title="MQTT" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, MQTTany Contributors
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

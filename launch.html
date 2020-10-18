@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Launching &mdash; MQTTany v0.11.0 documentation</title>
+  <title>Launching &mdash; MQTTany v0.12.0 documentation</title>
   
 
   
@@ -37,8 +37,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="MQTT" href="mqtt/index.html" />
-    <link rel="prev" title="Installation" href="install.html" /> 
+    <link rel="next" title="Communication Modules" href="communication/index.html" />
+    <link rel="prev" title="Getting Started" href="start.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -48,7 +48,7 @@
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search"  style="background: navy" >
+        <div class="wy-side-nav-search" >
           
 
           
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                v0.11.0
+                v0.12.0
               </div>
             
           
@@ -87,92 +87,109 @@
               
             
             
-              <p class="caption"><span class="caption-text">MQTTany</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="start.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="start.html#modules">Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start.html#paths">Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start.html#ids">IDs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start.html#installation">Installation</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Launching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="communication/index.html">Communication Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="communication/mqtt/index.html">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="communication/mqtt/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="communication/mqtt/index.html#configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interface/index.html">Interface Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interface/gpio/index.html">GPIO</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interface/gpio/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interface/gpio/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interface/gpio/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/gpio/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/gpio/index.html#single-pin-definition">Single Pin Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/gpio/index.html#multiple-pin-definition">Multiple Pin Definition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="interface/gpio/index.html#supported-boards">Supported Boards</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/gpio/board/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/gpio/board/odroid.html">Odroid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/gpio/board/orangepi.html">Orange Pi</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="interface/gpio/index.html#supported-pin-types">Supported Pin Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/gpio/pin/digital.html">Digital Pin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/gpio/pin/counter.html">Counter Pin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interface/i2c/index.html">I2C</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interface/i2c/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interface/i2c/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/i2c/devices/mcp230xx.html">MCP230xx</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="interface/i2c/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interface/i2c/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/i2c/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/i2c/index.html#device-definition">Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interface/onewire/index.html">OneWire</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interface/onewire/index.html#permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interface/onewire/index.html#devices">Devices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/onewire/devices/ds18x20.html">DS18x20</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="interface/onewire/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interface/onewire/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/onewire/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/onewire/index.html#single-device-definition">Single Device Definition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interface/led/index.html">LED</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interface/led/animations.html">Animations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/led/animations/built-in.html">Built-in</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/led/animations/custom.html">Custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/led/animations.html#triggering">Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="interface/led/index.html#supported-outputs">Supported Outputs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/led/outputs/raspi.html">Raspberry Pi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/led/outputs/sacn.html">Streaming ACN</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="interface/led/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interface/led/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/led/index.html#module-settings">Module Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="interface/led/index.html#array-definition">Array Definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interface/xset/index.html">XSET</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="interface/xset/index.html#paths">Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="interface/xset/index.html#configuration">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="interface/xset/index.html#module-settings">Module Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="interface/xset/index.html#useful-xset-commands">Useful <code class="docutils literal notranslate"><span class="pre">xset</span></code> Commands</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/releases">Releases</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/dev/CHANGELOG.md">Change Log</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mqtt/index.html">MQTT Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="mqtt/index.html#topics">Topics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="mqtt/index.html#relative">Relative</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mqtt/index.html#absolute">Absolute</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="mqtt/index.html#substitutions">Substitutions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mqtt/index.html#configuration">Configuration</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="gpio/index.html">GPIO Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gpio/index.html#supported-boards">Supported Boards</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gpio/raspi.html">Raspberry Pi</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gpio/odroid.html">Odroid</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gpio/index.html#substitutions">Substitutions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gpio/index.html#configuration">Configuration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gpio/index.html#module-settings">Module Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gpio/index.html#single-pin-definition">Single Pin Definition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gpio/index.html#multiple-pin-definition">Multiple Pin Definition</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="i2c/index.html">I2C Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="i2c/index.html#devices">Devices</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="i2c/devices/mcp230xx.html">MCP230xx</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="i2c/index.html#substitutions">Substitutions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="i2c/index.html#configuration">Configuration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="i2c/index.html#module-settings">Module Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="i2c/index.html#device-definition">Device Definition</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="onewire/index.html">OneWire Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="onewire/index.html#devices">Devices</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="onewire/devices/ds18x20.html">DS18x20</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="onewire/index.html#substitutions">Substitutions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="onewire/index.html#configuration">Configuration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="onewire/index.html#module-settings">Module Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="onewire/index.html#single-device-definition">Single Device Definition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="onewire/index.html#multiple-device-definition">Multiple Device Definition</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="led/index.html">LED Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="led/animations.html">Animations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="led/animations/built-in.html">Built-in</a></li>
-<li class="toctree-l3"><a class="reference internal" href="led/animations/custom.html">Custom</a></li>
-<li class="toctree-l3"><a class="reference internal" href="led/animations.html#triggering">Triggering</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="led/index.html#supported-interfaces">Supported Interfaces</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="led/interfaces/raspi.html">Raspberry Pi</a></li>
-<li class="toctree-l3"><a class="reference internal" href="led/interfaces/sacn.html">Streaming ACN</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="led/index.html#substitutions">Substitutions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="led/index.html#configuration">Configuration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="led/index.html#module-settings">Module Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="led/index.html#array-definition">Array Definition</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="xset/index.html">XSET Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xset/index.html#configuration">Configuration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="xset/index.html#module-settings">Module Settings</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="xset/index.html#commands">Commands</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
 </ul>
 
             
@@ -245,13 +262,13 @@
 python3 mqttany/mqttany.py
 </pre></div>
 </div>
-<p>But this has some obvious drawbacks. You have to run it manually, and must
+<p>But this has some obvious drawbacks: You have to run it manually, and must
 keep the terminal session open.</p>
 <p>Most of the time you will want MQTTany to run in the background at startup.
 The following instructions will guide you through setting that up on Debian
 Linux (including Raspbian).</p>
 <ol class="arabic">
-<li><p>Included with MQTTany is a <code class="docutils literal notranslate"><span class="pre">.service</span></code> file that tells Debian what it is
+<li><p>Included with MQTTany is a <code class="docutils literal notranslate"><span class="pre">.service</span></code> file that tells systemd what it is
 and how to run it. We need to put that file in the right place:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> /opt/mqttany
 sudo cp mqttany.service /etc/systemd/system/mqttany.service
@@ -295,10 +312,10 @@ sudo systemctl start mqttany
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mqtt/index.html" class="btn btn-neutral float-right" title="MQTT" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="communication/index.html" class="btn btn-neutral float-right" title="Communication Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="install.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="start.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

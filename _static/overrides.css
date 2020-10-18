@@ -17,3 +17,81 @@
 .wy-table-responsive {
     overflow: visible !important;
 }
+
+/* text formatting for board pinout tables */
+.pinout tr {
+    text-align: center;
+}
+    /* WiringPi */
+.pinout th:first-child {
+    color: #d13500;
+}
+.pinout th:first-child p {
+    font-size: .8rem !important;
+}
+.pinout th:last-child {
+    color: #d13500;
+}
+.pinout th:last-child p {
+    font-size: .8rem !important;
+}
+.pinout td:first-child {
+    color: #d13500;
+    font-weight: bolder;
+}
+.pinout td:last-child {
+    color: #d13500;
+    font-weight: bolder;
+}
+    /* SoC */
+.pinout th:nth-child(2) {
+    color: blue;
+}
+.pinout th:nth-last-child(2) {
+    color: blue;
+}
+.pinout td:nth-child(2) {
+    color: blue;
+    font-weight: bolder;
+}
+.pinout td:nth-last-child(2) {
+    color: blue;
+    font-weight: bolder;
+}
+    /* Board */
+.pinout th:nth-child(3) {
+    color: green;
+}
+.pinout th:nth-last-child(3) {
+    color: green;
+}
+.pinout td:nth-child(3) {
+    color: green;
+    font-weight: bolder;
+}
+.pinout td:nth-last-child(3) {
+    color: green;
+    font-weight: bolder;
+}
+    /* Function */
+.pinout td:nth-child(4) p {
+    font-size: .8rem !important;
+}
+.pinout td:nth-last-child(4) p {
+    font-size: .8rem !important;
+}
+    /* Pin */
+.pinout td:nth-child(5) {
+    color: white;
+    font-weight: bolder;
+    background-color: black !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+.pinout td:nth-last-child(5) {
+    color: white;
+    font-weight: bolder;
+    background-color: black !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
