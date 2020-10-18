@@ -27,14 +27,6 @@ MQTT Module
 
 __all__ = []
 
-try:
-    import paho.mqtt.client as mqtt
-except ImportError:
-    raise ImportError(
-        "MQTTany's MQTT module requires 'paho-mqtt' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
-
 from collections import OrderedDict
 import socket
 from threading import Timer
@@ -94,6 +86,17 @@ def load(config_raw):
     and validate the configuration and do other basic setup of the module. Do not start
     any threads or long running tasks here, they should go in the ``start`` function.
     """
+    try:
+        import paho.mqtt.client as mqtt
+
+        del mqtt
+    except ModuleNotFoundError:
+        log.error(
+            "MQTTany's MQTT module requires 'paho-mqtt' to be installed, "
+            "please see the wiki for instructions on how to install requirements"
+        )
+        return False
+
     config_data = parse_config(config_raw, CONF_OPTIONS, log)
     del config_raw
     if config_data:
@@ -125,6 +128,8 @@ def start():
     should be started here and a listener thread should be created for receiving messages
     from the outside connection if required.
     """
+    import paho.mqtt.client as mqtt
+
     global client
     log.debug("Creating MQTT client")
     client = mqtt.Client(client_id=CONFIG[CONF_KEY_CLIENTID], clean_session=False)
@@ -159,6 +164,8 @@ def stop():
     This function runs on the module's dedicated process when it is exiting. Connections
     should be closed and threads stopped.
     """
+    import paho.mqtt.client as mqtt
+
     log.debug("Disconnecting")
     discon_msg = client.publish(
         topic=CONFIG[CONF_KEY_TOPIC_LWT], payload="Offline", retain=True
@@ -250,6 +257,8 @@ def on_message(client, userdata, message):
     """
     Gets called when an MQTT message is received
     """
+    import paho.mqtt.client as mqtt
+
     if mqtt.topic_matches_sub(f"{CONFIG[CONF_KEY_TOPIC_ROOT]}/+/+/+/#", message.topic):
         receive_queue.put_nowait(
             BusMessage(

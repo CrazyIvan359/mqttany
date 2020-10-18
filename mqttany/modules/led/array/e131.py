@@ -147,11 +147,12 @@ class sacnArray(baseArray):
         if not sender:
             try:
                 import sacn as libsacn
-            except ImportError:
-                raise ImportError(
+            except ModuleNotFoundError:
+                self._log.error(
                     "MQTTany's LED module requires 'sacn' to be installed, "
                     "please see the wiki for instructions on how to install requirements"
                 )
+                return False
             else:
                 sender = libsacn.sACNsender(
                     source_name="MQTTany",

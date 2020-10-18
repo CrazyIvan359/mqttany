@@ -26,14 +26,6 @@ I2C Core
 
 __all__ = ["load", "start", "stop", "device_message", "poll_message"]
 
-try:
-    from smbus2 import SMBus
-except ImportError:
-    raise ImportError(
-        "MQTTany's I2C module requires 'smbus2' to be installed, "
-        "please see the wiki for instructions on how to install requirements"
-    )
-
 from threading import Timer
 
 from config import parse_config
@@ -75,7 +67,7 @@ def build_device(device_id, device_config):
 
     if bus is not None:
         if bus not in buses:
-            buses[bus] = SMBus()
+            buses[bus] = None
     else:
         log.error("Failed to configure %s '%s', bus is invalid.", device.upper(), name)
         return None
@@ -115,6 +107,17 @@ def load(config_raw={}):
     """
     Initializes the module
     """
+    try:
+        from smbus2 import SMBus
+
+        del SMBus
+    except ModuleNotFoundError:
+        log.error(
+            "MQTTany's I2C module requires 'smbus2' to be installed, "
+            "please see the wiki for instructions on how to install requirements"
+        )
+        return False
+
     conf_options = updateConfOptions(CONF_OPTIONS)
     conf_options.move_to_end("regex:.+")
 
@@ -142,9 +145,12 @@ def start():
     """
     Actions to be done in the subprocess before the loop starts
     """
+    from smbus2 import SMBus
+
     # Open I2C buses
     log.debug("Opening I2C bus streams")
     for bus in buses:
+        buses[bus] = SMBus()
         try:
             buses[bus].open(bus)
         except IOError as err:
@@ -190,7 +196,8 @@ def stop():
 
     log.debug("Disconnecting from bus streams")
     for bus in buses:
-        buses[bus].close()
+        if buses[bus]:
+            buses[bus].close()
 
 
 def device_message(message: BusMessage):

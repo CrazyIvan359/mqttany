@@ -339,7 +339,7 @@ def start(core_queue, config_file):
         try:
             lib = import_module(name)
             del lib
-        except ImportError:
+        except ModuleNotFoundError:
             log.error("Missing import: %s", name)
             return False
         else:

@@ -174,11 +174,12 @@ class rpiArray(baseArray):
 
         try:
             import rpi_ws281x
-        except ImportError:
-            raise ImportError(
+        except ModuleNotFoundError:
+            self._log.error(
                 "MQTTany's LED module requires 'rpi-ws281x' to be installed, "
                 "please see the wiki for instructions on how to install requirements"
             )
+            return False
 
         if self._pin != 10:
             if not os.access("/dev/mem", os.R_OK | os.W_OK, effective_ids=True):
