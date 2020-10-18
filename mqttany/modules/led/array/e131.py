@@ -52,6 +52,7 @@ CONF_OPTIONS = {
         CONF_KEY_SACN: {
             "type": "section",
             "required": False,
+            "conditions": [(CONF_KEY_OUTPUT, "sacn")],
             CONF_KEY_UNIVERSE: {"type": int, "default": 1},
             CONF_KEY_ADDRESS: {"type": str, "default": None},
             CONF_KEY_SYNC: {"type": int, "default": None},

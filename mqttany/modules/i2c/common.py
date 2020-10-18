@@ -83,7 +83,7 @@ CONF_OPTIONS = OrderedDict(
                 "type": "section",
                 "required": False,
                 CONF_KEY_NAME: {"type": str, "default": "{device_id}"},
-                CONF_KEY_DEVICE: {"type": str},
+                CONF_KEY_DEVICE: {"selection": []},
                 CONF_KEY_BUS: {"type": (int, str), "default": 1},
                 CONF_KEY_ADDRESS: {"type": int},
             },

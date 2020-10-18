@@ -47,8 +47,9 @@ CONF_OPTIONS = {
         CONF_KEY_OUTPUT: {"selection": {"rpi": "rpi", "RPi": "rpi"}},
         CONF_KEY_RPI: {
             "type": "section",
-            "required": False,
-            CONF_KEY_GPIO: {"type": int, "default": None},
+            "required": True,
+            "conditions": [(CONF_KEY_OUTPUT, "rpi")],
+            CONF_KEY_GPIO: {"type": int},
             CONF_KEY_CHIP: {
                 "default": "WS2812B",
                 "selection": ["WS2811", "WS2812", "WS2812B", "SK6812", "SK6812W"],

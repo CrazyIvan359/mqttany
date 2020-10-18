@@ -35,7 +35,6 @@ __all__ = [
     "CONF_KEY_NAME",
     "CONF_KEY_FIRST_INDEX",
     "CONF_KEY_PIN_MODE",
-    "CONF_KEY_INVERT",
     "CONF_OPTIONS",
 ]
 
@@ -73,7 +72,6 @@ CONF_KEY_PIN = "pin"
 CONF_KEY_NAME = "name"
 CONF_KEY_FIRST_INDEX = "first index"
 CONF_KEY_PIN_MODE = "pin mode"
-CONF_KEY_INVERT = "invert"
 
 CONF_OPTIONS = OrderedDict(
     [
@@ -104,7 +102,6 @@ CONF_OPTIONS = OrderedDict(
                 CONF_KEY_NAME: {"type": (str, list), "default": "{pin_id}"},
                 CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
                 CONF_KEY_PIN_MODE: {"selection": {}},
-                CONF_KEY_INVERT: {"type": bool, "default": False},
             },
         ),
     ]

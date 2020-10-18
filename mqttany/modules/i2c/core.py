@@ -37,9 +37,9 @@ except ImportError:
 from threading import Timer
 
 from config import parse_config
-from common import BusMessage, update_dict, validate_id
+from common import BusMessage, validate_id
 
-from modules.i2c.device import getDeviceClass, getConfOptions, getDeviceOptions
+from modules.i2c.device import getDeviceClass, updateConfOptions
 from modules.i2c.common import (  # pylint: disable=unused-import
     log,
     CONFIG,
@@ -115,13 +115,10 @@ def load(config_raw={}):
     """
     Initializes the module
     """
-    # Add device specific options
-    CONF_OPTIONS["regex:.+"].update(getDeviceOptions())
-    # Add device options to root
-    update_dict(CONF_OPTIONS, getConfOptions())
-    CONF_OPTIONS.move_to_end("regex:.+")
+    conf_options = updateConfOptions(CONF_OPTIONS)
+    conf_options.move_to_end("regex:.+")
 
-    config_data = parse_config(config_raw, CONF_OPTIONS, log)
+    config_data = parse_config(config_raw, conf_options, log)
     del config_raw
     if config_data:
         log.debug("Config loaded")

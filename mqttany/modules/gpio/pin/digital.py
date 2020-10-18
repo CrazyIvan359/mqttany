@@ -39,11 +39,13 @@ from gpio import board, Mode, PinMode, PinBias, PinEdge
 
 from modules.gpio import common
 from modules.gpio.pin.base import Pin
-from modules.gpio.common import CONFIG, CONF_KEY_PIN_MODE, CONF_KEY_INVERT
+from modules.gpio.common import CONFIG, CONF_KEY_PIN_MODE
 
 CONF_KEY_DEBOUNCE = "debounce"
-CONF_KEY_INTERRUPT = "interrupt"
 CONF_KEY_RESISTOR = "resistor"
+CONF_KEY_DIGITAL = "digital"
+CONF_KEY_INTERRUPT = "interrupt"
+CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
 
 CONF_OPTIONS = {
@@ -58,15 +60,6 @@ CONF_OPTIONS = {
                 "out": PinMode.OUTPUT,
             },
         },
-        CONF_KEY_INTERRUPT: {
-            "default": PinEdge.NONE,
-            "selection": {
-                "rising": PinEdge.RISING,
-                "falling": PinEdge.FALLING,
-                "both": PinEdge.BOTH,
-                "none": PinEdge.NONE,
-            },
-        },
         CONF_KEY_RESISTOR: {
             "default": PinBias.NONE,
             "selection": {
@@ -78,9 +71,27 @@ CONF_OPTIONS = {
                 "none": PinBias.NONE,
             },
         },
-        CONF_KEY_INITIAL: {
-            "selection": {"ON": True, "on": True, "OFF": False, "off": False},
-            "default": False,
+        CONF_KEY_DIGITAL: {
+            "type": "section",
+            "required": False,
+            "conditions": [
+                (CONF_KEY_PIN_MODE, PinMode.INPUT),
+                (CONF_KEY_PIN_MODE, PinMode.OUTPUT),
+            ],
+            CONF_KEY_INTERRUPT: {
+                "default": PinEdge.NONE,
+                "selection": {
+                    "rising": PinEdge.RISING,
+                    "falling": PinEdge.FALLING,
+                    "both": PinEdge.BOTH,
+                    "none": PinEdge.NONE,
+                },
+            },
+            CONF_KEY_INVERT: {"type": bool, "default": False},
+            CONF_KEY_INITIAL: {
+                "selection": {"ON": True, "on": True, "OFF": False, "off": False},
+                "default": False,
+            },
         },
     },
 }
@@ -104,10 +115,10 @@ class Digital(Pin):
         super().__init__(pin, gpio_mode, id, name, pin_config)
         self._log = logger.get_logger("gpio.digital")
         self._pulse_timer = None
-        self._edge = pin_config[CONF_KEY_INTERRUPT]
         self._bias = pin_config[CONF_KEY_RESISTOR]
-        self._invert = pin_config[CONF_KEY_INVERT]
-        self._initial = pin_config[CONF_KEY_INITIAL]
+        self._edge = pin_config[CONF_KEY_DIGITAL][CONF_KEY_INTERRUPT]
+        self._invert = pin_config[CONF_KEY_DIGITAL][CONF_KEY_INVERT]
+        self._initial = pin_config[CONF_KEY_DIGITAL][CONF_KEY_INITIAL]
         self._handle = board.get_pin(
             pin=pin,
             mode=gpio_mode,

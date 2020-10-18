@@ -52,6 +52,10 @@ automation setup much in order to interface with this version of MQTTany.
   * **GPIO** - Change language for `direction` to `pin mode` to be less specific and lay
     ground work for additional pin modes.
     [#55](https://github.com/CrazyIvan359/mqttany/pull/55)
+  * **GPIO** - move `interrupt`, `invert`, and `initial` settings into a `digital`
+    subsection in config. This was done to align with the new counter pin type to
+    distinguish which pin type these settings apply to.
+    [#78](https://github.com/CrazyIvan359/mqttany/pull/78)
 
 * **Added**
   * Colorized log output to terminal.
@@ -81,6 +85,8 @@ automation setup much in order to interface with this version of MQTTany.
   * Config option `conditions` allows matching a key at the same level to a value.
     Useful for sections or options that are required only for certain modes.
     [#77](https://github.com/CrazyIvan359/mqttany/pull/77)
+  * Update all modules to use config conditions.
+    [#78](https://github.com/CrazyIvan359/mqttany/pull/78)
 
 * **Changed**
   * Convert all string formatting to use *f-strings*. This change means you must be using

@@ -24,7 +24,9 @@ I2C Device
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ["getDeviceClass", "getConfOptions", "getDeviceOptions"]
+__all__ = ["getDeviceClass", "updateConfOptions"]
+
+from common import update_dict
 
 from modules.i2c.device import mcp230xx
 
@@ -39,19 +41,9 @@ def getDeviceClass(device):
     return dev_classes.get(device, None)
 
 
-def getConfOptions():
+def updateConfOptions(conf_options):
     """
-    Return a dict of all additional config options
+    Returns a copy of ``conf_options`` updated with options from each device.
     """
-    conf = {}
-    conf.update(mcp230xx.CONF_OPTIONS)
-    return conf
-
-
-def getDeviceOptions():
-    """
-    Return a dict of all additional device config options
-    """
-    conf = {}
-    conf.update(mcp230xx.CONF_DEVICE_OPTIONS)
-    return conf
+    conf_options = update_dict(conf_options, mcp230xx.CONF_OPTIONS)
+    return conf_options

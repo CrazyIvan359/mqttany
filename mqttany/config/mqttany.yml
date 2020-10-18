@@ -74,19 +74,12 @@ mqtt:
     ### Pin Mode
     #pin mode: 'input' # can be 'input' or 'output'
 
-    ### Pin Interrupt
-    #interrupt: 'none' # can be 'rising', 'falling', 'both', or 'none'
-
     ### Pin Resistor
     #resistor: 'off' # can be 'pullup', 'pulldown', or 'off'
 
-    ### Pin Invert
-    # true means pin states ON=LOW, OFF=HIGH
-    #invert: false # can be true or false
-
-    ### Initial State
-    # must be true/false or 1/0
-    #initial state: 'false'
+    ### Pin Type Specifc Options
+    # Each pin type will have some options specific to it,
+    # consult the documentation for details.
 
   ### Multiple Pin Configuration
   # alternatively a list of pins can be given.

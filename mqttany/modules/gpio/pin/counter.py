@@ -38,7 +38,7 @@ from gpio import board, Mode, PinMode, PinBias, PinEdge
 
 from modules.gpio import common
 from modules.gpio.pin.base import Pin
-from modules.gpio.common import CONFIG, CONF_KEY_PIN_MODE, CONF_KEY_INVERT
+from modules.gpio.common import CONFIG, CONF_KEY_PIN_MODE
 
 now = datetime.now
 
@@ -61,11 +61,11 @@ class Function(enum.Enum):
     FREQ_MAX = enum.auto()
 
 
-CONF_KEY_DEBOUNCE = "debounce"
+CONF_KEY_DEBOUNCE = "debounce"  # added by Digital
+CONF_KEY_RESISTOR = "resistor"  # added by Digital
 CONF_KEY_COUNTER = "counter"
 CONF_KEY_INTERVAL = "interval"
 CONF_KEY_INTERRUPT = "interrupt"
-CONF_KEY_RESISTOR = "resistor"
 CONF_KEY_FUNCTION = "function"
 CONF_KEY_UNIT = "unit"
 CONF_KEY_DIVIDER = "divider"
@@ -73,13 +73,12 @@ CONF_KEY_DIVIDER = "divider"
 CONF_OPTIONS = {
     "regex:.+": {
         CONF_KEY_PIN_MODE: {
-            "selection": {
-                "counter": "COUNTER",
-            },
+            "selection": {"counter": "COUNTER"},
         },
         CONF_KEY_COUNTER: {
             "type": "section",
             "required": False,
+            "conditions": [(CONF_KEY_PIN_MODE, "COUNTER")],
             CONF_KEY_INTERVAL: {"default": 60, "type": int},
             CONF_KEY_INTERRUPT: {
                 "default": PinEdge.RISING,
@@ -87,17 +86,6 @@ CONF_OPTIONS = {
                     "rising": PinEdge.RISING,
                     "falling": PinEdge.FALLING,
                     "both": PinEdge.BOTH,
-                },
-            },
-            CONF_KEY_RESISTOR: {
-                "default": PinBias.NONE,
-                "selection": {
-                    "pullup": PinBias.PULL_UP,
-                    "up": PinBias.PULL_UP,
-                    "pulldown": PinBias.PULL_DOWN,
-                    "down": PinBias.PULL_DOWN,
-                    "off": PinBias.NONE,
-                    "none": PinBias.NONE,
                 },
             },
             CONF_KEY_FUNCTION: {
@@ -145,25 +133,12 @@ class Counter(Pin):
         pin_config[CONF_KEY_PIN_MODE] = PinMode.INPUT
         super().__init__(pin, gpio_mode, id, name, pin_config)
         self._log = logger.get_logger("gpio.counter")
-        self._interval = max(
-            pin_config.get(CONF_KEY_COUNTER, {}).get(CONF_KEY_INTERVAL, 60), 5
-        )
-        self._edge = pin_config.get(CONF_KEY_COUNTER, {}).get(
-            CONF_KEY_INTERRUPT, PinEdge.RISING
-        )
-        self._bias = pin_config.get(CONF_KEY_COUNTER, {}).get(
-            CONF_KEY_RESISTOR, PinBias.NONE
-        )
-        self._function = pin_config.get(CONF_KEY_COUNTER, {}).get(
-            CONF_KEY_FUNCTION, Function.COUNT
-        )
-        self._unit = pin_config.get(CONF_KEY_COUNTER, {}).get(
-            CONF_KEY_UNIT, Unit.MILLIS
-        )
-        self._divider = float(
-            pin_config.get(CONF_KEY_COUNTER, {}).get(CONF_KEY_DIVIDER, 1)
-        )
-        self._invert = pin_config[CONF_KEY_INVERT]
+        self._bias = pin_config.get(CONF_KEY_RESISTOR, PinBias.NONE)
+        self._interval = max(pin_config[CONF_KEY_COUNTER][CONF_KEY_INTERVAL], 5)
+        self._edge = pin_config[CONF_KEY_COUNTER][CONF_KEY_INTERRUPT]
+        self._function = pin_config[CONF_KEY_COUNTER][CONF_KEY_FUNCTION]
+        self._unit = pin_config[CONF_KEY_COUNTER][CONF_KEY_UNIT]
+        self._divider = float(pin_config[CONF_KEY_COUNTER][CONF_KEY_DIVIDER])
         self._timer = None
         self._data_lock = threading.Lock()
         self._data = []
@@ -210,7 +185,6 @@ class Counter(Pin):
                     CONF_KEY_PIN_MODE: "COUNTER",
                     CONF_KEY_INTERRUPT: self._edge.name,
                     CONF_KEY_RESISTOR: self._bias.name,
-                    CONF_KEY_INVERT: self._invert,
                     CONF_KEY_FUNCTION: self._function.name,
                     CONF_KEY_UNIT: self._unit.name,
                     CONF_KEY_DIVIDER: self._divider,

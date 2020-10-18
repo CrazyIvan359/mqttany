@@ -24,7 +24,7 @@ I2C Device MCP230xx
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ["CONF_OPTIONS", "CONF_DEVICE_OPTIONS", "SUPPORTED_DEVICES"]
+__all__ = ["CONF_OPTIONS", "SUPPORTED_DEVICES"]
 
 from collections import OrderedDict
 from enum import Enum
@@ -36,7 +36,7 @@ from config import resolve_type
 from common import BusMessage, BusNode, BusProperty, validate_id
 from modules.i2c.device.base import I2CDevice
 from modules.i2c import common
-from modules.i2c.common import CONF_KEY_NAME
+from modules.i2c.common import CONF_KEY_NAME, CONF_KEY_DEVICE
 
 
 class Logic(Enum):
@@ -64,52 +64,58 @@ CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
 CONF_KEY_FIRST_INDEX = "first index"
 
-CONF_OPTIONS = {}  # added to root config section
-CONF_DEVICE_OPTIONS = {  # added to device definition section
-    CONF_KEY_MCP: OrderedDict(
-        [
-            ("type", "section"),
-            ("required", False),
-            (
-                "regex:.+",
-                {
-                    "type": "section",
-                    "required": False,
-                    CONF_KEY_PIN: {"type": (int, list)},
-                    CONF_KEY_NAME: {"type": (str, list), "default": "{pin_id}"},
-                    CONF_KEY_DIRECTION: {
-                        "default": Direction.INPUT,
-                        "selection": {
-                            "input": Direction.INPUT,
-                            "in": Direction.INPUT,
-                            "output": Direction.OUTPUT,
-                            "out": Direction.OUTPUT,
+CONF_OPTIONS = {
+    "regex:.+": {
+        CONF_KEY_DEVICE: {"selection": ["mcp23008", "mcp23017"]},
+        CONF_KEY_MCP: OrderedDict(
+            [
+                ("type", "section"),
+                ("required", True),
+                (
+                    "conditions",
+                    [(CONF_KEY_DEVICE, "mcp23008"), (CONF_KEY_DEVICE, "mcp23017")],
+                ),
+                (
+                    "regex:.+",
+                    {
+                        "type": "section",
+                        "required": False,
+                        CONF_KEY_PIN: {"type": (int, list)},
+                        CONF_KEY_NAME: {"type": (str, list), "default": "{pin_id}"},
+                        CONF_KEY_DIRECTION: {
+                            "default": Direction.INPUT,
+                            "selection": {
+                                "input": Direction.INPUT,
+                                "in": Direction.INPUT,
+                                "output": Direction.OUTPUT,
+                                "out": Direction.OUTPUT,
+                            },
                         },
-                    },
-                    CONF_KEY_RESISTOR: {
-                        "default": Resistor.OFF,
-                        "selection": {
-                            "pullup": Resistor.PULL_UP,
-                            "up": Resistor.PULL_UP,
-                            "off": Resistor.OFF,
-                            "none": Resistor.OFF,
+                        CONF_KEY_RESISTOR: {
+                            "default": Resistor.OFF,
+                            "selection": {
+                                "pullup": Resistor.PULL_UP,
+                                "up": Resistor.PULL_UP,
+                                "off": Resistor.OFF,
+                                "none": Resistor.OFF,
+                            },
                         },
-                    },
-                    CONF_KEY_INVERT: {"type": bool, "default": False},
-                    CONF_KEY_INITIAL: {
-                        "selection": {
-                            "ON": True,
-                            "on": True,
-                            "OFF": False,
-                            "off": False,
+                        CONF_KEY_INVERT: {"type": bool, "default": False},
+                        CONF_KEY_INITIAL: {
+                            "selection": {
+                                "ON": True,
+                                "on": True,
+                                "OFF": False,
+                                "off": False,
+                            },
+                            "default": False,
                         },
-                        "default": False,
+                        CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
                     },
-                    CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
-                },
-            ),
-        ]
-    )
+                ),
+            ]
+        ),
+    }
 }
 
 
