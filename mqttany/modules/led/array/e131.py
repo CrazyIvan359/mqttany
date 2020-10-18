@@ -209,12 +209,13 @@ class sacnArray(baseArray):
         Cleanup actions when stopping
         """
         super().cleanup()
-        for universe in self._universes:
-            sender.deactivate_output(universe)
-        if not sender.get_active_outputs():
-            sender.stop()
-            global sender_started
-            sender_started = False
+        if sender:
+            for universe in self._universes:
+                sender.deactivate_output(universe)
+            if not sender.get_active_outputs():
+                sender.stop()
+                global sender_started
+                sender_started = False
 
     def show(self) -> None:
         """
