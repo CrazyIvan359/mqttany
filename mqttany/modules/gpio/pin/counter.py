@@ -160,27 +160,36 @@ class Counter(Pin):
         self._unit = pin_config.get(CONF_KEY_COUNTER, {}).get(
             CONF_KEY_UNIT, Unit.MILLIS
         )
-        self._divider = pin_config.get(CONF_KEY_COUNTER, {}).get(CONF_KEY_DIVIDER, 1)
+        self._divider = float(
+            pin_config.get(CONF_KEY_COUNTER, {}).get(CONF_KEY_DIVIDER, 1)
+        )
         self._invert = pin_config[CONF_KEY_INVERT]
         self._timer = None
         self._data_lock = threading.Lock()
         self._data = []
         self._functions = {
             Function.RAW: lambda data: f'{{"pulses": {[round(f * self._unit.value) for f in data]}}}',
-            Function.COUNT: len,
+            Function.COUNT: lambda data: len(data) * self._divider,
             Function.AVERAGE: lambda data: getattr(  # use fmean if available
                 statistics, "fmean", statistics.mean
-            )([round(f * self._unit.value) for f in data]),
+            )([round(f * self._unit.value) for f in data])
+            * self._divider,
             Function.MEDIAN: lambda data: statistics.median(
                 [round(f * self._unit.value) for f in data]
-            ),
-            Function.MIN: lambda data: min([round(f * self._unit.value) for f in data]),
-            Function.MAX: lambda data: max([round(f * self._unit.value) for f in data]),
+            )
+            * self._divider,
+            Function.MIN: lambda data: min([round(f * self._unit.value) for f in data])
+            * self._divider,
+            Function.MAX: lambda data: max([round(f * self._unit.value) for f in data])
+            * self._divider,
             Function.FREQ_AVG: lambda data: round(
-                1.0 / getattr(statistics, "fmean", statistics.mean)(data), 3
+                1.0
+                / (getattr(statistics, "fmean", statistics.mean)(data))
+                * self._divider,
+                3,
             ),
-            Function.FREQ_MIN: lambda data: round(1.0 / min(data), 3),
-            Function.FREQ_MAX: lambda data: round(1.0 / max(data), 3),
+            Function.FREQ_MIN: lambda data: round(1.0 / (min(data) * self._divider), 3),
+            Function.FREQ_MAX: lambda data: round(1.0 / (max(data) * self._divider), 3),
         }
         self._handle = board.get_pin(
             pin=pin,
