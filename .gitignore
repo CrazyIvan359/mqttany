@@ -18,4 +18,4 @@ build/
 _build/
 
 # Environments
-.venv
+.venv*
