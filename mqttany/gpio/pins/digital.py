@@ -252,12 +252,13 @@ class Interrupt:
         while not self._poll_kill.is_set():
             if self._pin._interface.poll(1):
                 self._state, self._start_us = self.get_event()
-                if self._debounce_thread:
-                    self._debounce_kill.set()
-                    self._debounce_thread.join()
-                if self._state is not None:
-                    self._debounce_thread = threading.Thread(target=self._debounce)
-                    self._debounce_thread.start()
+                if self._start_us:
+                    if self._debounce_thread:
+                        self._debounce_kill.set()
+                        self._debounce_thread.join()
+                    if self._state is not None:
+                        self._debounce_thread = threading.Thread(target=self._debounce)
+                        self._debounce_thread.start()
 
     def _debounce(self):
         end_us = self._start_us + self._debounce_us
@@ -265,8 +266,9 @@ class Interrupt:
             sleep(0.0005)  # 0.5ms
         if not self._debounce_kill.is_set() and self._state == self._pin.read():
             if callable(self._pin._interrupt_callback):
-                threading.Thread(target=self._pin._callback, args=(self._state)).run()
-        self._start_us = None
+                threading.Thread(
+                    target=self._pin._interrupt_callback, args=(self._state,)
+                ).run()
         self._debounce_kill.clear()
         self._debounce_thread = None
 
@@ -290,9 +292,7 @@ class Interrupt:
 class cdevInterrupt(Interrupt):
     def get_event(self) -> (bool, int):
         edge, ns = self._pin._interface.read_event()
-        return True if edge == periphery_PinEdge[PinEdge.RISING] else False, int(
-            ns / 1000
-        )
+        return edge == periphery_PinEdge[PinEdge.RISING], int(ns / 1000.0) / 1000000.0
 
 
 class sysfsInterrupt(Interrupt):
