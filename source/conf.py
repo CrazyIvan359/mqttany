@@ -48,7 +48,7 @@ copyright = "2020, MQTTany Contributors"
 author = "Michael Murton"
 
 # The full version, including alpha/beta/rc tags
-release = "v0.11.0"
+release = "v0.12.0"
 version = release
 
 # Provide global replace directives
@@ -105,7 +105,7 @@ html_theme_options = {
     "prev_next_buttons_location": "bottom",
     "style_external_links": True,
     #'vcs_pageview_mode': 'blob',
-    "style_nav_header_background": "navy",
+    #"style_nav_header_background": "navy",
     # Toc options
     "collapse_navigation": False,
     "sticky_navigation": False,
