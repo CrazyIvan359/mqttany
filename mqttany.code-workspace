@@ -8,6 +8,9 @@
         "python.autoComplete.extraPaths": [
             "./mqttany"
         ],
+        "python.analysis.extraPaths": [
+            "./mqttany"
+        ],
         "python.formatting.provider": "black",
         "python.linting.enabled": true,
         "python.linting.pylintEnabled": true,
@@ -17,6 +20,6 @@
         "editor.formatOnSave": true,
         "editor.rulers": [
             88
-        ],
+        ]
     }
 }
