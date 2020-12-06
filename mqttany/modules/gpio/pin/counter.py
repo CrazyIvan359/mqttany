@@ -77,7 +77,6 @@ CONF_OPTIONS = {
         },
         CONF_KEY_COUNTER: {
             "type": "section",
-            "required": False,
             "conditions": [(CONF_KEY_PIN_MODE, "COUNTER")],
             CONF_KEY_INTERVAL: {"default": 60, "type": int},
             CONF_KEY_INTERRUPT: {

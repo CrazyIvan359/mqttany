@@ -47,7 +47,6 @@ CONF_OPTIONS = {
         CONF_KEY_OUTPUT: {"selection": {"rpi": "rpi", "RPi": "rpi"}},
         CONF_KEY_RPI: {
             "type": "section",
-            "required": True,
             "conditions": [(CONF_KEY_OUTPUT, "rpi")],
             CONF_KEY_GPIO: {"type": int},
             CONF_KEY_CHIP: {

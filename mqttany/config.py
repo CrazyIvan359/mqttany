@@ -125,18 +125,13 @@ def parse_config(
                         return False
 
             if condition_matched != False:
-                if value == "**NO DATA**" and option.get("type", None) == "section":
-                    if option.get("required", True):
-                        log.error("Missing required section '%s'", name)
-                        return False
-                    elif condition_matched:
-                        log.trace("Descending into section '%s'", name)
-                        section_valid, config[name] = parse_dict({}, option)
-                        return True
-
-                elif isinstance(value, dict):
+                if isinstance(value, dict) or (
+                    value == "**NO DATA**" and option.get("type", None) == "section"
+                ):
                     log.trace("Descending into section '%s'", name)
-                    section_valid, section_config = parse_dict(value, option)
+                    section_valid, section_config = parse_dict(
+                        {} if value == "**NO DATA**" else value, option
+                    )
                     if not section_valid and option.get("required", True):
                         log.error("Required section '%s' is not valid", name)
                         return False

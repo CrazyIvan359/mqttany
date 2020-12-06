@@ -73,7 +73,6 @@ CONF_OPTIONS = {
         },
         CONF_KEY_DIGITAL: {
             "type": "section",
-            "required": False,
             "conditions": [
                 (CONF_KEY_PIN_MODE, PinMode.INPUT),
                 (CONF_KEY_PIN_MODE, PinMode.OUTPUT),

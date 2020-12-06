@@ -70,7 +70,6 @@ CONF_OPTIONS = {
         CONF_KEY_MCP: OrderedDict(
             [
                 ("type", "section"),
-                ("required", True),
                 (
                     "conditions",
                     [(CONF_KEY_DEVICE, "mcp23008"), (CONF_KEY_DEVICE, "mcp23017")],

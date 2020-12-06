@@ -40,7 +40,6 @@ CONF_KEY_UNIT = "unit"
 CONF_OPTIONS = {  # will be added to device section of core CONF_OPTIONS
     CONF_KEY_DS18X20: {
         "type": "section",
-        "required": False,
         CONF_KEY_UNIT: {
             "default": "C",
             "selection": ["C", "c", "F", "f"],

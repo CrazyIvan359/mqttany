@@ -2,6 +2,14 @@
 
 ## Development
 
+* **Added**
+  * Config parser now considers required sections with defaults for all options to be
+    valid and will populate the section in the returned configuration.
+
+* **Fixed**
+  * Config parser was reporting valid configuration for optional conditional sections
+    containing invalid values. Fixes problem 1 in [#80](https://github.com/CrazyIvan359/mqttany/issues/80).
+
 ## 0.12.0
 
 ### Major Core Rewrite
