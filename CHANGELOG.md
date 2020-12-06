@@ -1,19 +1,23 @@
 # MQTTany Change Log
 
-## Development
+## 0.12.1
 
 * **Changed**
   * Config parser no long converts selection keys to strings before matching.
+    [#82](https://github.com/CrazyIvan359/mqttany/pull/82)
 
 * **Added**
   * Config parser now considers required sections with defaults for all options to be
     valid and will populate the section in the returned configuration.
+    [#81](https://github.com/CrazyIvan359/mqttany/pull/81)
 
 * **Fixed**
   * Config parser was reporting valid configuration for optional conditional sections
     containing invalid values. Fixes problem 1 in [#80](https://github.com/CrazyIvan359/mqttany/issues/80).
+    [#81](https://github.com/CrazyIvan359/mqttany/pull/81)
   * YAML returning booleans for unquoted `on` or `off` strings, booleans have been
     added as accepted values where applicable to avoid confusion. Fixes [#80](https://github.com/CrazyIvan359/mqttany/issues/80).
+    [#82](https://github.com/CrazyIvan359/mqttany/pull/82)
 
 ## 0.12.0
 
