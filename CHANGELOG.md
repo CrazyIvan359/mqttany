@@ -2,6 +2,9 @@
 
 ## Development
 
+* **Changed**
+  * Config parser no long converts selection keys to strings before matching.
+
 * **Added**
   * Config parser now considers required sections with defaults for all options to be
     valid and will populate the section in the returned configuration.
@@ -9,6 +12,8 @@
 * **Fixed**
   * Config parser was reporting valid configuration for optional conditional sections
     containing invalid values. Fixes problem 1 in [#80](https://github.com/CrazyIvan359/mqttany/issues/80).
+  * YAML returning booleans for unquoted `on` or `off` strings, booleans have been
+    added as accepted values where applicable to avoid confusion. Fixes [#80](https://github.com/CrazyIvan359/mqttany/issues/80).
 
 ## 0.12.0
 

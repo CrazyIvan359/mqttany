@@ -68,6 +68,7 @@ CONF_OPTIONS = {
                 "pulldown": PinBias.PULL_DOWN,
                 "down": PinBias.PULL_DOWN,
                 "off": PinBias.NONE,
+                False: PinBias.NONE,
                 "none": PinBias.NONE,
             },
         },
@@ -88,7 +89,14 @@ CONF_OPTIONS = {
             },
             CONF_KEY_INVERT: {"type": bool, "default": False},
             CONF_KEY_INITIAL: {
-                "selection": {"ON": True, "on": True, "OFF": False, "off": False},
+                "selection": {
+                    "ON": True,
+                    "on": True,
+                    True: True,
+                    "OFF": False,
+                    "off": False,
+                    False: False,
+                },
                 "default": False,
             },
         },

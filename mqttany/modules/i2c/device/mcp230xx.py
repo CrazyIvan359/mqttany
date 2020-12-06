@@ -96,6 +96,7 @@ CONF_OPTIONS = {
                                 "pullup": Resistor.PULL_UP,
                                 "up": Resistor.PULL_UP,
                                 "off": Resistor.OFF,
+                                False: Resistor.OFF,
                                 "none": Resistor.OFF,
                             },
                         },
@@ -104,8 +105,10 @@ CONF_OPTIONS = {
                             "selection": {
                                 "ON": True,
                                 "on": True,
+                                True: True,
                                 "OFF": False,
                                 "off": False,
+                                False: False,
                             },
                             "default": False,
                         },

@@ -184,16 +184,16 @@ def parse_config(
                                 return False
 
                         elif "selection" in option:
-                            if str(value) in option["selection"]:
+                            if value in option["selection"]:
                                 log.trace(
                                     "Got selection '%s' for config option '%s'",
                                     value,
                                     name,
                                 )
                                 if isinstance(option["selection"], dict):
-                                    config[name] = option["selection"][str(value)]
+                                    config[name] = option["selection"][value]
                                 else:
-                                    config[name] = str(value)
+                                    config[name] = value
                             else:
                                 log.error(
                                     "Value '%s' for config option '%s' is not one of %s",
