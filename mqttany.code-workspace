@@ -20,6 +20,11 @@
         "editor.formatOnSave": true,
         "editor.rulers": [
             88
-        ]
+        ],
+        "[markdown]": {
+            "editor.wordWrap": "on",
+            "editor.quickSuggestions": false,
+            "files.trimTrailingWhitespace": false
+        }
     }
 }
