@@ -11,7 +11,7 @@ your home automation solution.
 Checkout the [Docs](https://crazyivan359.github.io/mqttany/index.html) to get
 started or download the latest [Release](https://github.com/CrazyIvan359/mqttany/releases).  
 If you run into issues and need a hand, or have a suggestion, you can post in the
-[Discussion](https://github.com/CrazyIvan359/mqttany/discussions) tab.
+[Discussions](https://github.com/CrazyIvan359/mqttany/discussions) tab.
 
 ## Communication Modules
 
