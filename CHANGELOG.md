@@ -2,6 +2,11 @@
 
 ## Development
 
+* **Changed**
+  * GPIO CDev interrupts now use Python timestamp instead of event timestamp. On some
+    systems it seems that it reports uptime nanoseconds, not epoch nanoseconds. Fixes
+    [#86](https://github.com/CrazyIvan359/mqttany/issues/86).
+
 * **Fixed**
   * Math error in GPIO debounce calculation, multiplied when I should have divided. Also
     corrects cast error in CDev interrupt where epoch nanoseconds (1.6×10<sup>15</sup>)

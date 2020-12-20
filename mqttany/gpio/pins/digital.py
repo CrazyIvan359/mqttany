@@ -300,7 +300,8 @@ class cdevInterrupt(Interrupt):
         edge, ns = self._pin._interface.read_event()
         return (
             edge == periphery_PinEdge[PinEdge.RISING],
-            round(ns / 1000000000.0, 6),
+            # round(ns / 1000000000.0, 6),
+            now().timestamp(),
         )
 
 
