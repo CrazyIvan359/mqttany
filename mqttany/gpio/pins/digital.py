@@ -236,10 +236,10 @@ class Interrupt:
     ):
         self._pin = pin
         self._edge = pin.edge
-        self._debounce_us = pin._interrupt_debounce * 1000.0
+        self._debounce_s = pin._interrupt_debounce / 1000.0
         self._state = None
         self._state_last = None
-        self._start_us = None
+        self._start_s = None
         self._debounce_thread = None
         self._debounce_kill = threading.Event()
         self._poll_thread = None
@@ -251,17 +251,23 @@ class Interrupt:
     def _poll(self):
         while not self._poll_kill.is_set():
             if self._pin._interface.poll(1):
-                self._state, self._start_us = self.get_event()
-                if self._start_us:
+                self._state, self._start_s = self.get_event()
+                if self._start_s:
                     if self._debounce_thread:
                         self._debounce_kill.set()
                         self._debounce_thread.join()
                     if self._state is not None:
                         self._debounce_thread = threading.Thread(target=self._debounce)
                         self._debounce_thread.start()
+                        log.trace(
+                            "%s edge detected on pin %s with timestamp %.6fs",
+                            "Rising" if self._state else "Falling",
+                            self._pin.name,
+                            self._start_s,
+                        )
 
     def _debounce(self):
-        end_us = self._start_us + self._debounce_us
+        end_us = self._start_s + self._debounce_s
         while not self._debounce_kill.is_set() and end_us > now().timestamp():
             sleep(0.0005)  # 0.5ms
         if not self._debounce_kill.is_set() and self._state == self._pin.read():
@@ -292,7 +298,10 @@ class Interrupt:
 class cdevInterrupt(Interrupt):
     def get_event(self) -> (bool, int):
         edge, ns = self._pin._interface.read_event()
-        return edge == periphery_PinEdge[PinEdge.RISING], int(ns / 1000.0) / 1000000.0
+        return (
+            edge == periphery_PinEdge[PinEdge.RISING],
+            round(ns / 1000000000.0, 6),
+        )
 
 
 class sysfsInterrupt(Interrupt):

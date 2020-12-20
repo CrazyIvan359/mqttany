@@ -2,6 +2,11 @@
 
 ## Development
 
+* **Fixed**
+  * Math error in GPIO debounce calculation, multiplied when I should have divided. Also
+    corrects cast error in CDev interrupt where epoch nanoseconds (1.6×10<sup>15</sup>)
+    is cast to a 32-bit integer (max 2.15×10<sup>9</sup>). Fixes [#85](https://github.com/CrazyIvan359/mqttany/issues/85).
+
 ## 0.12.1
 
 * **Changed**
