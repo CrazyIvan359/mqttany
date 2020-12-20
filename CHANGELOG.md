@@ -1,16 +1,19 @@
 # MQTTany Change Log
 
+## Development
+
 ## 0.12.2
 
 * **Changed**
   * GPIO CDev interrupts now use Python timestamp instead of event timestamp. On some
     systems it seems that it reports uptime nanoseconds, not epoch nanoseconds. Fixes
-    [#86](https://github.com/CrazyIvan359/mqttany/issues/86).
+    [#86](https://github.com/CrazyIvan359/mqttany/issues/86). [#88](https://github.com/CrazyIvan359/mqttany/pull/88)
 
 * **Fixed**
   * Math error in GPIO debounce calculation, multiplied when I should have divided. Also
     corrects cast error in CDev interrupt where epoch nanoseconds (1.6×10<sup>15</sup>)
     is cast to a 32-bit integer (max 2.15×10<sup>9</sup>). Fixes [#85](https://github.com/CrazyIvan359/mqttany/issues/85).
+    [#87](https://github.com/CrazyIvan359/mqttany/pull/87)
 
 ## 0.12.1
 
