@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## Development
+## 0.12.2
 
 * **Changed**
   * GPIO CDev interrupts now use Python timestamp instead of event timestamp. On some
