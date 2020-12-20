@@ -5,15 +5,14 @@
         }
     ],
     "settings": {
-        "python.autoComplete.extraPaths": [
-            "./mqttany"
-        ],
+        "python.analysis.diagnosticMode": "workspace",
         "python.analysis.extraPaths": [
             "./mqttany"
         ],
+        "python.autoComplete.extraPaths": [
+            "./mqttany"
+        ],
         "python.formatting.provider": "black",
-        "python.linting.enabled": true,
-        "python.linting.pylintEnabled": true,
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true,
         "editor.renderWhitespace": "all",

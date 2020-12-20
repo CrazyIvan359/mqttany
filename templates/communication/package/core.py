@@ -25,24 +25,27 @@ Communication Module Template
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from config import parse_config
-from common import BusMessage
+import typing as t
 
-from modules.comm_pkg_template import common
-from modules.comm_pkg_template.common import (
-    log,
-    core_queue,
-    receive_queue,
-    CONFIG,
-    CONF_KEY_STRING,
+from config import parse_config
+
+from common import SubscribeMessage
+
+from . import common
+from .common import (
     CONF_KEY_FIXED_TYPE,
     CONF_KEY_SELECTION,
+    CONF_KEY_STRING,
     CONF_KEY_SUBSECTION,
     CONF_OPTIONS,
+    CONFIG,
+    core_queue,
+    log,
+    receive_queue,
 )
 
 
-def load(config_raw) -> bool:
+def load(config_raw: t.Dict[str, t.Any]) -> bool:
     """
     This function runs on the main process after the module is imported. It should parse
     and validate the configuration and do other basic setup of the module. Do not start
@@ -78,9 +81,9 @@ def stop() -> None:
     pass
 
 
-def transmit_callback(message: BusMessage) -> bool:
+def transmit_callback(message: SubscribeMessage) -> bool:
     """
-    This function is required and must accept exactly one argument of type ``BusMessage``.
+    This function is required and must accept exactly one argument of type ``SubscribeMessage``.
     It will be called when there is a message to be sent. If the sending succeeds it must
     return ``True``. If sending fails and it returns ``False``, MQTTany will queue the
     message and wait 500ms before attempting to send again.

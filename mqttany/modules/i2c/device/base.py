@@ -26,10 +26,12 @@ I2C Device Common
 
 __all__ = ["I2CDevice"]
 
-from typing import List
+import typing as t
 
-from common import BusMessage, BusNode, BusProperty
-from modules.i2c import common
+from common import BusNode, BusProperty, PublishMessage, SubscribeMessage
+from logger import mqttanyLogger
+
+from .. import common
 
 
 class I2CDevice:
@@ -38,16 +40,26 @@ class I2CDevice:
     """
 
     def __init__(
-        self, id: str, name: str, device: str, address: int, bus, bus_path: str
-    ):
+        self,
+        id: str,
+        name: str,
+        device: str,
+        address: int,
+        bus: object,
+        bus_path: str,
+        *args: t.Any,
+        **kwargs: t.Any,
+    ) -> None:
+        from smbus2 import SMBus
+
         self._setup = False
         self._id = id
         self._name = name
         self._device = device.upper()
         self._address = address
-        self._bus = bus
+        self._bus: SMBus = t.cast(SMBus, bus)
         self._bus_path = bus_path
-        self._log = None  # must be set by subclass
+        self._log: mqttanyLogger = None  # type: ignore - must be set by subclass
 
     def get_node(self) -> BusNode:
         """
@@ -77,6 +89,13 @@ class I2CDevice:
             # check device is on the line
             try:
                 self._bus.write_quick(self.address)
+                common.publish_queue.put_nowait(
+                    PublishMessage(
+                        path=f"{self._id}/address",
+                        content=f"0x{self._address:02x}",
+                        mqtt_retained=True,
+                    )
+                )
                 return True
             except IOError:
                 self._log.error(
@@ -85,14 +104,6 @@ class I2CDevice:
                     self._name,
                     self._address,
                     self._bus_path,
-                )
-            else:
-                common.publish_queue.put_nowait(
-                    BusMessage(
-                        path=f"{self._id}/address",
-                        content=f"0x{self._address:02x}",
-                        mqtt_retained=True,
-                    )
                 )
         return False
 
@@ -109,14 +120,14 @@ class I2CDevice:
         """
         raise NotImplementedError
 
-    def message_callback(self, message: BusMessage) -> None:
+    def message_callback(self, message: SubscribeMessage) -> None:
         """
         Subclasses MUST override this method.
         Handles messages received for this device.
         """
         raise NotImplementedError
 
-    def _read_byte(self, register: int) -> int:
+    def _read_byte(self, register: int) -> t.Union[int, None]:
         """
         Read byte from I2C device.
         Returns ``int`` or ``None`` if read fails.
@@ -178,7 +189,7 @@ class I2CDevice:
                 return True
         return False
 
-    def _read_word(self, register: int) -> int:
+    def _read_word(self, register: int) -> t.Union[int, None]:
         """
         Read 16-bit word from I2C device.
         Returns ``int`` or ``None`` if read fails.
@@ -240,7 +251,7 @@ class I2CDevice:
                 return True
         return False
 
-    def _read_block(self, register: int, length: int) -> List[int]:
+    def _read_block(self, register: int, length: int) -> t.Union[t.Sequence[int], None]:
         """
         Read up to 32 bytes from I2C device.
         Returns list of ``bytes`` or ``None`` if read fails.
@@ -272,7 +283,7 @@ class I2CDevice:
                 return data
         return None
 
-    def _write_block(self, register: int, data: List[int]) -> bool:
+    def _write_block(self, register: int, data: t.Sequence[int]) -> bool:
         """
         Write list of up to 32 bytes to I2C device.
         Returns ``True`` if success, ``False`` otherwise.

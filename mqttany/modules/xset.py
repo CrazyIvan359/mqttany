@@ -27,20 +27,24 @@ XSET Module
 
 __all__ = []
 
-import json, subprocess
+import json
+import multiprocessing as mproc
+import subprocess
+import typing as t
 from collections import OrderedDict
 
 import logger
+from common import BusMessage, BusNode, BusProperty, PublishMessage, SubscribeMessage
 from config import parse_config
-from common import BusMessage, BusNode, BusProperty
+
 from modules import ModuleType
 
-_module_type = ModuleType.INTERFACE
+_module_type = ModuleType.INTERFACE  # type: ignore
 
 CONF_KEY_DEFAULT_DISPLAY = "default display"
 CONF_KEY_STARTUP_COMMANDS = "startup commands"
 
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (CONF_KEY_DEFAULT_DISPLAY, {"type": str, "default": None}),
         (CONF_KEY_STARTUP_COMMANDS, {"type": list}),
@@ -48,11 +52,11 @@ CONF_OPTIONS = OrderedDict(
 )
 
 log = logger.get_logger("xset")
-CONFIG = {}
+CONFIG: t.Dict[str, t.Any] = {}
 
-publish_queue = None
-subscribe_queue = None
-nodes = {
+publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+subscribe_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+nodes: t.Dict[str, BusNode] = {
     "xset": BusNode(
         name="XSET",
         type="Module",
@@ -65,7 +69,7 @@ nodes = {
 }
 
 
-def load(config_raw={}):
+def load(config_raw: t.Dict[str, t.Any] = {}) -> bool:
     """
     Initializes the module
     """
@@ -81,7 +85,7 @@ def load(config_raw={}):
         return False
 
 
-def start():
+def start() -> None:
     """
     Actions to be done in the subprocess before the loop starts
     """
@@ -91,7 +95,7 @@ def start():
             run_xset(command)
 
 
-def message_callback(message: BusMessage):
+def message_callback(message: SubscribeMessage) -> None:
     """
     Callback for commands
     """
@@ -101,34 +105,36 @@ def message_callback(message: BusMessage):
         log.debug("Received message on unregistered path: %s", message)
 
 
-def run_xset(content):
+def run_xset(content: str) -> None:
     """
     Processes a command
     """
     try:
-        content = json.loads(content)
+        payload: t.Dict[str, t.Any] = json.loads(content)
     except ValueError:
         log.error("Received malformed JSON '%s'", content)
     else:
-        command = content.get("command", None)
+        command = payload.get("command", None)
 
         if command:
-            display = content.get("display", CONFIG[CONF_KEY_DEFAULT_DISPLAY])
+            display = payload.get("display", CONFIG[CONF_KEY_DEFAULT_DISPLAY])
             display = f"-display {display}" if display else ""
             # strip out commands that follow for security
             command = command.split(";")[0].split("&")[0].split("|")[0].strip()
             command = f"xset {display} {command}"
             log.debug("Running command '%s'", command)
-            publish_queue.put_nowait(BusMessage(path="xset/command", content=command))
+            publish_queue.put_nowait(
+                PublishMessage(path="xset/command", content=command)
+            )
             result = subprocess.run(
                 command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
             )
             log.trace("Command '%s' result: %s", command, result.stdout)
             publish_queue.put_nowait(
-                BusMessage(path="xset/stdout", content=result.stdout)
+                PublishMessage(path="xset/stdout", content=result.stdout)
             )
             publish_queue.put_nowait(
-                BusMessage(path="xset/stderr", content=result.stderr)
+                PublishMessage(path="xset/stderr", content=result.stderr)
             )
         else:
             log.error("No command provided in message '%s'", content)

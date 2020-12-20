@@ -25,30 +25,32 @@ Interface Module Template
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = []
+__all__ = ["load", "start", "stop", "message_callback", "log", "nodes"]
 
-from mprop import mproperty
+import multiprocessing as mproc
 
 from modules import ModuleType
+from mprop import mproperty
 
-from modules.interface_pkg_template.core import load, start, stop
-from modules.interface_pkg_template.core import message_callback
-from modules.interface_pkg_template import common
-from modules.interface_pkg_template.common import log, nodes
+from common import BusMessage
 
-_module_type = ModuleType.INTERFACE
-_publish_queue = None
-subscribe_queue = None
+from . import common
+from .common import log, nodes
+from .core import load, message_callback, start, stop
+
+_module_type = ModuleType.INTERFACE  # type: ignore
+_publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+subscribe_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 
 @mproperty
-def publish_queue(module):
+def publish_queue(module: object) -> "mproc.Queue[BusMessage]":
     return _publish_queue
 
 
 @publish_queue.setter
-def publish_queue(module, value):
-    module._publish_queue = value
+def publish_queue(module: object, value: "mproc.Queue[BusMessage]") -> None:
+    module._publish_queue = value  # type: ignore
     common.publish_queue = value
     # Do not try assigning the queue to attributes of other files as that
     # will likely result in a circular import!

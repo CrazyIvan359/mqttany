@@ -27,26 +27,32 @@ LED Animations
 
 __all__ = ["load_animations"]
 
-import time
-import os
-import inspect
 import importlib.util
+import inspect
+import os
+import threading
+import time
+import typing as t
+from collections import Sequence
 
 import logger
 from logger import log_traceback
 
-from modules.led.common import log, CONFIG, CONF_KEY_ANIM_DIR
+from .array.base import baseArray
+from .common import CONF_KEY_ANIM_DIR, CONFIG, Color, log
 
 log = logger.get_logger("led.anim")
 
 DEFAULT_PATH = "/etc/mqttany/led-anim"
 
 
-def load_animations():
+def load_animations() -> t.Dict[str, t.Callable[[baseArray, threading.Event], None]]:
     """
     Loads custom animations and returns a dictionary of them and the built-ins.
     """
-    anims = {  # built-in animations
+    anims: t.Dict[
+        str, t.Callable[[baseArray, threading.Event], None]
+    ] = {  # built-in animations
         "on": anim_on,
         "off": anim_off,
         "set.brightness": anim_set_brightness,
@@ -60,11 +66,14 @@ def load_animations():
         "test.order": anim_testorder,
         "test.array": anim_testarray,
     }
-    utils = [parse_color, parse_pixel]  # utility functions
+    utils: t.List[t.Callable[[baseArray, *t.Any], t.Any]] = [  # utility functions
+        parse_color,
+        parse_pixel,
+    ]
 
     log.debug("Loading animations")
 
-    animpaths = [DEFAULT_PATH] if os.path.isdir(DEFAULT_PATH) else []
+    animpaths: t.List[str] = [DEFAULT_PATH] if os.path.isdir(DEFAULT_PATH) else []
     animpaths += (
         CONFIG[CONF_KEY_ANIM_DIR]
         if isinstance(CONFIG[CONF_KEY_ANIM_DIR], list)
@@ -85,9 +94,9 @@ def load_animations():
                     mod_anims = []
 
                     try:
-                        spec = importlib.util.spec_from_file_location("*", filename)
+                        spec = importlib.util.spec_from_file_location("*", filename)  # type: ignore
                         module = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(module)
+                        spec.loader.exec_module(module)  # type: ignore
                     except:
                         log.error(
                             "An error occured while importing animation file '%s'",
@@ -100,43 +109,50 @@ def load_animations():
                             "Animation file '%s' imported successfully", module.__name__
                         )
 
-                    # get all functions in module that start with "anim_" and don't have a conflicting name
-                    mod_anims = dict(inspect.getmembers(module, inspect.isfunction))
-                    for func in [key for key in mod_anims]:
-                        if not func.startswith("anim_"):
-                            mod_anims.pop(func, None)
+                        # get all functions in module that start with "anim_" and don't have a conflicting name
+                        mod_anims = dict(inspect.getmembers(module, inspect.isfunction))
+                        for func_name in [key for key in mod_anims]:
+                            if not func_name.startswith("anim_"):
+                                mod_anims.pop(func_name, None)
+                                log.trace(
+                                    "Ignoring function '%s' in '%s' as it does not start with 'anim_",
+                                    func_name,
+                                    os.path.join(animpath, filename),
+                                )
+                            elif not callable(mod_anims[func_name]):
+                                # TODO check function signatures
+                                mod_anims.pop(func_name, None)
+                                log.warn(
+                                    "Ignoring animation '%s.%s' in '%s' as it is not callable",
+                                    module.__name__,
+                                    func_name[5:],
+                                    os.path.join(animpath, filename),
+                                )
+                            elif f"{module.__name__}.{func_name[5:]}" in mod_anims:
+                                mod_anims.pop(func_name, None)
+                                log.warn(
+                                    "Duplicate animation '%s.%s' in '%s' is being ignored",
+                                    module.__name__,
+                                    func_name[5:],
+                                    os.path.join(animpath, filename),
+                                )
+
+                        # add all functions to main anim list, names are "module.funcname" with "anim_" prefix removed
+                        for func_name in mod_anims:
+                            anims[f"{module.__name__}.{func_name[5:]}"] = mod_anims[
+                                func_name
+                            ]
                             log.trace(
-                                "Ignoring function '%s' in '%s' as it does not start with 'anim_",
-                                func,
-                                os.path.join(animpath, filename),
-                            )
-                        elif not callable(func):
-                            mod_anims.pop(func, None)
-                            log.warn(
-                                "Ignoring animation '%s.%s' in '%s' as it is not callable",
+                                "Animation '%s.%s' added",
                                 module.__name__,
-                                func[5:],
-                                os.path.join(animpath, filename),
-                            )
-                        elif f"{module.__name__}.{func[5:]}" in mod_anims:
-                            mod_anims.pop(func, None)
-                            log.warn(
-                                "Duplicate animation '%s.%s' in '%s' is being ignored",
-                                module.__name__,
-                                func[5:],
-                                os.path.join(animpath, filename),
+                                func_name[5:],
                             )
 
-                    # add all functions to main anim list, names are "module.funcname" with "anim_" prefix removed
-                    for func in mod_anims:
-                        anims[f"{module.__name__}.{func[5:]}"] = mod_anims[func]
-                        log.trace("Animation '%s.%s' added", module.__name__, func[5:])
-
-                    log.debug(
-                        "Loaded %d animations from '%s'",
-                        len(mod_anims),
-                        os.path.join(animpath, filename),
-                    )
+                        log.debug(
+                            "Loaded %d animations from '%s'",
+                            len(mod_anims),
+                            os.path.join(animpath, filename),
+                        )
 
                 else:
                     log.trace("Skipping file '%s'", os.path.join(animpath, filename))
@@ -144,10 +160,11 @@ def load_animations():
             log.warn("Animation path '%s' is not a directory", animpath)
 
     # add utils to anims
-    for func in anims:
-        anims[func].__globals__["log"] = logger.get_logger(f"led.anim.{func}")
+    for func_name in anims:
+        func_globals = t.cast(t.Dict[str, t.Any], anims[func_name].__globals__)  # type: ignore
+        func_globals["log"] = logger.get_logger(f"led.anim.{func_name}")
         for util in utils:
-            anims[func].__globals__[util.__name__] = util
+            func_globals[util.__name__] = util
 
     return anims
 
@@ -155,13 +172,21 @@ def load_animations():
 ##### Utility functions #####
 
 
-def parse_color(array, c=None, r=-1, g=-1, b=-1, w=-1, pixel=None):
+def parse_color(
+    array: baseArray,
+    color: t.Optional[t.Union[t.Sequence[int], str, int]] = None,
+    r: int = -1,
+    g: int = -1,
+    b: int = -1,
+    w: int = -1,
+    pixel: t.Optional[int] = None,
+) -> t.Union[Color, None]:
     """
     Returns 24/32-bit color value
 
     Accepts
     - a color:
-        c: can be ``[r, g, b, w]`` or ``#WWRRGGBB`` or ``0xWWRRGGBB``
+        color: can be ``[r, g, b, w]`` or ``#WWRRGGBB`` or ``0xWWRRGGBB``
     - component values
         r: red 0-255
         g: green
@@ -171,62 +196,66 @@ def parse_color(array, c=None, r=-1, g=-1, b=-1, w=-1, pixel=None):
         pixel: pixel index
 
     Returns:
-        - 24/32-bit color value if ``c`` can be parsed or sufficient components
+        - ``Color`` instance if ``c`` can be parsed or sufficient components
           are provided for the channel count of the array, otherwise ``None``.
           If ``pixel`` is provided, any values of ``-1`` will use the current
           channel level for that pixel, otherwise ``0``.
     """
-    color = None
-    pixel_color = 0
+    pixel_color = Color(0, 0, 0, 0)
 
     if pixel is not None:
         pixel_color = array.getPixelColor(pixel)
+    if pixel_color is None:
+        return None
 
-    if c is not None:
-        # check if we got a list
-        if isinstance(c, list):
-            if len(c) >= array.colors:
-                r = c[0]
-                g = c[1]
-                b = c[2]
-                w = c[3] if array.colors == 4 else 0
+    if color is not None:
         # check if we got hex '#WWRRGGBB' or '0xWWRRGGBB'
-        elif isinstance(c, str):
-            c = c.strip("#")
-            if c.startswith("0x"):
-                c = c[2:]
-            c = c.rjust(8, "0")[-8:]
+        if isinstance(color, str):
+            cs = color.strip("#")
+            if cs.startswith("0x"):
+                cs = cs[2:]
+            cs = cs.rjust(8, "0")[-8:]
             try:
-                c = int.from_bytes(bytearray.fromhex(c), byteorder="big")
+                ci = int.from_bytes(bytearray.fromhex(cs), byteorder="big")
             except:
-                log.warn("Could not parse hex 'color' value 0x%04x", c)
+                log.warn("Could not parse hex 'color' value 0x%04x", cs)
             else:
                 # fmt: off
-                r =  (c >> 16) & 255
-                g =  (c >>  8) & 255
-                b =   c        & 255
-                w = ((c >> 24) & 255) if array.colors == 4 else 0
+                r =  (ci >> 16) & 255
+                g =  (ci >>  8) & 255
+                b =   ci        & 255
+                w = ((ci >> 24) & 255) if array.colors == 4 else 0
                 # fmt: on
+        # check if we got a list
+        elif isinstance(color, Sequence):
+            if len(color) >= array.colors:
+                r = color[0]
+                g = color[1]
+                b = color[2]
+                w = color[3] if array.colors == 4 else 0
         # unrecognized
         else:
-            log.warn("Unrecognized 'color' value '%s'", c)
+            log.warn("Unrecognized 'color' value '%s'", color)
 
     if r > -1 or g > -1 or b > -1 or (array.colors == 4 and w > -1):
-        # fmt: off
-        color  = ((r if r > -1 else (pixel_color >> 16)) & 255) << 16
-        color += ((g if g > -1 else (pixel_color >>  8)) & 255) <<  8
-        color +=  (b if b > -1 else (pixel_color      )) & 255
-        color += ((w if w > -1 else (pixel_color >> 24)) & 255) << 24
-        # fmt: on
+        return Color(
+            r if r > -1 else pixel_color.r,
+            g if g > -1 else pixel_color.g,
+            b if b > -1 else pixel_color.b,
+            w if w > -1 else pixel_color.w,
+        )
     else:
         log.warn(
             "Must provide 'color' or at least one of 'red', 'green', 'blue', or 'white'"
         )
 
-    return color
+    return None
 
 
-def parse_pixel(array, p):
+def parse_pixel(
+    array: baseArray,
+    p: t.Union[int, str, t.List[t.Union[int, str, t.Sequence[int]]], None],
+) -> t.List[int]:
     """
     Parses ``p`` into a list of pixel indices, returns ``[]`` if unable.
 
@@ -241,37 +270,39 @@ def parse_pixel(array, p):
 
     """
     pixels = []
-    if isinstance(p, (int, str, list)):
-        if isinstance(p, (int, str)):
-            p = [p]
+    if p is None:
+        return pixels
+    if isinstance(p, (int, str)):
+        p = [p]
 
-        for v in p:
-            # singleton
-            if isinstance(v, int):
-                pixels.append(v)
-            # range (str)
-            elif isinstance(v, str):
-                parts = v.split("-")
-                if len(parts) == 2:
-                    try:
-                        parts[0] = int(parts[0])
-                        parts[1] = int(parts[1])
-                    except:
-                        log.warn("Invalid pixel range '%s'", v)
-                        continue  # skip on invalid range
-                    pixels.extend([i for i in range(parts[0], parts[1] + 1)])
-            # list of (index, count)
-            elif isinstance(v, list) and len(v) == 2:
+    for v in p:
+        # singleton
+        if isinstance(v, int):
+            pixels.append(v)
+        # range (str)
+        elif isinstance(v, str):
+            parts = v.split("-")
+            if len(parts) == 2:
                 try:
-                    v[0] = int(v[0])
-                    v[1] = int(v[1])
+                    start = int(parts[0])
+                    end = int(parts[1])
                 except:
-                    log.warn("Invalid pixel range %s", v)
-                    continue  # skip on invalid values
-                pixels.extend([i for i in range(v[0], v[0] + v[1])])
-            # unrecognized
-            else:
-                log.warn("Unrecognized pixel reference '%s'", v)
+                    log.warn("Invalid pixel range '%s'", v)
+                    continue  # skip on invalid range
+                pixels.extend([i for i in range(start, end + 1)])
+        # sequence of (index, count)
+        elif isinstance(v, (list, tuple)) and len(t.cast(t.Sequence[int], v)) == 2:
+            v = t.cast(t.Sequence[int], v)
+            try:
+                start = int(v[0])
+                end = int(v[1])
+            except:
+                log.warn("Invalid pixel range %s", v)
+                continue  # skip on invalid values
+            pixels.extend([i for i in range(start, start + end)])
+        # unrecognized
+        else:
+            log.warn("Unrecognized pixel reference '%s'", t.cast(t.Any, v))
 
     # remove any out-of-range indices
     if pixels:
@@ -286,25 +317,27 @@ def parse_pixel(array, p):
 ##### Built-in Animations #####
 
 
-def anim_on(array, cancel, **kwargs):
+def anim_on(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Turns on the array
     """
     for i in range(array.count):
-        array.setPixelColor(i, 0xFFFFFFFF)
+        array.setPixel(i, 0xFFFFFFFF)
     array.show()
 
 
-def anim_off(array, cancel, **kwargs):
+def anim_off(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Turns off the array
     """
     for i in range(array.count):
-        array.setPixelColor(i, 0)
+        array.setPixel(i, 0)
     array.show()
 
 
-def anim_set_brightness(array, cancel, **kwargs):
+def anim_set_brightness(
+    array: baseArray, cancel: threading.Event, **kwargs: t.Any
+) -> None:
     """
     Sets the array brightness
     """
@@ -318,7 +351,7 @@ def anim_set_brightness(array, cancel, **kwargs):
     array.show()
 
 
-def anim_set_array(array, cancel, **kwargs):
+def anim_set_array(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Set the entire array color
     """
@@ -336,7 +369,7 @@ def anim_set_array(array, cancel, **kwargs):
         array.show()
 
 
-def anim_set_pixel(array, cancel, **kwargs):
+def anim_set_pixel(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Set a pixel or range of pixels
     """
@@ -349,15 +382,16 @@ def anim_set_pixel(array, cancel, **kwargs):
 
     pixels = parse_pixel(array, p)
 
-    # make sure we have pixels and a valid color
-    if pixels and parse_color(array, c, r, g, b, w) is not None:
-        for pixel in pixels:
-            array.setPixelColor(pixel, parse_color(array, c, r, g, b, w, pixel))
+    for pixel in pixels:
+        color = parse_color(array, c, r, g, b, w, pixel)
+        if color is not None:
+            array.setPixelColor(pixel, color)
 
+    if pixels:
         array.show()
 
 
-def anim_fade_on(array, cancel, **kwargs):
+def anim_fade_on(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Fades on the array
     """
@@ -366,13 +400,13 @@ def anim_fade_on(array, cancel, **kwargs):
         cancel,
         **{
             "pixel": [[0, array.count]],
-            "color": "0xFFFFFFFF",
+            "color": 0xFFFFFFFF,
             "duration": kwargs.get("duration", 0),
         },
     )
 
 
-def anim_fade_off(array, cancel, **kwargs):
+def anim_fade_off(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Fades off the array
     """
@@ -381,20 +415,22 @@ def anim_fade_off(array, cancel, **kwargs):
         cancel,
         **{
             "pixel": [[0, array.count]],
-            "color": "0x0",
+            "color": 0x0,
             "duration": kwargs.get("duration", 0),
         },
     )
 
 
-def anim_fade_brightness(array, cancel, **kwargs):
+def anim_fade_brightness(
+    array: baseArray, cancel: threading.Event, **kwargs: t.Any
+) -> None:
     """
     Fades the array brightness
     """
     bri_current = float(array.brightness)
     bri_end = float(int(kwargs.get("brightness", -1)))
     duration = float(kwargs.get("duration", 0))
-    frame_time = FRAME_MS  # frame time, default minimum 16.7ms = ~60fps
+    frame_time: float = t.cast(float, FRAME_MS)  # type: ignore - frame time, default minimum 16.7ms = ~60fps
     frame_overrun = 0.0
     frame_count = int(abs(bri_end - bri_current))
 
@@ -416,11 +452,11 @@ def anim_fade_brightness(array, cancel, **kwargs):
     # calculate step and frame
     else:
         duration = (
-            FRAME_MS if duration < FRAME_MS else duration
+            t.cast(float, FRAME_MS) if duration < FRAME_MS else duration  # type: ignore
         )  # enforce minimum 1 frame duration
         frame_time = duration / frame_count
         # get frame time above minimum
-        while frame_time < FRAME_MS:
+        while frame_time < FRAME_MS:  # type:ignore
             frame_count -= 1
             frame_time = duration / frame_count
 
@@ -442,7 +478,7 @@ def anim_fade_brightness(array, cancel, **kwargs):
     while not cancel.is_set() and frame_count > 0:
         frame_start = time.perf_counter()
         bri_current += bri_step
-        array.brightness = bri_current
+        array.brightness = int(bri_current)
         array.show()
         frame_count -= 1
         frame_delta = time.perf_counter() - frame_start
@@ -464,11 +500,11 @@ def anim_fade_brightness(array, cancel, **kwargs):
 
     # set end state if anim finished
     if frame_count <= 0:
-        array.brightness = bri_end
+        array.brightness = int(bri_end)
         array.show()
 
 
-def anim_fade_array(array, cancel, **kwargs):
+def anim_fade_array(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Fades the entire array color
     """
@@ -476,18 +512,18 @@ def anim_fade_array(array, cancel, **kwargs):
     array.anims["fade.pixel"](array, cancel, **kwargs)
 
 
-def anim_fade_pixel(array, cancel, **kwargs):
+def anim_fade_pixel(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Fades a pixel or range of pixels
     """
-    p = kwargs.get("pixel", None)
+    p = kwargs.get("pixel", [])
     c = kwargs.get("color", None)
     r = kwargs.get("red", -1)
     g = kwargs.get("green", -1)
     b = kwargs.get("blue", -1)
     w = kwargs.get("white", -1)
     duration = float(kwargs.get("duration", 0))
-    frame_time = FRAME_MS  # frame time, default minimum 16.7ms = ~60fps
+    frame_time = t.cast(float, FRAME_MS)  # type: ignore - frame time, default minimum 16.7ms = ~60fps
     frame_overrun = 0.0
     pixels = {}
 
@@ -499,18 +535,17 @@ def anim_fade_pixel(array, cancel, **kwargs):
     # build pixels dicts
     for pixel in parse_pixel(array, p):
         pixel_color = array.getPixelColor(pixel)
-        pixels[pixel] = {
-            # fmt: off
-            "r_curr": float(pixel_color >> 16 & 255),
-            "g_curr": float(pixel_color >>  8 & 255),
-            "b_curr": float(pixel_color       & 255),
-            "w_curr": float(pixel_color >> 24 & 255),
-            "r_end": float(color >> 16 & 255),
-            "g_end": float(color >>  8 & 255),
-            "b_end": float(color       & 255),
-            "w_end": float(color >> 24 & 255),
-            # fmt: on
-        }
+        if pixel_color is not None:
+            pixels[pixel] = {
+                "r_curr": float(pixel_color.r),
+                "g_curr": float(pixel_color.g),
+                "b_curr": float(pixel_color.b),
+                "w_curr": float(pixel_color.w),
+                "r_end": float(color.r),
+                "g_end": float(color.g),
+                "b_end": float(color.b),
+                "w_end": float(color.w),
+            }
     if not pixels:
         return
 
@@ -543,11 +578,11 @@ def anim_fade_pixel(array, cancel, **kwargs):
     # calculate frame count and frame
     else:
         duration = (
-            FRAME_MS if duration < FRAME_MS else duration
+            t.cast(float, FRAME_MS) if duration < FRAME_MS else duration  # type: ignore
         )  # enforce minimum 1 frame duration
         frame_time = duration / frame_count
         # get frame time above minimum
-        while frame_time < FRAME_MS:
+        while frame_time < FRAME_MS:  # type: ignore
             frame_count -= 1
             frame_time = duration / frame_count
 
@@ -619,7 +654,7 @@ def anim_fade_pixel(array, cancel, **kwargs):
         array.show()
 
 
-def anim_testorder(array, cancel, **kwargs):
+def anim_testorder(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Set color order to RGB(W) and run this animation.
     If you see 1 red, 2 green, and 3 blue is RGB, otherwise the number of LEDs
@@ -638,13 +673,13 @@ def anim_testorder(array, cancel, **kwargs):
     array.show()
 
 
-def anim_testarray(array, cancel, **kwargs):
+def anim_testarray(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
     """
     Draw a rainbow that uniformly distributes itself across all pixels then
     fade white channel up then down.
     """
 
-    def wheel(pos):
+    def wheel(pos: int) -> t.Tuple[int, int, int]:
         """Generate rainbow colors across 0-255 positions."""
         if pos < 85:
             return (pos * 3, 255 - pos * 3, 0)

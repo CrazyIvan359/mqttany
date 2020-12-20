@@ -37,19 +37,23 @@ __all__ = [
     "CONF_OPTIONS",
 ]
 
+import multiprocessing as mproc
+import typing as t
 from collections import OrderedDict
 
 import logger
 
+from common import BusMessage, BusNode
+
 # If you don't specify the logging name you will get `interface_pkg_template.common` here
 log = logger.get_logger("interface_pkg_template")
-CONFIG = {}
+CONFIG: t.Dict[str, t.Any] = {}
 
 # If the module publishes messages it must have the `publish_queue` attribute. It will
 # be assigned a queue that the module can use `put_nowait()` to put BusMessage objects
 # in the queue to be transmitted by the communication modules.
 # Omit this if module is subscribe only
-publish_queue = None
+publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 """
 When using this in other files in this package you MUST use it like this:
     from modules.interface_pkg_template import common
@@ -75,7 +79,7 @@ files in the package as long as we reference the 'common' file's copy of it like
 
 # Interface modules must have a non-empty dict of Nodes that they provide. This can be
 # partially or entirely populated at runtime in the `load` function.
-nodes = {}
+nodes: t.Dict[str, BusNode] = {}
 
 # Configuration keys, best to define them here so they can be changed easily
 CONF_KEY_STRING = "string"
@@ -85,7 +89,7 @@ CONF_KEY_SUBSECTION = "sub section"
 
 # Configuration layout for `parse_config`
 # it should be an OrderedDict of `(key, {})`
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (  # an empty dict means any value is valid and option is required
             CONF_KEY_STRING,

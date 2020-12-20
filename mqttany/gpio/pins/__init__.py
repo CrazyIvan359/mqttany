@@ -27,7 +27,11 @@ Core GPIO Pins
 
 __all__ = ["SUPPORTED_PIN_MODES"]
 
-from gpio.pins import digital
+import typing as t
 
-SUPPORTED_PIN_MODES = {}
+from ..common import PinMode
+from . import digital
+from .base import Pin
+
+SUPPORTED_PIN_MODES: t.Dict[PinMode, t.Type[Pin]] = {}
 SUPPORTED_PIN_MODES.update(digital.SUPPORTED_PIN_MODES)

@@ -46,15 +46,13 @@ __all__ = [
     "Color",
 ]
 
-from collections import OrderedDict, namedtuple
+import multiprocessing as mproc
+import typing as t
+from collections import OrderedDict
 
 import logger
 
-log = logger.get_logger("led")
-CONFIG = {}
-
-publish_queue = None
-nodes = {}
+from common import BusMessage, BusNode
 
 CONF_KEY_ANIM_DIR = "anim dir"
 CONF_KEY_ANIM_STARTUP = "anim startup"
@@ -66,7 +64,7 @@ CONF_KEY_BRIGHTNESS = "brightness"
 CONF_KEY_COLOR_ORDER = "color order"
 CONF_KEY_ANIM_FPS = "anim fps"
 
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (CONF_KEY_ANIM_DIR, {"type": (str, list), "default": []}),
         (CONF_KEY_ANIM_STARTUP, {"type": str, "default": "test.array"}),
@@ -107,8 +105,14 @@ ANIM_KEY_NAME = "anim"
 ANIM_KEY_REPEAT = "repeat"
 ANIM_KEY_PRIORITY = "priority"
 
+log = logger.get_logger("led")
+CONFIG: t.Dict[str, t.Any] = {}
 
-class Color(namedtuple("Color", ["r", "g", "b", "w"])):
+publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+nodes: t.Dict[str, BusNode] = {}
+
+
+class Color(t.NamedTuple):
     r: int
     g: int
     b: int
@@ -151,7 +155,7 @@ class Color(namedtuple("Color", ["r", "g", "b", "w"])):
         return color
 
     @staticmethod
-    def getRGBFromInt(color: int) -> tuple:
+    def getRGBFromInt(color: int) -> t.Tuple[int, int, int, int]:
         """
         Coverts a 24/32-bit ``int`` in the format ``RRGGBB`` or ``WWRRGGBB`` into a
         tuple of its R, G, B, and W components.

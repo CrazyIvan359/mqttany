@@ -27,45 +27,48 @@ MQTTany Core
 
 __all__ = ["start", "stop"]
 
-import time
-from importlib import import_module
 import multiprocessing as mproc
+import time
+import types
+import typing as t
+from importlib import import_module
 from queue import Empty as QueueEmptyError
 
-import logger
-from logger import log_traceback
 import bus
+import logger
+from common import BusMessage, PoisonPill, PublishMessage, SignalHook, SubscribeMessage
 from config import load_config
-from common import _call, POISON_PILL, SignalHook, BusMessage
+from logger import log_traceback
 from modules import (
-    ModuleType,
-    ATTR_TYPE,
-    ATTR_LOG,
+    ATTR_CBTRANSMIT,
     ATTR_LOAD,
+    ATTR_LOG,
+    ATTR_NODES,
+    ATTR_QRESEND,
+    ATTR_QSUBSCRIBE,
+    ATTR_QTRANSMIT,
     ATTR_START,
     ATTR_STOP,
-    ATTR_QTRANSMIT,
-    ATTR_CBTRANSMIT,
-    ATTR_QRESEND,
     ATTR_TXREADY,
-    ATTR_QSUBSCRIBE,
-    ATTR_NODES,
+    ATTR_TYPE,
+    ModuleType,
+    call,
 )
 
 log = logger.get_logger("core")
-communication_modules = []
-interface_modules = []
+communication_modules: t.List[types.ModuleType] = []
+interface_modules: t.List[types.ModuleType] = []
 
 
-def _loop_comm(module):
-    def _get_message(queue_name):
+def _loop_comm(module: types.ModuleType) -> None:
+    def _get_message(queue_name: str) -> t.Union[BusMessage, None]:
         try:
             return getattr(module, queue_name).get_nowait()
         except QueueEmptyError:
             return None
 
-    def _queue_resend(msg):
-        messages = [msg]
+    def _queue_resend(msg: BusMessage) -> None:
+        messages: t.List[BusMessage] = [msg]
         message = _get_message(ATTR_QRESEND)
         while message:
             messages.append(message)
@@ -74,85 +77,97 @@ def _loop_comm(module):
             getattr(module, ATTR_QRESEND).put_nowait(message)
 
     signal = SignalHook()
-    _call(module, ATTR_START)
+    call(module, ATTR_START)
 
-    message = None
-    while message != POISON_PILL and signal.signal != signal.SIGTERM:
+    message: t.Union[BusMessage, None] = None
+    while (not isinstance(message, PoisonPill)) and signal.signal != signal.SIGTERM:
         message = None
-        if _call(module, ATTR_TXREADY):
+        if call(module, ATTR_TXREADY):
             # check for messages in the resend queue first
             message = _get_message(ATTR_QRESEND)
             # if it is empty then we can get a new message from the transmit queue
             message = message if message else _get_message(ATTR_QTRANSMIT)
 
-            if isinstance(message, BusMessage):
-                module.log.trace("Message received to transmit: %s", message)
-                if not _call(module, ATTR_CBTRANSMIT, message=message):
+            if isinstance(message, PublishMessage):
+                # TODO convert modules to classes
+                module.log.trace("Message received to transmit: %s", message)  # type: ignore
+                if not call(module, ATTR_CBTRANSMIT, message=message):
                     # transmit failed
-                    module.log.debug(
+                    # TODO convert modules to classes
+                    module.log.debug(  # type: ignore
                         "Failed to send message, queued for retransmission"
                     )
                     _queue_resend(message)
                     time.sleep(0.5)  # 500ms
-            elif message != POISON_PILL and message is not None:
+            elif (not isinstance(message, PoisonPill)) and message is not None:
                 try:
-                    module.log.warn("Got unrecognized message to transmit: %s", message)
+                    # TODO convert modules to classes
+                    module.log.warn("Got unrecognized message to transmit: %s", message)  # type: ignore
                 except:
-                    module.log.warn("Got unrecognized message to transmit")
+                    # TODO convert modules to classes
+                    module.log.warn("Got unrecognized message to transmit")  # type: ignore
         else:
             # module not ready to transmit, but check transmit queue in case exit is requested
             message = _get_message(ATTR_QTRANSMIT)
-            if isinstance(message, BusMessage):
-                module.log.debug("Not ready to send, message queued for retransmission")
+            if isinstance(message, PublishMessage):
+                # TODO convert modules to classes
+                module.log.debug("Not ready to send, message queued for retransmission")  # type: ignore
                 _queue_resend(message)
                 time.sleep(0.5)  # 500ms
 
         if not message:
             time.sleep(0.025)  # 25ms
-        elif message == POISON_PILL:
-            module.log.trace("Module stopping")
+        elif isinstance(message, PoisonPill):
+            # TODO convert modules to classes
+            module.log.trace("Module stopping")  # type: ignore
 
     if signal.signal == signal.SIGTERM:
-        module.log.trace("Received %s", signal.signal.name)
+        # TODO convert modules to classes
+        module.log.trace("Received %s", signal.signal.name)  # type: ignore
 
-    _call(module, ATTR_STOP)
+    call(module, ATTR_STOP)
 
 
-def _loop_interface(module):
+def _loop_interface(module: types.ModuleType) -> None:
     signal = SignalHook()
-    _call(module, ATTR_START)
+    call(module, ATTR_START)
 
-    message = None
-    while message != POISON_PILL and signal.signal != signal.SIGTERM:
+    message: t.Union[BusMessage, None] = None
+    while (not isinstance(message, PoisonPill)) and signal.signal != signal.SIGTERM:
         try:
             message = getattr(module, ATTR_QSUBSCRIBE).get(timeout=1)
         except QueueEmptyError:
             pass
         else:
-            if isinstance(message, BusMessage):
-                module.log.trace("Message received on subscribe queue: %s", message)
-                _call(module, message.callback, message=message)
-            elif message == POISON_PILL:
-                module.log.trace("Module stopping")
+            if isinstance(message, SubscribeMessage):
+                # TODO convert modules to classes
+                module.log.trace("Message received on subscribe queue: %s", message)  # type: ignore
+                call(module, message.callback, message=message)
+            elif isinstance(message, PoisonPill):
+                # TODO convert modules to classes
+                module.log.trace("Module stopping")  # type: ignore
             else:
                 try:
-                    module.log.warn(
+                    # TODO convert modules to classes
+                    module.log.warn(  # type: ignore
                         "Got unrecognized message on subscribe queue: %s", message
                     )
                 except:
-                    module.log.warn("Got unrecognized message on subscribe queue")
+                    # TODO convert modules to classes
+                    module.log.warn("Got unrecognized message on subscribe queue")  # type: ignore
 
     if signal.signal == signal.SIGTERM:
-        module.log.trace("Received %s", signal.signal.name)
+        # TODO convert modules to classes
+        module.log.trace("Received %s", signal.signal.name)  # type: ignore
 
-    _call(module, ATTR_STOP)
+    call(module, ATTR_STOP)
 
 
-def _validate_module(module):
+def _validate_module(module: types.ModuleType) -> bool:
     module_name = module.__name__.split(".")[-1]
     valid = True
 
-    def check_function(name, required=True):
+    def check_function(name: str, required: t.Optional[bool] = True) -> bool:
         func_valid = True
         log_func = getattr(log, "error" if required else "debug")
         cb = getattr(module, name, None)
@@ -204,14 +219,16 @@ def _validate_module(module):
     return valid
 
 
-def _load_modules(config_file, core_queue):
+def _load_modules(
+    config_file: str, core_queue: "mproc.Queue[str]"
+) -> t.List[types.ModuleType]:
     """
     Loads each module with a section in the config and spawns a process for them
     """
     config = load_config(config_file)
 
     if not config:
-        return False
+        return []
 
     for module_name in [key for key in config if isinstance(config[key], dict)]:
         module = None
@@ -233,9 +250,8 @@ def _load_modules(config_file, core_queue):
 
         else:
             if _validate_module(module):
-                if not _call(
-                    module, ATTR_LOAD, config_raw=config[module_name]
-                ):  # call module load
+                # call module load
+                if not call(module, ATTR_LOAD, config_raw=config[module_name]):
                     log.warn("Module '%s' load failed", module_name)
                     continue
                 else:
@@ -262,7 +278,7 @@ def _load_modules(config_file, core_queue):
     return communication_modules + interface_modules
 
 
-def _start_modules():
+def _start_modules() -> None:
     """
     Starts a subprocess for each module that was loaded.
     """
@@ -273,9 +289,10 @@ def _start_modules():
             log.trace("Creating process for '%s'", module_name)
             if getattr(module, ATTR_TYPE) == ModuleType.COMMUNICATION:
                 target = _loop_comm
-            elif getattr(module, ATTR_TYPE) == ModuleType.INTERFACE:
+            else:  # if getattr(module, ATTR_TYPE) == ModuleType.INTERFACE:
                 target = _loop_interface
-            module.process = mproc.Process(
+            # TODO convert modules to classes
+            module.process = mproc.Process(  # type: ignore
                 name=module_name, target=target, args=(module,), daemon=False
             )
         except Exception as err:  # pylint: disable=broad-except
@@ -285,7 +302,8 @@ def _start_modules():
             log.trace("Process created successfully for module '%s'", module_name)
             try:
                 log.trace("Starting process for '%s'", module_name)
-                module.process.start()
+                # TODO convert modules to classes
+                module.process.start()  # type: ignore
             except Exception as err:  # pylint: disable=broad-except
                 log.error("Failed to start process for module '%s'", module_name)
                 log.error("  %s", err)
@@ -293,7 +311,7 @@ def _start_modules():
                 log.info("Module '%s' started successfully", module_name)
 
 
-def _stop_modules():
+def _stop_modules() -> None:
     """
     Unloads each module that was loaded and terminates processes
     """
@@ -301,23 +319,30 @@ def _stop_modules():
         module_name = module.__name__.split(".")[-1]
         if module:
             if hasattr(module, "process"):
-                if module.process.is_alive():
+                # TODO convert modules to classes
+                if module.process.is_alive():  # type: ignore
                     log.trace(
                         "Stopping subprocess for '%s' with 10s timeout", module_name
                     )
                     if hasattr(module, "transmit_queue"):
-                        module.transmit_queue.put_nowait(POISON_PILL)
+                        # TODO convert modules to classes
+                        module.transmit_queue.put_nowait(PoisonPill())  # type: ignore
                     else:
-                        module.subscribe_queue.put_nowait(POISON_PILL)
-                    module.process.join(10)
-                    if module.process.is_alive():
+                        # TODO convert modules to classes
+                        module.subscribe_queue.put_nowait(PoisonPill())  # type: ignore
+                    # TODO convert modules to classes
+                    module.process.join(10)  # type: ignore
+                    if module.process.is_alive():  # type: ignore
                         log.warn(
                             "Subprocess for module '%s' did not stop when requested, "
                             "terminating forcefully",
                             module_name,
                         )
-                        module.process.terminate()
-                        module.process.join(10)  # make sure cleanup is done
+                        # TODO convert modules to classes
+                        module.process.terminate()  # type: ignore
+                        # make sure cleanup is done
+                        # TODO convert modules to classes
+                        module.process.join(10)  # type: ignore
                         log.warn(
                             "Subprocess terminated forcefully for module '%s'",
                             module_name,
@@ -327,15 +352,16 @@ def _stop_modules():
                             "Subproccess for module '%s' stopped cleanly", module_name
                         )
                 else:
-                    module.process.join(10)
+                    # TODO convert modules to classes
+                    module.process.join(10)  # type: ignore
                     log.warn("Subprocess for module '%s' was not running", module_name)
             else:
                 log.warn("Module '%s' does not have a subprocess", module_name)
             log.info("Module '%s' unloaded", module_name)
 
 
-def start(core_queue, config_file):
-    def check_import(name):
+def start(core_queue: "mproc.Queue[str]", config_file: str) -> None:
+    def check_import(name: str) -> bool:
         try:
             lib = import_module(name)
             del lib
@@ -364,6 +390,6 @@ def start(core_queue, config_file):
             core_queue.put_nowait(__name__)
 
 
-def stop():
+def stop() -> None:
     _stop_modules()
     bus.stop()

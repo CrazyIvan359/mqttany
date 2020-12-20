@@ -27,28 +27,29 @@ Core GPIO Boards
 
 __all__ = ["get_board"]
 
+import typing as t
+
 from adafruit_platformdetect import Detector
 from adafruit_platformdetect.constants.boards import GENERIC_LINUX_PC
 
-import logger
-from gpio.boards.base import Board
-from gpio.boards import rpi, odroid, opi
+from . import odroid, opi, rpi
+from .base import Board
 
 
 class Unknown(Board):
-    def __init__(self):
+    def __init__(self) -> None:
         self._id = "UNRECOGNIZED"
         self._chips.append(999)  # dummy
 
 
 class Generic(Board):
-    def __init__(self):
+    def __init__(self) -> None:
         self._id = GENERIC_LINUX_PC
         self._chips.append(999)  # dummy
 
 
 def get_board() -> Board:
-    all_boards = {GENERIC_LINUX_PC: Generic}
+    all_boards: t.Dict[str, t.Type[Board]] = {GENERIC_LINUX_PC: Generic}
     all_boards.update(rpi.SUPPORTED_BOARDS)
     all_boards.update(odroid.SUPPORTED_BOARDS)
     all_boards.update(opi.SUPPORTED_BOARDS)

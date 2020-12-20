@@ -28,13 +28,15 @@ LED RPi Array Module
 __all__ = ["SUPPORTED_TYPES", "CONF_OPTIONS"]
 
 import os
+import typing as t
 
-import logger
 import gpio
-from common import DataType, BusMessage, BusNode, BusProperty
-from modules.led import common
-from modules.led.common import CONF_KEY_OUTPUT
-from modules.led.array.base import baseArray
+import logger
+from common import BusNode, BusProperty, DataType, PublishMessage
+
+from .. import common
+from ..common import CONF_KEY_OUTPUT
+from .base import baseArray
 
 CONF_KEY_RPI = "rpi"
 CONF_KEY_GPIO = "gpio"
@@ -42,7 +44,7 @@ CONF_KEY_CHIP = "chip"
 CONF_KEY_FREQUENCY = "frequency"
 CONF_KEY_INVERT = "invert"
 
-CONF_OPTIONS = {
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = {
     "regex:.+": {
         CONF_KEY_OUTPUT: {"selection": {"rpi": "rpi", "RPi": "rpi"}},
         CONF_KEY_RPI: {
@@ -116,8 +118,8 @@ class rpiArray(baseArray):
         color_order: str,
         fps: int,
         init_brightness: int,
-        array_config: dict,
-    ):
+        array_config: t.Dict[str, t.Any],
+    ) -> None:
         """
         Returns an LED object wrapping ``rpi_ws281x.PixelStrip``
         """
@@ -134,7 +136,7 @@ class rpiArray(baseArray):
         self._chip = array_config[CONF_KEY_RPI][CONF_KEY_CHIP]
         self._frequency = array_config[CONF_KEY_RPI][CONF_KEY_FREQUENCY]
         self._invert = array_config[CONF_KEY_RPI][CONF_KEY_INVERT]
-        self._order = self._order.format(default=DEFAULT_COLOR_ORDER[self._chip])
+        self._order: str = self._order.format(default=DEFAULT_COLOR_ORDER[self._chip])
         self._log.debug(
             "Configured '%s' on GPIO%02d with %d %s LEDs %s",
             self._name,
@@ -207,24 +209,24 @@ class rpiArray(baseArray):
             else:
                 super().begin()
                 common.publish_queue.put_nowait(
-                    BusMessage(
+                    PublishMessage(
                         path=f"{self.id}/gpio", content=self._pin, mqtt_retained=True
                     )
                 )
                 common.publish_queue.put_nowait(
-                    BusMessage(
+                    PublishMessage(
                         path=f"{self.id}/chip", content=self._chip, mqtt_retained=True
                     )
                 )
                 common.publish_queue.put_nowait(
-                    BusMessage(
+                    PublishMessage(
                         path=f"{self.id}/frequency",
                         content=self._frequency,
                         mqtt_retained=True,
                     )
                 )
                 common.publish_queue.put_nowait(
-                    BusMessage(
+                    PublishMessage(
                         path=f"{self.id}/invert",
                         content=self._invert,
                         mqtt_retained=True,
@@ -272,8 +274,8 @@ def validateGPIO(
     color_order: str,
     fps: int,
     init_brightness: int,
-    array_config: dict,
-):
+    array_config: t.Dict[str, t.Any],
+) -> t.Union[baseArray, None]:
     """
     Validate GPIO pin and return array instance if valid.
     """
@@ -343,12 +345,13 @@ def validateGPIO(
             )
 
     else:
-        logger.get_logger("led.rpi").error(
+        log = logger.get_logger("led.rpi")
+        log.error(
             "This module only supports GPIO output on certain Raspberry Pi boards"
         )
-        logger.get_logger("led.rpi").error(
-            "Please see the documentation for supported boards"
-        )
+        log.error("Please see the documentation for supported boards")
 
 
-SUPPORTED_TYPES = {"rpi": validateGPIO}
+# We're cheating here and providing a function in order to validate the GPIO pin
+# selected. The result is the same because the function returns a class instance.
+SUPPORTED_TYPES: t.Dict[str, t.Type[baseArray]] = {"rpi": validateGPIO}  # type:ignore

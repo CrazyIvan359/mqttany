@@ -40,9 +40,9 @@ import os
 import adafruit_platformdetect
 from adafruit_platformdetect.constants import boards as board_ids
 
-from gpio import common
-from gpio.common import log, Mode, PinMode, PinBias, PinEdge, PinAlternate
-from gpio.boards import get_board, Unknown
+from . import common
+from .common import log, Mode, PinMode, PinBias, PinEdge, PinAlternate
+from .boards import get_board, Unknown
 
 board = get_board()
 common.cdev = os.access(
@@ -53,7 +53,7 @@ common.sysfs = os.access(
 )
 
 
-def init():
+def init() -> None:
     if isinstance(board, Unknown):
         log.error("Unsupported board: %s", adafruit_platformdetect.Detector().board.id)
     elif board.id == board_ids.GENERIC_LINUX_PC:

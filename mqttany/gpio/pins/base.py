@@ -27,7 +27,9 @@ Core GPIO Base Pin
 
 __all__ = ["Pin"]
 
-from gpio.common import Mode, PinMode
+import typing as t
+
+from ..common import Mode, PinMode
 
 
 class Pin:
@@ -42,12 +44,12 @@ class Pin:
         pin_board: int,
         pin_wpi: int,
         pin_mode: PinMode,
-    ):
+    ) -> None:
         self._gpio_mode = gpio_mode
         self._chip = chip
         self._line = line
         self._mode = pin_mode
-        self._setup = False
+        self._setup: bool = False
         self._pin = {Mode.SOC: pin_soc, Mode.BOARD: pin_board, Mode.WIRINGPI: pin_wpi}
         self._name = {
             Mode.SOC: f"GPIO{pin_soc:02d}",
@@ -94,7 +96,7 @@ class Pin:
         """Returns the pin number under ``mode``."""
         return self._pin[mode]
 
-    def get_name(self, mode: Mode = None) -> str:
+    def get_name(self, mode: t.Optional[Mode] = None) -> str:
         """Returns a logging friendly name for this pin using ``mode`` numbering."""
         return self._name[mode or self._gpio_mode]
 
@@ -102,6 +104,6 @@ class Pin:
         """Setup the pin before use, returns ``True`` on success."""
         raise NotImplementedError
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Perform cleanup when shutting down."""
         self._setup = False

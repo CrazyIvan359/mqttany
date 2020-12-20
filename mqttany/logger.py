@@ -25,26 +25,24 @@ Logger
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = [
-    "get_logger",
-    "set_level",
-    "log_traceback",
-    "uninit",
-    "TRACE",
-    "DEBUG",
-    "INFO",
-    "WARN",
-    "ERROR",
-]
+__all__ = ["get_logger", "set_level", "log_traceback", "uninit", "LogLevel"]
 
-import os, sys, errno, inspect, traceback
-from types import MethodType
+import enum
+import errno
+import inspect
 import logging
+import os
+import sys
+import traceback
+from logging import DEBUG, ERROR, INFO, NOTSET
+from logging import WARNING as WARN
 from logging import handlers
-from logging import DEBUG, INFO, WARNING as WARN, ERROR
 import colorlog
 
-TRACE = 5  # trace level logging
+try:
+    import typing as t
+except ModuleNotFoundError:
+    pass
 
 _LOG_FILE = os.path.join(os.path.dirname(__file__), "log", "mqttany.log")
 
@@ -93,34 +91,60 @@ _LOG_SECONDARY_COLORS = {
 _log_handlers = []
 
 
-def trace_log(self, msg, *args, **kwargs):
-    """
-    Trace method that will be injected into ``logging.Logger``
-    """
-    if self.isEnabledFor(TRACE):
-        self._log(TRACE, msg, args, **kwargs)
+class LogLevel(enum.IntEnum):
+    TRACE = 5
+    DEBUG = DEBUG
+    INFO = INFO
+    WARN = WARN
+    ERROR = ERROR
+    NOTSET = NOTSET
 
 
-def warn_log(self, msg, *args, **kwargs):
-    """
-    Warn method that will be injected into ``logging.Logger``.
-    Needed because ``log.warn`` is depreciated in Python 3.7
-    """
-    if self.isEnabledFor(WARN):
-        self._log(WARN, msg, args, **kwargs)
+class mqttanyLogger(logging.Logger):
+    def __init__(self, name, level=LogLevel.NOTSET.value):
+        # type: (str, int) -> None
+        super().__init__(name, level)
+
+    def trace(self, msg, *args, **kwargs):
+        # type: (t.Any, t.Any, t.Any) -> None
+        """
+        Log 'msg % args' with severity 'TRACE'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.trace("Houston, we have a %s", "thorny problem", exc_info=1)
+        """
+        if self.isEnabledFor(LogLevel.TRACE.value):
+            self._log(LogLevel.TRACE.value, msg, args, **kwargs)
+
+    def warn(self, msg, *args, **kwargs):  # type: ignore
+        # type: (t.Any, t.Any, t.Any) -> None
+        """
+        Log 'msg % args' with severity 'WARN'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.warn("Houston, we have a %s", "thorny problem", exc_info=1)
+        """
+        # Added because ``warn`` is depreciated in Python 3.7 but I want to keep
+        # log level to less than 5 characters
+        if self.isEnabledFor(LogLevel.WARN.value):
+            self._log(LogLevel.WARN.value, msg, args, **kwargs)
 
 
 def _init_logger():
+    # type: () -> mqttanyLogger
     """
     Creates the root logger for MQTTany
     """
-    logging.addLevelName(WARN, "WARN")
-    logging.addLevelName(TRACE, "TRACE")
+    logging.addLevelName(LogLevel.WARN.value, "WARN")
+    logging.addLevelName(LogLevel.TRACE.value, "TRACE")
+    logging.setLoggerClass(mqttanyLogger)
 
     log = logging.getLogger("mqttany")
-    log.trace = MethodType(trace_log, log)
-    log.warn = MethodType(warn_log, log)
-    log.setLevel(INFO)
+    log.setLevel(LogLevel.INFO.value)
 
     if not os.path.exists(os.path.dirname(_LOG_FILE)):
         try:
@@ -146,38 +170,38 @@ def _init_logger():
 
     for handler in _log_handlers:
         log.addHandler(handler)
-    return log
+    return log  # type: ignore
 
 
 _log = _init_logger()
 
 
 def get_logger(name=None, level=None):
+    # type: (t.Optional[str], t.Optional[int]) -> mqttanyLogger
     """
     Returns a logger, if ``name`` is not specified the import name of the calling
     file will be used.
     """
     if name is None:
         frm = inspect.stack()[1]
-        name = inspect.getmodule(frm[0]).__name__
+        name = inspect.getmodule(frm[0]).__name__  # type: ignore
     name = ".".join([s for s in name.split(".") if s not in ["mqttany", "modules"]])
     name = name[len(name) - _LOG_LEN_NAME :] if len(name) > _LOG_LEN_NAME else name
     logger = logging.getLogger(name)
     if not logger.hasHandlers():
         for handler in _log_handlers:
             logger.addHandler(handler)
-    logger.trace = MethodType(trace_log, logger)
-    logger.warn = MethodType(warn_log, logger)
     logger.setLevel(level or logging.getLogger("mqttany").level)
-    return logger
+    return logger  # type: ignore
 
 
 def set_level(level):
+    # type: (LogLevel) -> None
     """
     Sets logging level to level
     """
-    _log.setLevel(level)
-    if level <= DEBUG:
+    _log.setLevel(level.value)
+    if level <= LogLevel.DEBUG:
         # for handler in _log.handlers:
         for handler in _log_handlers:
             if isinstance(handler, logging.StreamHandler):
@@ -191,7 +215,6 @@ def set_level(level):
             else:
                 handler.setFormatter(logging.Formatter(_LOG_FORMAT_FILE_DEBUG))
     else:
-        # for handler in _log.handlers:
         for handler in _log_handlers:
             if isinstance(handler, logging.StreamHandler):
                 handler.setFormatter(
@@ -206,15 +229,17 @@ def set_level(level):
 
 
 def log_traceback(log, limit=None):
+    # type: (mqttanyLogger, t.Optional[int]) -> None
     """
     Print a traceback to the log
     """
     log.error(
-        "\n\n" + "".join(traceback.format_exception(*sys.exc_info(), limit=limit))
+        "\n\n" + "".join(traceback.format_exception(*sys.exc_info(), limit=limit))  # type: ignore
     )
 
 
 def uninit():
+    # type: () -> None
     """
     Flushes and closes all log handlers
     """

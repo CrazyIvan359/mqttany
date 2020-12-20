@@ -26,24 +26,30 @@ I2C Device
 
 __all__ = ["getDeviceClass", "updateConfOptions"]
 
+import typing as t
+from collections import OrderedDict
+
 from common import update_dict
 
-from modules.i2c.device import mcp230xx
+from . import mcp230xx
+from .base import I2CDevice
 
 
-def getDeviceClass(device):
+def getDeviceClass(device: str) -> t.Union[t.Type[I2CDevice], None]:
     """
     Returns an I2CDevice subclass to handle ``device`` or ``None`` if one
     is not available.
     """
-    dev_classes = {}
+    dev_classes: t.Dict[str, t.Type[I2CDevice]] = {}
     dev_classes.update(mcp230xx.SUPPORTED_DEVICES)
     return dev_classes.get(device, None)
 
 
-def updateConfOptions(conf_options):
+def updateConfOptions(
+    conf_options: t.MutableMapping[str, t.Dict[t.Any, t.Any]]
+) -> "OrderedDict[str, t.Dict[t.Any, t.Any]]":
     """
     Returns a copy of ``conf_options`` updated with options from each device.
     """
     conf_options = update_dict(conf_options, mcp230xx.CONF_OPTIONS)
-    return conf_options
+    return t.cast("OrderedDict[str, t.Dict[t.Any, t.Any]]", conf_options)

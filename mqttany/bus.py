@@ -28,38 +28,41 @@ Pub/Sub Bus
 __all__ = ["data_tree", "get_property_from_path"]
 
 
-import threading, sys
 import multiprocessing as mproc
+import sys
+import threading
+import types
+import typing as t
 from queue import Empty as QueueEmptyError
 
 import logger
-from common import BusMessage, BusNode, BusProperty
+from common import BusMessage, BusNode, BusProperty, PublishMessage, SubscribeMessage
 from modules import (
-    ATTR_QCORE,
-    ATTR_QRECEIVE,
-    ATTR_QTRANSMIT,
-    ATTR_QRESEND,
-    ATTR_QPUBLISH,
-    ATTR_QSUBSCRIBE,
     ATTR_NODES,
+    ATTR_QCORE,
+    ATTR_QPUBLISH,
+    ATTR_QRECEIVE,
+    ATTR_QRESEND,
+    ATTR_QSUBSCRIBE,
+    ATTR_QTRANSMIT,
 )
 
 log = logger.get_logger("bus")
 
 # Communication module queues
-receive_queue = mproc.Queue()
-transmit_queues = {}
+receive_queue: "mproc.Queue[BusMessage]" = mproc.Queue()
+transmit_queues: t.Dict[str, "mproc.Queue[BusMessage]"] = {}
 
 # Interface module queues
-publish_queue = mproc.Queue()
-subscribe_queues = {}
+publish_queue: "mproc.Queue[BusMessage]" = mproc.Queue()
+subscribe_queues: t.Dict[str, "mproc.Queue[BusMessage]"] = {}
 
 # Data tree
-data_tree = {}
+data_tree: t.Dict[str, BusNode] = {}
 
 # Message Bus threads
-_thread_receive = None
-_thread_transmit = None
+_thread_receive: threading.Thread = None  # type: ignore
+_thread_transmit: threading.Thread = None  # type: ignore
 poison_pill = False
 
 
@@ -68,11 +71,11 @@ class ReceiveThread(threading.Thread):
     Message bus receive->subscribe thread
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(name="Receive")
         self.log = logger.get_logger("bus.receive")
 
-    def run(self):
+    def run(self) -> None:
         self.log.trace("Message Bus Receive thread started successfully")
         try:
             while not poison_pill:
@@ -81,7 +84,7 @@ class ReceiveThread(threading.Thread):
                 except QueueEmptyError:
                     pass
                 else:
-                    if isinstance(message, BusMessage):
+                    if isinstance(message, SubscribeMessage):
                         self.log.trace("Message received on receive queue: %s", message)
                         node, prop = get_property_from_path(message.path)
                         if node and prop and prop.callback:
@@ -113,11 +116,11 @@ class TransmitThread(threading.Thread):
     Message bus publish->transmit loop
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(name="Transmit")
         self.log = logger.get_logger("bus.transmit")
 
-    def run(self):
+    def run(self) -> None:
         self.log.trace("Message Bus Transmit thread started successfully")
         try:
             while not poison_pill:
@@ -126,7 +129,7 @@ class TransmitThread(threading.Thread):
                 except QueueEmptyError:
                     pass
                 else:
-                    if isinstance(message, BusMessage):
+                    if isinstance(message, PublishMessage):
                         self.log.trace("Message received on publish queue: %s", message)
                         for q in transmit_queues:
                             transmit_queues[q].put_nowait(message)
@@ -145,7 +148,7 @@ class TransmitThread(threading.Thread):
             self.log.debug("Message Bus Transmit thread stopped cleanly")
 
 
-def setup_comm_module(module, core_queue):
+def setup_comm_module(module: types.ModuleType, core_queue: "mproc.Queue[str]") -> None:
     """
     Add required queues to communication module.
     """
@@ -163,7 +166,7 @@ def setup_comm_module(module, core_queue):
     log.debug("Module '%s' added as a transmitter", module_name)
 
 
-def setup_interface_module(module):
+def setup_interface_module(module: types.ModuleType) -> None:
     """
     Add required queues to interface module and parse nodes.
     """
@@ -193,12 +196,12 @@ def setup_interface_module(module):
             )
 
 
-def start():
+def start() -> bool:
     """
     Start Message Bus
     """
 
-    def _start_thread(thread):
+    def _start_thread(thread: threading.Thread) -> None:
         try:
             log.debug("Starting Message Bus %s thread", thread.name)
             thread.start()
@@ -215,12 +218,12 @@ def start():
     return True if _thread_receive and _thread_transmit else False
 
 
-def stop():
+def stop() -> None:
     """
     Stop Message Bus
     """
 
-    def _stop_thread(thread):
+    def _stop_thread(thread: threading.Thread) -> None:
         if thread:
             if thread.is_alive():
                 log.trace(
@@ -243,7 +246,9 @@ def stop():
     _stop_thread(_thread_transmit)
 
 
-def get_property_from_path(path: str) -> (BusNode, BusProperty):
+def get_property_from_path(
+    path: str,
+) -> t.Tuple[t.Union[BusNode, None], t.Union[BusProperty, None]]:
     """
     Returns the a tuple of the Node and Property from ``data_tree`` matching ``path``.
     If no Node is found it will return ``(None, None)``. If a Node is found but no

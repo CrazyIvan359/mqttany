@@ -27,17 +27,20 @@ Core GPIO Orange Pi Boards
 
 __all__ = ["SUPPORTED_BOARDS"]
 
+import typing as t
+
 from adafruit_platformdetect.constants.boards import ORANGE_PI_ZERO
 
-from gpio.common import Mode, PinMode, PinBias, PinAlternate
-from gpio.boards.base import Board
+from ..common import Mode, PinAlternate, PinBias, PinMode
+from .base import Board
 
 DIGITAL = PinMode.DIGITAL
 P_UP = PinBias.PULL_UP
 
 
 class OPiZero(Board):
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         self._id = ORANGE_PI_ZERO
 
         # chip, line, soc, board, wpi, modes, biases, alts
@@ -74,4 +77,4 @@ class OPiZero(Board):
                     self._pin_lookup[Mode.SOC][pin].lock(None, module="system.1wire")
 
 
-SUPPORTED_BOARDS = {ORANGE_PI_ZERO: OPiZero}
+SUPPORTED_BOARDS: t.Dict[str, t.Type[Board]] = {ORANGE_PI_ZERO: OPiZero}

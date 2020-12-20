@@ -27,33 +27,37 @@ LED Module
 
 __all__ = ["load", "start", "stop", "anim_message"]
 
-from config import parse_config
-from common import update_dict, BusMessage, validate_id
+import threading
+import typing as t
 
-from modules.led.array import getArray, getConfOptions
-from modules.led.anim import load_animations
-from modules.led.common import (
-    log,
-    CONFIG,
-    nodes,
-    CONF_KEY_ANIM_STARTUP,
-    CONF_OPTIONS,
+from config import parse_config
+
+from common import SubscribeMessage, validate_id
+
+from .anim import load_animations
+from .array import getArray, updateConfOptions
+from .array.base import baseArray
+from .common import (
     ANIM_KEY_NAME,
     ANIM_KEY_PRIORITY,
+    CONF_KEY_ANIM_STARTUP,
+    CONF_OPTIONS,
+    CONFIG,
+    log,
+    nodes,
 )
 
-queue = None
-arrays = {}
+arrays: t.Dict[str, baseArray] = {}
 
 
-def load(config_raw={}) -> bool:
+def load(config_raw: t.Dict[str, t.Any] = {}) -> bool:
     """
     Initializes the module
     """
-    CONF_OPTIONS.update(update_dict(CONF_OPTIONS, getConfOptions()))
-    CONF_OPTIONS.move_to_end("regex:.+")
+    conf_options = updateConfOptions(CONF_OPTIONS)
+    conf_options.move_to_end("regex:.+")
 
-    config_data = parse_config(config_raw, CONF_OPTIONS, log)
+    config_data = parse_config(config_raw, conf_options, log)
     del config_raw
     if config_data:
         log.debug("Config loaded")
@@ -82,7 +86,7 @@ def start() -> None:
     """
     Actions to be done in the subprocess before the loop starts
     """
-    anims = {}
+    anims: t.Dict[str, t.Callable[[baseArray, threading.Event], None]] = {}
     anims.update(load_animations())
 
     log.info("Setting up hardware")
@@ -102,7 +106,7 @@ def stop() -> None:
         arrays[id].cleanup()
 
 
-def anim_message(message: BusMessage) -> None:
+def anim_message(message: SubscribeMessage) -> None:
     """
     Animation message callback
     """

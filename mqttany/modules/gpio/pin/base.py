@@ -27,10 +27,13 @@ GPIO Pin Base
 
 __all__ = ["Pin"]
 
-from common import BusProperty
-from gpio import Mode
+import typing as t
 
-from modules.gpio.common import CONF_KEY_PIN_MODE
+from common import BusProperty
+from gpio.common import Mode, PinMode
+from gpio.pins.base import Pin as CorePin
+from logger import mqttanyLogger
+from ..common import CONF_KEY_PIN_MODE
 
 
 class Pin(object):
@@ -39,17 +42,24 @@ class Pin(object):
     """
 
     def __init__(
-        self, pin: int, gpio_mode: Mode, id: str, name: str, pin_config: dict = {}
+        self,
+        pin: int,
+        gpio_mode: Mode,
+        id: str,
+        name: str,
+        pin_config: t.Dict[str, t.Any] = {},
     ):
         self._setup = False
-        self._log = None  # assigned by subclass
-        self._handle = None  # hardware access, assigned by subclass
+        self._log: mqttanyLogger = None  # type: ignore - assigned by subclass
+        self._handle: t.Union[
+            CorePin, None
+        ] = None  # hardware access, assigned by subclass
         self._pin = pin
         self._gpio_mode = gpio_mode
         self._id = id
         self._name = name
         self._path = f"gpio/{id}"
-        self._mode = pin_config[CONF_KEY_PIN_MODE]
+        self._mode: PinMode = pin_config[CONF_KEY_PIN_MODE]
 
     def get_property(self) -> BusProperty:
         """
@@ -58,14 +68,14 @@ class Pin(object):
         """
         raise NotImplementedError
 
-    def setup(self):
+    def setup(self) -> bool:
         """
         Subclasses MUST override this method.
         A pin handle should be acquired from ``gpio.board.get_pin``.
         """
         raise NotImplementedError
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Cleanup actions when stopping
         """
@@ -73,14 +83,14 @@ class Pin(object):
         if self._handle:
             self._handle.cleanup()
 
-    def publish_state(self):
+    def publish_state(self) -> None:
         """
         Subclasses MUST override this method.
         Reads and publishes the current pin state.
         """
         raise NotImplementedError
 
-    def message_callback(self, path: str, content: str):
+    def message_callback(self, path: str, content: str) -> None:
         """
         Subclasses MUST override this method.
         Handles messages received for this pin.
@@ -101,4 +111,4 @@ class Pin(object):
 
     @property
     def pin_name(self) -> str:
-        return self._handle.get_name(self._gpio_mode)
+        return self._handle.get_name(self._gpio_mode)  # type: ignore

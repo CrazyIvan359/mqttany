@@ -27,21 +27,21 @@ LED sACN Array Module
 
 __all__ = ["SUPPORTED_TYPES", "CONF_OPTIONS"]
 
+import typing as t
+
 import logger
+from common import BusNode, BusProperty, PublishMessage
 
-from common import BusMessage, BusNode, BusProperty
-from modules.led import common
-from modules.led.common import CONF_KEY_OUTPUT, Color
-from modules.led.array.base import baseArray
-
-log = logger.get_logger("led.sacn")
+from .. import common
+from ..common import CONF_KEY_OUTPUT, Color
+from .base import baseArray
 
 CONF_KEY_SACN = "sacn"
 CONF_KEY_UNIVERSE = "universe"
 CONF_KEY_ADDRESS = "address"
 CONF_KEY_SYNC = "sync universe"
 
-CONF_OPTIONS = {
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = {
     "regex:.+": {
         CONF_KEY_OUTPUT: {"selection": {"sacn": "sacn", "sACN": "sacn"}},
         CONF_KEY_SACN: {
@@ -68,8 +68,8 @@ class sacnArray(baseArray):
         color_order: str,
         fps: int,
         init_brightness: int,
-        array_config: dict,
-    ):
+        array_config: t.Dict[str, t.Any],
+    ) -> None:
         """
         Returns an LED object that outputs via sACN
         """
@@ -82,10 +82,10 @@ class sacnArray(baseArray):
             if init_brightness < 0
             else init_brightness
         )
-        self._order = self._order.format(default="RGB")
-        self._address = array_config[CONF_KEY_SACN][CONF_KEY_ADDRESS]
-        self._sync = array_config[CONF_KEY_SACN][CONF_KEY_SYNC]
-        self._universes = []
+        self._order: str = self._order.format(default="RGB")
+        self._address: str = array_config[CONF_KEY_SACN][CONF_KEY_ADDRESS]
+        self._sync: int = array_config[CONF_KEY_SACN][CONF_KEY_SYNC]
+        self._universes: t.List[int] = []
         for universe in range(
             0, round((count * leds_per_pixel * self.colors) / 512.0 + 0.5)
         ):
@@ -93,7 +93,7 @@ class sacnArray(baseArray):
                 universe + array_config[CONF_KEY_SACN][CONF_KEY_UNIVERSE]
             )
         self._dmx_data = [0] * (512 * len(self._universes))
-        self._order_map = {}
+        self._order_map: t.Dict[str, int] = {}
         self._order_map["r"] = self._order.find("R")
         self._order_map["g"] = self._order.find("G")
         self._order_map["b"] = self._order.find("B")
@@ -175,14 +175,14 @@ class sacnArray(baseArray):
                 sender[universe].destination = self._address
 
         common.publish_queue.put_nowait(
-            BusMessage(
+            PublishMessage(
                 path=f"{self.id}/universe",
                 content=f"{self._universes[0]}{f'-{self._universes[-1]}' if len(self._universes)>1 else ''}",
                 mqtt_retained=True,
             )
         )
         common.publish_queue.put_nowait(
-            BusMessage(
+            PublishMessage(
                 path=f"{self.id}/mode",
                 content="Unicast" if self._address else "Multicast",
                 mqtt_retained=True,
@@ -190,13 +190,13 @@ class sacnArray(baseArray):
         )
         if self._address is not None:
             common.publish_queue.put_nowait(
-                BusMessage(
+                PublishMessage(
                     path=f"{self.id}/address", content=self._address, mqtt_retained=True
                 )
             )
         if self._sync is not None:
             common.publish_queue.put_nowait(
-                BusMessage(
+                PublishMessage(
                     path=f"{self.id}/sync", content=self._sync, mqtt_retained=True
                 )
             )

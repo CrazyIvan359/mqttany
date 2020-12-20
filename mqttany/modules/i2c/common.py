@@ -40,31 +40,15 @@ __all__ = [
     "validateBus",
 ]
 
+import multiprocessing as mproc
 import os
+import typing as t
 from collections import OrderedDict
 
 import logger
 from config import resolve_type
-from common import DataType, BusNode, BusProperty
 
-log = logger.get_logger("i2c")
-CONFIG = {}
-
-publish_queue = None
-nodes = {
-    "i2c": BusNode(
-        name="I2C",
-        type="Module",
-        properties={
-            "poll-all": BusProperty(
-                name="Poll All", settable=True, callback="poll_message"
-            ),
-            "polling-interval": BusProperty(
-                name="Polling Interval", datatype=DataType.INT, unit="s"
-            ),
-        },
-    )
-}
+from common import BusMessage, BusNode, BusProperty, DataType
 
 CONF_KEY_POLL_INT = "polling interval"
 CONF_KEY_BUS_SCAN = "bus scan"  # TODO not implemented yet
@@ -73,7 +57,7 @@ CONF_KEY_DEVICE = "device"
 CONF_KEY_BUS = "bus"
 CONF_KEY_ADDRESS = "address"
 
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (CONF_KEY_POLL_INT, {"type": int, "default": 60}),
         (CONF_KEY_BUS_SCAN, {"type": bool, "default": False}),
@@ -91,8 +75,27 @@ CONF_OPTIONS = OrderedDict(
     ]
 )
 
+log = logger.get_logger("i2c")
+CONFIG: t.Dict[str, t.Any] = {}
 
-def validateAddress(address):
+publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+nodes: t.Dict[str, BusNode] = {
+    "i2c": BusNode(
+        name="I2C",
+        type="Module",
+        properties={
+            "poll-all": BusProperty(
+                name="Poll All", settable=True, callback="poll_message"
+            ),
+            "polling-interval": BusProperty(
+                name="Polling Interval", datatype=DataType.INT, unit="s"
+            ),
+        },
+    )
+}
+
+
+def validateAddress(address: t.Any) -> t.Union[int, None]:
     """
     Validates I2C address.
     Returns ``None`` if address is invalid.
@@ -105,7 +108,7 @@ def validateAddress(address):
     return None
 
 
-def validateBus(bus):
+def validateBus(bus: t.Any) -> t.Union[str, None]:
     """
     Validates I2C bus ID or full path.
     Returns ``None`` if bus is invalid.

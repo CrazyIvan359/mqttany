@@ -25,20 +25,21 @@ Communication Module Template
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = []
+__all__ = ["load", "start", "stop", "transmit_callback", "transmit_ready"]
 
+import multiprocessing as mproc
+import typing as t
 from collections import OrderedDict
 
 import logger
+from common import BusMessage, SubscribeMessage
 from config import parse_config
-from common import BusMessage
 from modules import ModuleType
-from bus import get_property_from_path
 
-_module_type = ModuleType.COMMUNICATION
+_module_type = ModuleType.COMMUNICATION  # type: ignore
 
 log = logger.get_logger()
-CONFIG = {}
+CONFIG: t.Dict[str, t.Any] = {}
 
 # This queue is used to request that MQTTany exit. If a fatal error is encountered put
 # a plain string on this queue using `put_nowait()` that will fit in this log entry
@@ -46,17 +47,18 @@ CONFIG = {}
 # An error that results in the module not being able to transmit messages, such as being
 # unable to connect to the server, is considered fatal. If a module is unable to transmit
 # it must request that MQTTany exit, otherwise it's transmit queue would overflow.
-core_queue = None
+core_queue: "mproc.Queue[str]" = None  # type: ignore
 
 # If the module can receive messages it must have the `receive_queue` attribute.
 # A listener thread should be spawned in the `start` function and should use the `put_nowait()`
 # method on the queue to put `BusMessage` objects in this queue
-receive_queue = None  # omit this if module is transmit only
+# omit this if module is transmit only
+receive_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 # These queues are put in the module's attributes whether they are defined here or not
 # Do not use these names in your module and do not access these objects
-transmit_queue = None
-resend_queue = None
+transmit_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+resend_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 # Configuration keys, best to define them here so they can be changed easily
 CONF_KEY_STRING = "string"
@@ -66,7 +68,7 @@ CONF_KEY_SUBSECTION = "sub section"
 
 # Configuration layout for `parse_config`
 # it should be an OrderedDict of `(key, {})`
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (  # an empty dict means any value is valid and option is required
             CONF_KEY_STRING,
@@ -116,7 +118,7 @@ CONF_OPTIONS = OrderedDict(
 )
 
 
-def load(config_raw) -> bool:
+def load(config_raw: t.Dict[str, t.Any]) -> bool:
     """
     This function runs on the main process after the module is imported. It should parse
     and validate the configuration and do other basic setup of the module. Do not start
@@ -152,9 +154,9 @@ def stop() -> None:
     pass
 
 
-def transmit_callback(message: BusMessage) -> bool:
+def transmit_callback(message: SubscribeMessage) -> bool:
     """
-    This function is required and must accept exactly one argument of type ``BusMessage``.
+    This function is required and must accept exactly one argument of type ``SubscribeMessage``.
     It will be called when there is a message to be sent. If the sending succeeds it must
     return ``True``. If sending fails and it returns ``False``, MQTTany will queue the
     message and wait 500ms before attempting to send again.

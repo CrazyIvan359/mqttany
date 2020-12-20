@@ -26,17 +26,19 @@ I2C Device MCP230xx
 
 __all__ = ["CONF_OPTIONS", "SUPPORTED_DEVICES"]
 
+import json
+import typing as t
 from collections import OrderedDict
 from enum import Enum
-import json
 from threading import Timer
 
 import logger
+from common import BusNode, BusProperty, PublishMessage, SubscribeMessage, validate_id
 from config import resolve_type
-from common import BusMessage, BusNode, BusProperty, validate_id
-from modules.i2c.device.base import I2CDevice
-from modules.i2c import common
-from modules.i2c.common import CONF_KEY_NAME, CONF_KEY_DEVICE
+
+from .. import common
+from ..common import CONF_KEY_DEVICE, CONF_KEY_NAME
+from .base import I2CDevice
 
 
 class Logic(Enum):
@@ -64,7 +66,7 @@ CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
 CONF_KEY_FIRST_INDEX = "first index"
 
-CONF_OPTIONS = {
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = {
     "regex:.+": {
         CONF_KEY_DEVICE: {"selection": ["mcp23008", "mcp23017"]},
         CONF_KEY_MCP: OrderedDict(
@@ -79,7 +81,7 @@ CONF_OPTIONS = {
                     {
                         "type": "section",
                         "required": False,
-                        CONF_KEY_PIN: {"type": (int, list)},
+                        CONF_KEY_PIN: {"type": (int, list)},  # type: ignore
                         CONF_KEY_NAME: {"type": (str, list), "default": "{pin_id}"},
                         CONF_KEY_DIRECTION: {
                             "default": Direction.INPUT,
@@ -122,15 +124,15 @@ CONF_OPTIONS = {
 
 
 # helpers to get/set bits
-def _get_bit(val, bit):
+def _get_bit(val: int, bit: int) -> int:
     return val & (1 << bit) > 0
 
 
-def _set_bit(val, bit, bit_val=1):
+def _set_bit(val: int, bit: int, bit_val: int = 1) -> int:
     return (val & ~(1 << bit)) | bit_val << bit
 
 
-def _clear_bit(val, bit):
+def _clear_bit(val: int, bit: int) -> int:
     return val & ~(1 << bit)
 
 
@@ -149,27 +151,27 @@ class Pin(object):
         invert: bool,
         initial: bool,
         device: I2CDevice,
-    ):
+    ) -> None:
         self._pin = pin
         self._id = id
         self._name = name
         self._direction = direction
         self._invert = invert
-        self._device = device
+        self._device = t.cast(MCP230xx, device)
         self._path = f"{self._device.id}/{self.id}"
         self._pulse_timer = None
 
         if direction == Direction.INPUT:
             if resistor == Resistor.PULL_UP:
-                device._gppu = _set_bit(device._gppu, pin)
+                self._device.gppu = _set_bit(self._device.gppu, pin)
         else:
-            device._iodir = _clear_bit(device._iodir, pin)
+            self._device.iodir = _clear_bit(self._device.iodir, pin)
             self.state = initial
 
-    def publish_state(self):
+    def publish_state(self) -> None:
         state = self.state_log
         common.publish_queue.put_nowait(
-            BusMessage(path=self._path, content=TEXT_STATE[state])
+            PublishMessage(path=self._path, content=TEXT_STATE[state])
         )
 
     @property
@@ -177,13 +179,13 @@ class Pin(object):
         """
         Returns pin state as ``bool`` after applying invert flag
         """
-        return bool(_get_bit(self._device._gpio, self._pin) ^ self._invert)
+        return bool(_get_bit(self._device.gpio, self._pin) ^ self._invert)
 
     @state.setter
-    def state(self, value: bool):
+    def state(self, value: bool) -> None:
         if self._direction == Direction.OUTPUT:
-            self._device._gpio = _set_bit(
-                self._device._gpio, self._pin, int(value) ^ self._invert
+            self._device.gpio = _set_bit(
+                self._device.gpio, self._pin, int(value) ^ self._invert
             )
 
     @property
@@ -192,7 +194,7 @@ class Pin(object):
         Returns pin state as ``bool`` after applying invert flag and logs the event
         """
         state = self.state
-        self._device._log.debug(
+        self._device.log.debug(
             "Read state %s logic %s from pin GP%02d '%s' on %s '%s'",
             TEXT_STATE[state],
             Logic(int(state ^ self._invert)).name,
@@ -204,11 +206,11 @@ class Pin(object):
         return state
 
     @state_log.setter
-    def state_log(self, state: bool):
+    def state_log(self, state: bool) -> None:
         if self._direction == Direction.OUTPUT:
             self._pulse_cancel()
             self.state = state
-            self._device._log.debug(
+            self._device.log.debug(
                 "Set pin GP%02d '%s' on %s '%s' to %s logic %s",
                 self._pin,
                 self._name,
@@ -218,7 +220,7 @@ class Pin(object):
                 Logic(int(state ^ self._invert)).name,
             )
 
-    def _pulse(self, time: int, state: bool):
+    def _pulse(self, time: int, state: bool) -> None:
         """
         Sets the pin to ``state`` for ``time`` ms then to ``not state``.
         Any calls to ``pulse`` while the timer is running will cancel the previous pulse.
@@ -236,12 +238,12 @@ class Pin(object):
             time,
         )
         self.state_log = state
-        self._device._write_gpio()
+        self._device.write_gpio()
         self._pulse_timer = Timer(float(time) / 1000, self._pulse_end, args=[not state])
         self._pulse_timer.start()
         self.publish_state()
 
-    def _pulse_end(self, state):
+    def _pulse_end(self, state: bool) -> None:
         """
         End of a pulse cycle, set pin to state and log
         """
@@ -254,10 +256,10 @@ class Pin(object):
             self._device.name,
         )
         self.state_log = state
-        self._device._write_gpio()
+        self._device.write_gpio()
         self.publish_state()
 
-    def _pulse_cancel(self):
+    def _pulse_cancel(self) -> None:
         if self._pulse_timer is not None:
             self._pulse_timer.cancel()
             self._pulse_timer = None
@@ -269,7 +271,7 @@ class Pin(object):
                 self._device.name,
             )
 
-    def set(self, content: str):
+    def set(self, content: str) -> None:
         """
         Handle a SET message
         """
@@ -277,11 +279,11 @@ class Pin(object):
             state = str(resolve_type(content))
             if state in TEXT_STATE:
                 self._pulse_cancel()
-                self.state_log = TEXT_STATE[state]
-                self._device._write_gpio()
+                self.state_log = t.cast(bool, TEXT_STATE[state])
+                self._device.write_gpio()
                 self.publish_state()
             else:
-                self._device._log.warn(
+                self._device.log.warn(
                     "Received unrecognized SET message for pin GP%02d '%s' on %s '%s': %s",
                     self._pin,
                     self._name,
@@ -290,7 +292,7 @@ class Pin(object):
                     content,
                 )
         else:
-            self._device._log.warn(
+            self._device.log.warn(
                 "Received SET command for pin GP%02d '%s' on %s '%s' but it is not "
                 "configured as an output",
                 self._pin,
@@ -299,15 +301,15 @@ class Pin(object):
                 self._device.name,
             )
 
-    def pulse(self, content: str):
+    def pulse(self, content: str) -> None:
         """
         Handle a PULSE message
         """
         if self._direction == Direction.OUTPUT:
             try:
-                content = json.loads(content)
+                payload: t.Dict[str, t.Any] = json.loads(content)
             except ValueError:
-                self._device._log.warn(
+                self._device.log.warn(
                     "Received unrecognized PULSE command for pin GP%02d '%s' on %s '%s': %s",
                     self._pin,
                     self._name,
@@ -316,10 +318,10 @@ class Pin(object):
                     content,
                 )
             else:
-                time = content.get("time")
-                state = content.get("state")
+                time = payload.get("time")
+                state = payload.get("state")
                 if not time:
-                    self._device._log.error(
+                    self._device.log.error(
                         "Received PULSE command missing 'time' argument for pin "
                         "GP%02d '%s' on %s '%s': %s",
                         self._pin,
@@ -330,14 +332,14 @@ class Pin(object):
                     )
                     return
                 if state is None:
-                    self._device._read_gpio()
+                    self._device.read_gpio()
                     state = TEXT_STATE[self.state]
                 else:
                     state = str(resolve_type(content))
                 if state in TEXT_STATE:
-                    self._pulse(time, TEXT_STATE[state])
+                    self._pulse(time, t.cast(bool, TEXT_STATE[state]))
                 else:
-                    self._device._log.warn(
+                    self._device.log.warn(
                         "Received unrecognized PULSE state for pin GP%02d '%s' on %s '%s': %s",
                         self._pin,
                         self._name,
@@ -346,7 +348,7 @@ class Pin(object):
                         state,
                     )
         else:
-            self._device._log.warn(
+            self._device.log.warn(
                 "Received PULSE command for pin GP%02d '%s' on %s '%s' but it is not "
                 "configured as an output",
                 self._pin,
@@ -363,6 +365,14 @@ class Pin(object):
     def name(self) -> str:
         return self._name
 
+    @property
+    def pin(self) -> int:
+        return self._pin
+
+    @property
+    def direction(self) -> Direction:
+        return self._direction
+
 
 class MCP230xx(I2CDevice):
     """
@@ -375,14 +385,16 @@ class MCP230xx(I2CDevice):
         name: str,
         device: str,
         address: int,
-        bus,
+        bus: object,
         bus_path: str,
-    ):
+    ) -> None:
         super().__init__(id, name, device, address, bus, bus_path)
-        self._pins = []
-        self._pin_max = 0
-        self._pin_from_path = {}
-        self._gpio = None  # set by subclass
+        self._pin_from_path: t.Dict[str, int] = {}
+        self._pin_max: int = 0
+        self._pins: t.List[Pin] = []
+        self.gpio: int = 0x0  # set by subclass
+        self.iodir: int = 0x0
+        self.gppu: int = 0x0
 
     def get_node(self) -> BusNode:
         node = super().get_node()
@@ -397,15 +409,15 @@ class MCP230xx(I2CDevice):
             node.add_property(
                 pin.id,
                 BusProperty(
-                    name=pin._name,
-                    settable=pin._direction == Direction.OUTPUT,
+                    name=pin.name,
+                    settable=pin.direction == Direction.OUTPUT,
                     callback="device_message",
                 ),
             )
-            node.add_property(str(pin._pin), node.properties[pin.id])
+            node.add_property(str(pin.pin), node.properties[pin.id])
         return node
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Perform cleanup on module shutdown.
         Subclasses may override this method
@@ -414,23 +426,23 @@ class MCP230xx(I2CDevice):
             self._gpio = 0
             for pin in self._pins:
                 if pin is not None:
-                    pin.state = 0  # set all pins to configured OFF
-            self._write_gpio()
+                    pin.state = False  # set all pins to configured OFF
+            self.write_gpio()
             self.publish_state()
             self._setup = False
 
-    def publish_state(self):
+    def publish_state(self) -> None:
         """
         Publishes the state of all configured pins
         """
         if self._setup:
             self._log.debug("Polling all pins")
-            self._read_gpio()
+            self.read_gpio()
             for pin in self._pins:
                 if pin is not None:
                     pin.publish_state()
 
-    def message_callback(self, message: BusMessage) -> None:
+    def message_callback(self, message: SubscribeMessage) -> None:
         """
         Handle messages to any of this device's subscriptions.
         """
@@ -466,7 +478,7 @@ class MCP230xx(I2CDevice):
                 except ValueError:
                     self._log.warn(
                         "Received unrecognized PULSE command for pin GP%02d '%s': %s",
-                        self._pins[self._pin_from_path[path[0]]]._pin,
+                        self._pins[self._pin_from_path[path[0]]].pin,
                         self._pins[self._pin_from_path[path[0]]].name,
                         message.content,
                     )
@@ -475,7 +487,7 @@ class MCP230xx(I2CDevice):
             else:
                 self._log.debug("Received message on unregistered path: %s", message)
 
-    def _build_pins(self, device_config):
+    def _build_pins(self, device_config: t.Dict[str, t.Any]) -> None:
         """
         Setup device pins from config
         """
@@ -542,7 +554,7 @@ class MCP230xx(I2CDevice):
         resistor: Resistor,
         invert: bool,
         initial: bool,
-    ):
+    ) -> None:
         """
         Setup pin for given options
         """
@@ -554,7 +566,7 @@ class MCP230xx(I2CDevice):
                 "will be ignored, pin already configured under '%s'",
                 pin,
                 id,
-                self._device.id,
+                self._id,
                 self._device,
                 self._name,
                 self._pins[pin].name,
@@ -564,7 +576,7 @@ class MCP230xx(I2CDevice):
                 "Found pin GP%02d in '%s' for %s '%s' but highest pin for device is GP%02d",
                 pin,
                 id,
-                self._device.id,
+                self._id,
                 self._name,
                 self._pin_max,
             )
@@ -595,17 +607,21 @@ class MCP230xx(I2CDevice):
                 },
             )
 
-    def _read_gpio(self):
+    def read_gpio(self) -> None:
         """
         Read the GP register(s)
         """
         raise NotImplementedError
 
-    def _write_gpio(self):
+    def write_gpio(self) -> None:
         """
         Write the GP register(s)
         """
         raise NotImplementedError
+
+    @property
+    def log(self) -> logger.mqttanyLogger:
+        return self._log
 
 
 class MCP23008(MCP230xx):
@@ -634,17 +650,17 @@ class MCP23008(MCP230xx):
         name: str,
         device: str,
         address: int,
-        bus,
+        bus: object,
         bus_path: str,
-        device_config: dict,
-    ):
+        device_config: t.Dict[str, t.Any],
+    ) -> None:
         super().__init__(id, name, device, address, bus, bus_path)
         self._log = logger.get_logger("i2c.mcp23008")
         self._pin_max = 7
-        self._pins = [None] * (self._pin_max + 1)
-        self._gpio = 0x0000
-        self._iodir = 0xFFFF
-        self._gppu = 0x0000
+        self._pins: t.List[Pin] = [None] * (self._pin_max + 1)  # type: ignore
+        self._gpio = 0x00
+        self._iodir = 0xFF
+        self._gppu = 0x00
         super()._build_pins(device_config)
 
     def setup(self) -> bool:
@@ -683,12 +699,12 @@ class MCP23008(MCP230xx):
 
         return self._setup
 
-    def _read_gpio(self):
+    def read_gpio(self) -> None:
         gpio = self._read_byte(self._GPIO)
         if gpio is not None:
             self._gpio = gpio
 
-    def _write_gpio(self):
+    def write_gpio(self) -> None:
         self._write_byte(self._GPIO, self._gpio)
 
 
@@ -729,20 +745,20 @@ class MCP23017(MCP230xx):
         name: str,
         device: str,
         address: int,
-        bus,
+        bus: object,
         bus_path: str,
-        device_config: dict,
+        device_config: t.Dict[str, t.Any],
     ):
         super().__init__(id, name, device, address, bus, bus_path)
         self._log = logger.get_logger("i2c.mcp23017")
         self._pin_max = 15
-        self._pins = [None] * (self._pin_max + 1)
+        self._pins: t.List[Pin] = [None] * (self._pin_max + 1)  # type: ignore
         self._gpio = 0x0000
         self._iodir = 0xFFFF
         self._gppu = 0x0000
         super()._build_pins(device_config)
 
-    def setup(self):
+    def setup(self) -> bool:
         """
         Setup the hardware
         """
@@ -788,13 +804,16 @@ class MCP23017(MCP230xx):
 
         return self._setup
 
-    def _read_gpio(self):
+    def read_gpio(self) -> None:
         gpio = self._read_word(self._GPIOA)
         if gpio is not None:
             self._gpio = gpio
 
-    def _write_gpio(self):
+    def write_gpio(self) -> None:
         self._write_word(self._GPIOA, self._gpio)
 
 
-SUPPORTED_DEVICES = {"mcp23008": MCP23008, "mcp23017": MCP23017}
+SUPPORTED_DEVICES: t.Dict[str, t.Type[I2CDevice]] = {
+    "mcp23008": MCP23008,
+    "mcp23017": MCP23017,
+}

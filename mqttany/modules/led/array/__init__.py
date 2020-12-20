@@ -25,27 +25,34 @@ LED Array Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ["getArray", "getConfOptions"]
+__all__ = ["getArray", "updateConfOptions"]
+
+import typing as t
+from collections import OrderedDict
 
 from common import update_dict
+from logger import mqttanyLogger
 
-from modules.led.common import (
+from ..common import (
+    CONF_KEY_ANIM_FPS,
+    CONF_KEY_BRIGHTNESS,
+    CONF_KEY_COLOR_ORDER,
+    CONF_KEY_COUNT,
     CONF_KEY_NAME,
     CONF_KEY_OUTPUT,
-    CONF_KEY_COUNT,
     CONF_KEY_PER_PIXEL,
-    CONF_KEY_COLOR_ORDER,
-    CONF_KEY_BRIGHTNESS,
-    CONF_KEY_ANIM_FPS,
 )
-from modules.led.array import rpi, e131
+from . import e131, rpi
+from .base import baseArray
 
 
-def getArray(array_id, array_config, log):
+def getArray(
+    array_id: str, array_config: t.Dict[str, t.Any], log: mqttanyLogger
+) -> t.Union[baseArray, None]:
     """
     Returns an LED Object or ``None`` if one is not available for the specified hardware.
     """
-    array_classes = {}
+    array_classes: t.Dict[str, t.Type[baseArray]] = {}
     array_classes.update(rpi.SUPPORTED_TYPES)
     array_classes.update(e131.SUPPORTED_TYPES)
     clazz = array_classes.get(array_config[CONF_KEY_OUTPUT], None)
@@ -66,11 +73,12 @@ def getArray(array_id, array_config, log):
     return None
 
 
-def getConfOptions():
+def updateConfOptions(
+    conf_options: t.MutableMapping[str, t.Dict[t.Any, t.Any]]
+) -> "OrderedDict[str, t.Dict[t.Any, t.Any]]":
     """
     Return Conf Options from all array types
     """
-    conf = {}
-    conf = update_dict(conf, rpi.CONF_OPTIONS)
-    conf = update_dict(conf, e131.CONF_OPTIONS)
-    return conf
+    conf_options = update_dict(conf_options, rpi.CONF_OPTIONS)
+    conf_options = update_dict(conf_options, e131.CONF_OPTIONS)
+    return t.cast("OrderedDict[str, t.Dict[t.Any, t.Any]]", conf_options)

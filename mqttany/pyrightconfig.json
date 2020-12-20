@@ -1,0 +1,10 @@
+{
+    "stubPath": "./../typings",
+    "pythonVersion": "3.6",
+    "pythonPlatform": "Linux",
+    "typeCheckingMode": "strict",
+    "reportImportCycles": "none",
+    "reportMissingTypeStubs": "warning",
+    "reportUnusedImport": "warning",
+    "reportUnusedVariable": "warning"
+}

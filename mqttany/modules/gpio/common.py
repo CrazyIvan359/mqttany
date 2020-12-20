@@ -38,33 +38,14 @@ __all__ = [
     "CONF_OPTIONS",
 ]
 
+import multiprocessing as mproc
+import typing as t
 from collections import OrderedDict
 
 import logger
-from common import DataType, BusNode, BusProperty
+
+from common import BusMessage, BusNode, BusProperty, DataType
 from gpio import Mode
-
-log = logger.get_logger("gpio")
-CONFIG = {}
-
-publish_queue = None
-nodes = {
-    "gpio": BusNode(
-        name="GPIO",
-        type="Module",
-        properties={
-            "poll-all": BusProperty(
-                name="Poll All Pins", settable=True, callback="poll_message"
-            ),
-            "polling-interval": BusProperty(
-                name="Polling Interval", datatype=DataType.FLOAT, unit="s"
-            ),
-            # from pin.digital
-            "pulse": BusProperty(name="Pulse", settable=True, callback="pulse_message"),
-        },
-    )
-}
-
 
 CONF_KEY_MODE = "mode"
 CONF_KEY_POLL_INT = "polling interval"
@@ -73,7 +54,7 @@ CONF_KEY_NAME = "name"
 CONF_KEY_FIRST_INDEX = "first index"
 CONF_KEY_PIN_MODE = "pin mode"
 
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (
             CONF_KEY_MODE,
@@ -106,3 +87,24 @@ CONF_OPTIONS = OrderedDict(
         ),
     ]
 )
+
+log = logger.get_logger("gpio")
+CONFIG: t.Dict[str, t.Any] = {}
+
+publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+nodes: t.Dict[str, BusNode] = {
+    "gpio": BusNode(
+        name="GPIO",
+        type="Module",
+        properties={
+            "poll-all": BusProperty(
+                name="Poll All Pins", settable=True, callback="poll_message"
+            ),
+            "polling-interval": BusProperty(
+                name="Polling Interval", datatype=DataType.FLOAT, unit="s"
+            ),
+            # from pin.digital
+            "pulse": BusProperty(name="Pulse", settable=True, callback="pulse_message"),
+        },
+    )
+}

@@ -28,18 +28,20 @@ GPIO Digital Pin
 __all__ = ["SUPPORTED_PIN_MODES", "CONF_OPTIONS"]
 
 import json
-from threading import Timer
+import typing as t
 from enum import Enum
+from threading import Timer
 
 import logger
-from logger import log_traceback
+from common import BusProperty, PublishMessage
 from config import resolve_type
-from common import BusMessage, BusProperty
-from gpio import board, Mode, PinMode, PinBias, PinEdge
+from gpio import Mode, PinBias, PinEdge, PinMode, board
+from gpio.pins.digital import Digital as CoreDigital
+from logger import log_traceback, mqttanyLogger
 
-from modules.gpio import common
-from modules.gpio.pin.base import Pin
-from modules.gpio.common import CONFIG, CONF_KEY_PIN_MODE
+from .. import common
+from ..common import CONF_KEY_PIN_MODE, CONFIG
+from .base import Pin
 
 CONF_KEY_DEBOUNCE = "debounce"
 CONF_KEY_RESISTOR = "resistor"
@@ -48,7 +50,7 @@ CONF_KEY_INTERRUPT = "interrupt"
 CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
 
-CONF_OPTIONS = {
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = {
     CONF_KEY_DEBOUNCE: {"type": int, "default": 50},
     "regex:.+": {
         CONF_KEY_PIN_MODE: {
@@ -117,15 +119,20 @@ class Digital(Pin):
     """
 
     def __init__(
-        self, pin: int, gpio_mode: Mode, id: str, name: str, pin_config: dict = {}
-    ):
+        self,
+        pin: int,
+        gpio_mode: Mode,
+        id: str,
+        name: str,
+        pin_config: t.Dict[str, t.Any] = {},
+    ) -> None:
         super().__init__(pin, gpio_mode, id, name, pin_config)
-        self._log = logger.get_logger("gpio.digital")
+        self._log: mqttanyLogger = logger.get_logger("gpio.digital")
         self._pulse_timer = None
-        self._bias = pin_config[CONF_KEY_RESISTOR]
-        self._edge = pin_config[CONF_KEY_DIGITAL][CONF_KEY_INTERRUPT]
-        self._invert = pin_config[CONF_KEY_DIGITAL][CONF_KEY_INVERT]
-        self._initial = pin_config[CONF_KEY_DIGITAL][CONF_KEY_INITIAL]
+        self._bias: PinBias = pin_config[CONF_KEY_RESISTOR]
+        self._edge: PinEdge = pin_config[CONF_KEY_DIGITAL][CONF_KEY_INTERRUPT]
+        self._invert: bool = pin_config[CONF_KEY_DIGITAL][CONF_KEY_INVERT]
+        self._initial: bool = pin_config[CONF_KEY_DIGITAL][CONF_KEY_INITIAL]
         self._handle = board.get_pin(
             pin=pin,
             mode=gpio_mode,
@@ -157,7 +164,7 @@ class Digital(Pin):
             callback="pin_message",
         )
 
-    def setup(self):
+    def setup(self) -> bool:
         """
         Configures the pin in hardware, returns ``True`` on success
         """
@@ -189,7 +196,7 @@ class Digital(Pin):
 
         return self._setup
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Cleanup actions when stopping
         """
@@ -197,7 +204,7 @@ class Digital(Pin):
             self._set(False)
         super().cleanup()
 
-    def publish_state(self):
+    def publish_state(self) -> None:
         """
         Read the state from the pin and publish
         """
@@ -212,10 +219,10 @@ class Digital(Pin):
                     self.pin_name,
                 )
                 common.publish_queue.put_nowait(
-                    BusMessage(path=self.path, content=TEXT_STATE[state])
+                    PublishMessage(path=self.path, content=TEXT_STATE[state])
                 )
 
-    def message_callback(self, path: str, content: str):
+    def message_callback(self, path: str, content: str) -> None:
         """
         Handles messages on the pin's paths. Path will have the pin's path removed,
         ex. path may only be ``set``.
@@ -234,13 +241,14 @@ class Digital(Pin):
                     content,
                 )
 
-    def get(self) -> bool:
+    def get(self) -> t.Union[bool, None]:
         """
         Reads the pin state, return ``None`` if read fails
         """
         if self._setup:
+            handle = t.cast(CoreDigital, self._handle)
             try:
-                return bool(self._handle.read() ^ self._invert)
+                return bool(handle.read() ^ self._invert)  # type:ignore
             except:
                 self._log.error(
                     "An exception occurred while reading '%s' on %s",
@@ -250,13 +258,14 @@ class Digital(Pin):
                 log_traceback(self._log)
         return None
 
-    def _set(self, state: bool):
+    def _set(self, state: bool) -> bool:
         """
         Set the state of the pin
         """
         if self._setup:
+            handle = t.cast(CoreDigital, self._handle)
             try:
-                self._handle.write(state ^ self._invert)
+                handle.write(state ^ self._invert)
                 self._log.debug(
                     "Set '%s' on %s to %s logic %s",
                     self.name,
@@ -273,7 +282,7 @@ class Digital(Pin):
                 )
         return False
 
-    def _pulse(self, time: int, state: bool):
+    def _pulse(self, time: int, state: bool) -> None:
         """
         Sets the pin to ``state`` for ``time`` ms then to ``not state``.
         Any calls to ``pulse`` while the timer is running will cancel the previous pulse.
@@ -296,7 +305,7 @@ class Digital(Pin):
                 self._pulse_timer.start()
                 self.publish_state()
 
-    def _pulse_end(self, state: bool):
+    def _pulse_end(self, state: bool) -> None:
         """
         End of a pulse cycle, set pin to state and log
         """
@@ -312,7 +321,7 @@ class Digital(Pin):
                 )
                 self.publish_state()
 
-    def _pulse_cancel(self):
+    def _pulse_cancel(self) -> None:
         """
         Cancel pulse timer if it is running.
         """
@@ -325,7 +334,7 @@ class Digital(Pin):
                 self.pin_name,
             )
 
-    def set(self, content: str):
+    def set(self, content: str) -> None:
         """
         Handle a SET message
         """
@@ -334,7 +343,7 @@ class Digital(Pin):
                 state = str(resolve_type(content))
                 if state in TEXT_STATE:
                     self._pulse_cancel()
-                    if self._set(TEXT_STATE[state]):
+                    if self._set(t.cast(bool, TEXT_STATE[state])):
                         self.publish_state()
                 else:
                     self._log.warn(
@@ -350,14 +359,14 @@ class Digital(Pin):
                     self.pin_name,
                 )
 
-    def pulse(self, content: str):
+    def pulse(self, content: str) -> None:
         """
         Handle a PULSE message
         """
         if self._setup:
             if self._mode == PinMode.OUTPUT:
                 try:
-                    content = json.loads(content)
+                    payload: t.Dict[str, t.Any] = json.loads(content)
                 except ValueError:
                     self._log.error(
                         "Received malformed JSON in PULSE command for '%s' on %s: %s",
@@ -366,8 +375,10 @@ class Digital(Pin):
                         content,
                     )
                 else:
-                    time = content.get("time")
-                    state = content.get("state", TEXT_STATE.get(self.get()))
+                    time = payload.get("time")
+                    state: t.Any = payload.get(
+                        "state", TEXT_STATE.get(t.cast(t.Any, self.get()))
+                    )
                     if not time:
                         self._log.error(
                             "Received PULSE command missing 'time' argument for '%s' on %s: %s",
@@ -386,7 +397,7 @@ class Digital(Pin):
 
                     state = str(resolve_type(state))
                     if state in TEXT_STATE:
-                        self._pulse(time, TEXT_STATE[state])
+                        self._pulse(time, t.cast(bool, TEXT_STATE[state]))
                     else:
                         self._log.warn(
                             "Received unrecognized PULSE state for '%s' on %s: %s",
@@ -401,7 +412,7 @@ class Digital(Pin):
                     self.pin_name,
                 )
 
-    def interrupt(self, state: bool):
+    def interrupt(self, state: bool) -> None:
         """
         Handles pin change interrupts
         """
@@ -415,8 +426,11 @@ class Digital(Pin):
             self.pin_name,
         )
         common.publish_queue.put_nowait(
-            BusMessage(path=self.path, content=TEXT_STATE[state])
+            PublishMessage(path=self.path, content=TEXT_STATE[state])
         )
 
 
-SUPPORTED_PIN_MODES = {PinMode.INPUT: Digital, PinMode.OUTPUT: Digital}
+SUPPORTED_PIN_MODES: t.Dict[t.Union[PinMode, str], t.Type[Pin]] = {
+    PinMode.INPUT: Digital,
+    PinMode.OUTPUT: Digital,
+}

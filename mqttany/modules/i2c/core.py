@@ -26,43 +26,48 @@ I2C Core
 
 __all__ = ["load", "start", "stop", "device_message", "poll_message"]
 
+import typing as t
 from threading import Timer
 
 from config import parse_config
-from common import BusMessage, validate_id
 
-from modules.i2c.device import getDeviceClass, updateConfOptions
-from modules.i2c.common import (  # pylint: disable=unused-import
-    log,
-    CONFIG,
-    nodes,
-    CONF_KEY_POLL_INT,
-    CONF_KEY_BUS_SCAN,
-    CONF_KEY_NAME,
-    CONF_KEY_DEVICE,
+from common import SubscribeMessage, validate_id
+
+from .common import CONF_KEY_ADDRESS  # pylint: disable=unused-import
+from .common import CONF_KEY_BUS_SCAN  # type: ignore
+from .common import (
     CONF_KEY_BUS,
-    CONF_KEY_ADDRESS,
+    CONF_KEY_DEVICE,
+    CONF_KEY_NAME,
+    CONF_KEY_POLL_INT,
     CONF_OPTIONS,
+    CONFIG,
+    log,
+    nodes,
     validateAddress,
     validateBus,
 )
+from .device import getDeviceClass, updateConfOptions
+from .device.base import I2CDevice
 
-buses = {}
-devices = {}
+buses: t.Dict[str, t.Any] = {}
+devices: t.Dict[str, I2CDevice] = {}
 polling_timer = None
 
 
-def build_device(device_id, device_config):
+def build_device(
+    device_id: str, device_config: t.Dict[str, t.Any]
+) -> t.Union[I2CDevice, None]:
     from smbus2 import SMBus
 
     if not validate_id(device_id):
         log.warn("'%s' is not a valid ID and will be ignored", device_id)
         return None
 
-    device = device_config[CONF_KEY_DEVICE]
+    device: str = device_config[CONF_KEY_DEVICE]
     bus = validateBus(device_config[CONF_KEY_BUS])
     address = validateAddress(device_config[CONF_KEY_ADDRESS])
-    name = device_config[CONF_KEY_NAME].format(
+    name: str = device_config[CONF_KEY_NAME].format(
         device_id=device_id, address=address, device=device.upper()
     )
     clazz = getDeviceClass(device)
@@ -105,7 +110,7 @@ def build_device(device_id, device_config):
         return None
 
 
-def load(config_raw={}):
+def load(config_raw: t.Dict[str, t.Any] = {}) -> bool:
     """
     Initializes the module
     """
@@ -143,15 +148,17 @@ def load(config_raw={}):
         return False
 
 
-def start():
+def start() -> None:
     """
     Actions to be done in the subprocess before the loop starts
     """
+    from smbus2 import SMBus
+
     # Open I2C buses
     log.debug("Opening I2C bus streams")
     for bus in buses:
         try:
-            buses[bus].open(bus)
+            t.cast(SMBus, buses[bus]).open(bus)
         except IOError as err:
             log.error("Failed to open I2C bus '%s': %s", bus, err)
 
@@ -181,7 +188,7 @@ def start():
     poll_all()
 
 
-def stop():
+def stop() -> None:
     """
     Actions to be done in the subprocess after the loop is exited
     """
@@ -199,7 +206,7 @@ def stop():
             buses[bus].close()
 
 
-def device_message(message: BusMessage):
+def device_message(message: SubscribeMessage) -> None:
     """
     Callback for device messages
     """
@@ -212,7 +219,7 @@ def device_message(message: BusMessage):
         log.debug("Received message on unregistered path: %s", message)
 
 
-def poll_message(message: BusMessage):
+def poll_message(message: SubscribeMessage) -> None:
     """
     Callback for poll all
     """
@@ -222,7 +229,7 @@ def poll_message(message: BusMessage):
         log.debug("Received message on unregistered path: %s", message)
 
 
-def poll_all():
+def poll_all() -> None:
     """
     Polls all devices
     """
@@ -231,7 +238,7 @@ def poll_all():
         devices[id].publish_state()
 
 
-def poll_interval():
+def poll_interval() -> None:
     """ Polls all devices and restarts the timer """
     log.debug("Polling timer fired")
     global polling_timer

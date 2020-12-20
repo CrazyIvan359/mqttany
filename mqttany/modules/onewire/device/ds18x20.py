@@ -27,17 +27,20 @@ OneWire DS18x20 Device
 
 __all__ = ["CONF_OPTIONS", "FAMILY_CODES", "SUPPORTED_DEVICES"]
 
-import logger
-from common import DataType, BusNode, BusMessage, BusProperty
+import typing as t
 
-from modules.onewire.bus.base import OneWireBus
-from modules.onewire.device.base import OneWireDevice
-from modules.onewire import common
+import logger
+from common import BusNode, BusProperty, DataType, PublishMessage, SubscribeMessage
+
+from .. import common
+from ..bus.base import OneWireBus
+from .base import OneWireDevice
 
 CONF_KEY_DS18X20 = "ds18x20"
 CONF_KEY_UNIT = "unit"
 
-CONF_OPTIONS = {  # will be added to device section of core CONF_OPTIONS
+# will be added to device section of core CONF_OPTIONS
+CONF_OPTIONS: t.Dict[str, t.Any] = {
     CONF_KEY_DS18X20: {
         "type": "section",
         CONF_KEY_UNIT: {
@@ -47,7 +50,7 @@ CONF_OPTIONS = {  # will be added to device section of core CONF_OPTIONS
     }
 }
 
-FAMILY_CODES = {
+FAMILY_CODES: t.Dict[int, str] = {
     0x10: "DS18S20",
     0x22: "DS1822",
     0x28: "DS18B20",
@@ -70,11 +73,11 @@ class DS18x20(OneWireDevice):
         device: str,
         address: str,
         bus: OneWireBus,
-        device_config: dict,
-    ):
+        device_config: t.Dict[str, t.Any],
+    ) -> None:
         super().__init__(id, name, device, address, bus)
         self._log = logger.get_logger("onewire.ds18x20")
-        self._unit = (
+        self._unit: str = (
             device_config.get(CONF_KEY_DS18X20, {}).get(CONF_KEY_UNIT, "C").upper()
         )
         self._log.debug(
@@ -96,7 +99,7 @@ class DS18x20(OneWireDevice):
         node.add_property("unit", BusProperty(name="Unit"))
         return node
 
-    def setup(self):
+    def setup(self) -> bool:
         """
         Sets up the device and makes sure it is available on the bus.
         Returns ``True`` if device is available, ``False`` otherwise.
@@ -104,7 +107,7 @@ class DS18x20(OneWireDevice):
         self._setup = super().setup()
         return self._setup
 
-    def publish_state(self):
+    def publish_state(self) -> None:
         """
         Publishes the current device state
         """
@@ -119,38 +122,40 @@ class DS18x20(OneWireDevice):
                     "%s: Read raw data 0x%s from device", self.name, data.hex()
                 )
 
-                temp = int.from_bytes(data[:2], byteorder="little", signed=False)
-                temp = int(f"0b{temp >> 4:08b}"[-8:], base=0)
-                temp = int.from_bytes(bytes([temp]), "big", signed=True)
-                temp = float(temp)
+                itemp = int.from_bytes(data[:2], byteorder="little", signed=False)
+                itemp = int(f"0b{itemp >> 4:08b}"[-8:], base=0)
+                itemp = int.from_bytes(bytes([itemp]), "big", signed=True)
+                ftemp = float(itemp)
                 data = int.from_bytes(data, byteorder="little", signed=False)
-                temp += 0.5000 * (data & (1 << 3) > 0)
-                temp += 0.2500 * (data & (1 << 2) > 0)
-                temp += 0.1250 * (data & (1 << 1) > 0)
-                temp += 0.0625 * (data & (1 << 0) > 0)
+                ftemp += 0.5000 * float(data & (1 << 3) > 0)
+                ftemp += 0.2500 * float(data & (1 << 2) > 0)
+                ftemp += 0.1250 * float(data & (1 << 1) > 0)
+                ftemp += 0.0625 * float(data & (1 << 0) > 0)
 
                 if self._unit == "F":
-                    temp = temp * 9 / 5 + 32
+                    ftemp = ftemp * 9 / 5 + 32
 
                 self._log.debug(
-                    "%s: Read temperature %0.3f %s", self.name, temp, self._unit
+                    "%s: Read temperature %0.3f %s", self.name, ftemp, self._unit
                 )
                 common.publish_queue.put_nowait(
-                    BusMessage(path=f"{self.id}/temperature", content=temp)
+                    PublishMessage(path=f"{self.id}/temperature", content=ftemp)
                 )
                 common.publish_queue.put_nowait(
-                    BusMessage(path=f"{self.id}/unit", content=self._unit)
+                    PublishMessage(path=f"{self.id}/unit", content=self._unit)
                 )
         else:
             self._log.error(
                 "%s: Failed to publish state, device is not setup", self.name
             )
 
-    def message_callback(self, message: BusMessage) -> None:
+    def message_callback(self, message: SubscribeMessage) -> None:
         if self._setup:
             self._log.debug(
                 "%s: Received message on unregistered path: %s", self.name, message
             )
 
 
-SUPPORTED_DEVICES = {code: DS18x20 for code in FAMILY_CODES}
+SUPPORTED_DEVICES: t.Dict[int, t.Type[OneWireDevice]] = {
+    code: DS18x20 for code in FAMILY_CODES
+}

@@ -27,15 +27,17 @@ Core GPIO Base Board
 
 __all__ = ["Board"]
 
-import os
-import multiprocessing as mproc
-from ctypes import c_char
 import inspect
+import multiprocessing as mproc
+import os
+import typing as t
+from ctypes import c_char
 
 import logger
-from gpio.common import Mode, PinMode, PinBias, PinAlternate
-from gpio.pins import SUPPORTED_PIN_MODES
-from gpio.pins.base import Pin
+
+from ..common import Mode, PinAlternate, PinBias, PinMode
+from ..pins import SUPPORTED_PIN_MODES
+from ..pins.base import Pin
 
 
 class structPin:
@@ -51,7 +53,7 @@ class structPin:
         modes: PinMode,
         biases: PinBias,
         alts: PinAlternate,
-    ):
+    ) -> None:
         self._chip = chip
         self._line = line
         self._soc = pin_soc
@@ -118,19 +120,24 @@ class structPin:
     def get_name(self, mode: Mode) -> str:
         return self._name[mode]
 
-    def lock(self, log, mode: Mode = Mode.SOC, module: str = None) -> bool:
+    def lock(
+        self,
+        log: t.Optional[logger.mqttanyLogger] = None,
+        mode: Mode = Mode.SOC,
+        module: t.Optional[str] = None,
+    ) -> bool:
         if not module:
             frm = inspect.stack()[2]
             module = ".".join(
                 [
                     s
-                    for s in inspect.getmodule(frm[0]).__name__.split(".")
+                    for s in inspect.getmodule(frm[0]).__name__.split(".")  # type: ignore
                     if s not in ["mqttany", "modules"]
                 ]
             )
 
         if not self._lock.value:
-            self._lock.raw = module.encode()
+            self._lock.raw = module.encode()  # type: ignore
             if log:
                 log.debug(
                     "'%s' acquired lock on %s (%s)",
@@ -139,7 +146,7 @@ class structPin:
                     self.name,
                 )
             return True
-        elif self._lock.raw.strip(bytes([0])).decode() == module:
+        elif self._lock.raw.strip(bytes([0])).decode() == module:  # type: ignore
             if log:
                 log.debug(
                     "'%s' already has a lock on %s (%s)",
@@ -155,7 +162,7 @@ class structPin:
                     module,
                     self.get_name(mode),
                     self.name,
-                    self._lock.raw.decode(),
+                    self._lock.raw.decode(),  # type: ignore
                 )
         return False
 
@@ -163,15 +170,19 @@ class structPin:
 class Board:
     """Base Board class."""
 
-    def __init_subclass__(self):
-        self._id = None
-        self._chips = []
-        self._pins = []
-        self._pin_lookup = {Mode.SOC: {}, Mode.BOARD: {}, Mode.WIRINGPI: {}}
+    def __init__(self) -> None:
+        self._id: str = ""
+        self._chips: t.List[int] = []
+        self._pins: t.List[structPin] = []
+        self._pin_lookup: t.Dict[Mode, t.Dict[int, structPin]] = {
+            Mode.SOC: {},
+            Mode.BOARD: {},
+            Mode.WIRINGPI: {},
+        }
         self.log = logger.get_logger("core.gpio.board")
 
     @property
-    def chips(self) -> tuple:
+    def chips(self) -> t.Tuple[int]:
         """Returns a tuple of the gpiochip numbers available on this board."""
         return tuple(self._chips)
 
@@ -190,7 +201,7 @@ class Board:
         modes: PinMode,
         biases: PinBias = PinBias.NONE,
         alts: PinAlternate = PinAlternate.NONE,
-    ):
+    ) -> None:
         """Add a pin to this board."""
         if chip not in self._chips:
             self._chips.append(chip)
@@ -245,7 +256,9 @@ class Board:
             )
         return False
 
-    def get_pin(self, pin: int, mode: Mode, pin_mode: PinMode, **kwargs) -> Pin:
+    def get_pin(
+        self, pin: int, mode: Mode, pin_mode: PinMode, **kwargs: t.Any
+    ) -> t.Union[Pin, None]:
         """
         Returns an instance of ``Pin``, subclassed based on ``pin_mode``.
 
@@ -267,27 +280,27 @@ class Board:
             this board.
         """
         if self.valid(pin, mode, pin_mode):
-            pin = self._pin_lookup[mode][pin]
+            pin_object = self._pin_lookup[mode][pin]
             if (
                 kwargs.get("bias", PinBias.NONE) != PinBias.NONE
-                and not pin.biases & kwargs["bias"]
+                and not pin_object.biases & kwargs["bias"]
             ):
                 self.log.warn(
                     "%s does not support bias %s, defaulting to %s",
-                    pin.name,
+                    pin_object.name,
                     kwargs["bias"].name,
                     PinBias.NONE.name,  # pylint: disable=no-member
                 )
                 kwargs["bias"] = PinBias.NONE
 
-            if pin.lock(self.log, mode):
-                return SUPPORTED_PIN_MODES.get(pin_mode)(
+            if pin_object.lock(self.log, mode):
+                return SUPPORTED_PIN_MODES[pin_mode](
                     gpio_mode=mode,
-                    chip=pin.chip,
-                    line=pin.line,
-                    pin_soc=pin.soc,
-                    pin_board=pin.board,
-                    pin_wpi=pin.wpi,
+                    chip=pin_object.chip,
+                    line=pin_object.line,
+                    pin_soc=pin_object.soc,
+                    pin_board=pin_object.board,
+                    pin_wpi=pin_object.wpi,
                     pin_mode=pin_mode,
                     **kwargs,
                 )

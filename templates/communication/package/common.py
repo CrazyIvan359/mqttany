@@ -25,12 +25,13 @@ Communication Module Template
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import typing as t
 from collections import OrderedDict
 
 import logger
 
 log = logger.get_logger("comm_pkg_template")
-CONFIG = {}
+CONFIG: t.Dict[str, t.Any] = {}
 
 # This queue is used to request that MQTTany exit. If a fatal error is encountered put
 # a plain string on this queue using `put_nowait()` that will fit in this log entry
@@ -38,12 +39,13 @@ CONFIG = {}
 # An error that results in the module not being able to transmit messages, such as being
 # unable to connect to the server, is considered fatal. If a module is unable to transmit
 # it must request that MQTTany exit, otherwise it's transmit queue would overflow.
-core_queue = None
+core_queue: "mproc.Queue[str]" = None  # type: ignore
 
 # If the module can receive messages it must have the `receive_queue` attribute.
 # A listener thread should be spawned in the `start` function and should use the `put_nowait()`
 # method on the queue to put `BusMessage` objects in this queue
-receive_queue = None  # omit this if module is transmit only
+# omit this if module is transmit only
+receive_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 # Configuration keys, best to define them here so they can be changed easily
 CONF_KEY_STRING = "string"
@@ -53,7 +55,7 @@ CONF_KEY_SUBSECTION = "sub section"
 
 # Configuration layout for `parse_config`
 # it should be an OrderedDict of `(key, {})`
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (  # an empty dict means any value is valid and option is required
             CONF_KEY_STRING,

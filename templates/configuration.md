@@ -8,12 +8,13 @@ and basic type checking.
 You must describe the options to the parser in a `collections.OrderedDict` like this:
 
 ```python
+import typing as t
 from collections import OrderedDict
 
 CONF_KEY_ANY = "any"
 CONF_KEY_SUBSECTION = "sub section"
 
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (  # an empty dict means any value is valid and the option is required
             CONF_KEY_ANY,
@@ -145,10 +146,9 @@ CONF_KEY_POLL_INT = "polling interval"
 CONF_KEY_PIN = "pin"
 CONF_KEY_NAME = "name"
 CONF_KEY_FIRST_INDEX = "first index"
-CONF_KEY_DIRECTION = "direction"
-CONF_KEY_INVERT = "invert"
+CONF_KEY_PIN_MODE = "pin mode"
 
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (
             CONF_KEY_MODE,
@@ -167,17 +167,16 @@ CONF_OPTIONS = OrderedDict(
                 },
             },
         ),
-        (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
+        (CONF_KEY_POLL_INT, {"type": int, "default": 60}),
         (
             "regex:.+",
             {
                 "type": "section",
                 "required": False,
                 CONF_KEY_PIN: {"type": (int, list)},
-                CONF_KEY_NAME: {"type": (str, list), "default": "{pin}"},
+                CONF_KEY_NAME: {"type": (str, list), "default": "{pin_id}"},
                 CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
-                CONF_KEY_DIRECTION: {"default": Direction.INPUT, "selection": {}},
-                CONF_KEY_INVERT: {"type": bool, "default": False},
+                CONF_KEY_PIN_MODE: {"selection": {}},
             },
         ),
     ]
@@ -196,12 +195,14 @@ collects these options and combines them with the base description like so:
 In `gpio.pin__init__` there is a function that collects all the options:
 
 ```python
-def updateConfOptions(conf_options):
+def updateConfOptions(
+    conf_options: t.MutableMapping[str, t.Dict[t.Any, t.Any]]
+) -> "OrderedDict[str, t.Dict[t.Any, t.Any]]":
     """
     Returns a copy of ``conf_options`` updated with options from each pin type.
     """
     conf_options = update_dict(conf_options, digital.CONF_OPTIONS)
-    return conf_options
+    return t.cast("OrderedDict[str, t.Dict[t.Any, t.Any]]", conf_options)
 ```
 
 And in `gpio.core` these are added to the base description before calling the parser.
@@ -209,7 +210,7 @@ _ **NOTE** that the regex element is pushed to the end of the `dict` to make sur
   doesn't gulp any of the options with fixed names.
 
 ```python
-def load(config_raw: dict = {}):
+def load(config_raw: t.Dict[str, t.Any] = {}) -> bool:
     ...
     conf_options = updateConfOptions(CONF_OPTIONS)
     conf_options.move_to_end("regex:.+")
@@ -221,7 +222,7 @@ If we combine the base description and that of `gpio.pin.digital` we end up with
 being passed to the parser:
 
 ```python
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (
             CONF_KEY_MODE,
@@ -240,7 +241,7 @@ CONF_OPTIONS = OrderedDict(
                 },
             },
         ),
-        (CONF_KEY_POLL_INT, {"type": float, "default": 0.0}),
+        (CONF_KEY_POLL_INT, {"type": int, "default": 60}),
         (CONF_KEY_DEBOUNCE, {"type": int, "default": 50}),
         (
             "regex:.+",
@@ -248,39 +249,57 @@ CONF_OPTIONS = OrderedDict(
                 "type": "section",
                 "required": False,
                 CONF_KEY_PIN: {"type": (int, list)},
-                CONF_KEY_NAME: {"type": (str, list), "default": "{pin}"},
+                CONF_KEY_NAME: {"type": (str, list), "default": "{pin_id}"},
                 CONF_KEY_FIRST_INDEX: {"type": int, "default": 0},
-                CONF_KEY_DIRECTION: {"default": Direction.INPUT, "selection": {}},
-                CONF_KEY_INVERT: {"type": bool, "default": False},
-                CONF_KEY_DIRECTION: {
+                CONF_KEY_PIN_MODE: {
+                    "default": PinMode.INPUT,
                     "selection": {
-                        "input": Direction.INPUT,
-                        "in": Direction.INPUT,
-                        "output": Direction.OUTPUT,
-                        "out": Direction.OUTPUT,
-                    }
-                },
-                CONF_KEY_INTERRUPT: {
-                    "default": Interrupt.NONE,
-                    "selection": {
-                        "rising": Interrupt.RISING,
-                        "falling": Interrupt.FALLING,
-                        "both": Interrupt.BOTH,
-                        "none": Interrupt.NONE,
+                        "input": PinMode.INPUT,
+                        "in": PinMode.INPUT,
+                        "output": PinMode.OUTPUT,
+                        "out": PinMode.OUTPUT,
                     },
                 },
                 CONF_KEY_RESISTOR: {
-                    "default": Resistor.OFF,
+                    "default": PinBias.NONE,
                     "selection": {
-                        "pullup": Resistor.PULL_UP,
-                        "up": Resistor.PULL_UP,
-                        "pulldown": Resistor.PULL_DOWN,
-                        "down": Resistor.PULL_DOWN,
-                        "off": Resistor.OFF,
-                        "none": Resistor.OFF,
+                        "pullup": PinBias.PULL_UP,
+                        "up": PinBias.PULL_UP,
+                        "pulldown": PinBias.PULL_DOWN,
+                        "down": PinBias.PULL_DOWN,
+                        "off": PinBias.NONE,
+                        False: PinBias.NONE,
+                        "none": PinBias.NONE,
                     },
                 },
-                CONF_KEY_INITIAL: {"type": bool, "default": False},
+                CONF_KEY_DIGITAL: {
+                    "type": "section",
+                    "conditions": [
+                        (CONF_KEY_PIN_MODE, PinMode.INPUT),
+                        (CONF_KEY_PIN_MODE, PinMode.OUTPUT),
+                    ],
+                    CONF_KEY_INTERRUPT: {
+                        "default": PinEdge.NONE,
+                        "selection": {
+                            "rising": PinEdge.RISING,
+                            "falling": PinEdge.FALLING,
+                            "both": PinEdge.BOTH,
+                            "none": PinEdge.NONE,
+                        },
+                    },
+                    CONF_KEY_INVERT: {"type": bool, "default": False},
+                    CONF_KEY_INITIAL: {
+                        "selection": {
+                            "ON": True,
+                            "on": True,
+                            True: True,
+                            "OFF": False,
+                            "off": False,
+                            False: False,
+                        },
+                        "default": False,
+                    },
+                },
             },
         ),
     ]

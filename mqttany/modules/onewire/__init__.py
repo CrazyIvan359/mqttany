@@ -25,29 +25,30 @@ Dallas OneWire Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = []
+__all__ = ["load", "start", "stop", "device_message", "poll_message", "log", "nodes"]
 
-from mprop import mproperty
+import multiprocessing as mproc
 
 from modules import ModuleType
+from mprop import mproperty
 
-from modules.onewire.core import load, start, stop
-from modules.onewire.core import device_message, poll_message
-from modules.onewire import common
-from modules.onewire.common import log, nodes
+from common import BusMessage
 
+from . import common
+from .common import log, nodes
+from .core import device_message, load, poll_message, start, stop
 
-_module_type = ModuleType.INTERFACE
-_publish_queue = None
-subscribe_queue = None
+_module_type = ModuleType.INTERFACE  # type: ignore
+_publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+subscribe_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 
 @mproperty
-def publish_queue(module):
+def publish_queue(module: object) -> "mproc.Queue[BusMessage]":
     return _publish_queue
 
 
 @publish_queue.setter
-def publish_queue(module, value):
-    module._publish_queue = value
+def publish_queue(module: object, value: "mproc.Queue[BusMessage]") -> None:
+    module._publish_queue = value  # type: ignore
     common.publish_queue = value

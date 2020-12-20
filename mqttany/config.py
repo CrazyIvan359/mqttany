@@ -28,15 +28,16 @@ Configuration Loader
 __all__ = ["load_config", "parse_config", "resolve_type"]
 
 
-import os, re
+import os
+import re
+import typing as t
 from ast import literal_eval
-from collections import OrderedDict
-from typing import Any
+
 import yaml
-import yamlloader
+import yamlloader  # type: ignore
 
 import logger
-from logger import log_traceback
+from logger import log_traceback, mqttanyLogger
 
 log = logger.get_logger()
 
@@ -44,11 +45,11 @@ CONF_KEY_VERSION = "version"
 CONFIG_VERSION = [1, 0]
 
 
-def load_config(config_file: str) -> dict:
+def load_config(config_file: str) -> t.Dict[str, t.Any]:
     """
     Reads configuration file and returns as dict
     """
-    config = {}
+    config: t.Dict[str, t.Any] = {}
 
     # attempt to determine full path if config_file is only a filename
     if not os.path.isfile(config_file):
@@ -60,13 +61,13 @@ def load_config(config_file: str) -> dict:
             config_file = os.path.join(os.getcwd(), config_file)
         else:
             log.debug("Unable to resolve config file location")
-            config_file = None
+            config_file = ""
 
     if config_file:
         log.debug("Loading config file")
         try:
             with open(config_file) as fh:
-                config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)
+                config = yaml.load(fh, Loader=yamlloader.ordereddict.CSafeLoader)  # type: ignore
         except:
             log.error("Config file contains errors")
             log_traceback(log, limit=0)
@@ -82,7 +83,7 @@ def load_config(config_file: str) -> dict:
                 "This version of MQTTany requires a minimum config file version of '%s'",
                 ".".join([str(i) for i in CONFIG_VERSION]),
             )
-            config = None
+            config = {}
         else:
             config.pop(CONF_KEY_VERSION, None)
     else:
@@ -92,14 +93,23 @@ def load_config(config_file: str) -> dict:
 
 
 def parse_config(
-    data: dict, options: OrderedDict, log: logger.logging.Logger = log
-) -> dict:
+    data: t.Dict[str, t.Any],
+    options: t.MutableMapping[str, t.Dict[str, t.Any]],
+    log: mqttanyLogger = log,
+) -> t.Dict[str, t.Any]:
     """
     Parse and validate config and values
     """
 
-    def parse_dict(data, options):
-        def process_option(name, value, option, config):
+    def parse_dict(
+        data: t.Dict[str, t.Any], options: t.MutableMapping[str, t.Any]
+    ) -> t.Tuple[bool, t.Dict[str, t.Any]]:
+        def process_option(
+            name: str,
+            value: t.Any,
+            option: t.Dict[str, t.Any],
+            config: t.Dict[str, t.Any],
+        ):
             condition_matched = None
             if option.get("conditions", False):
                 condition_matched = False
@@ -130,7 +140,7 @@ def parse_config(
                 ):
                     log.trace("Descending into section '%s'", name)
                     section_valid, section_config = parse_dict(
-                        {} if value == "**NO DATA**" else value, option
+                        {} if value == "**NO DATA**" else value, option  # type: ignore
                     )
                     if not section_valid and option.get("required", True):
                         log.error("Required section '%s' is not valid", name)
@@ -250,10 +260,10 @@ def parse_config(
 
     valid, config = parse_dict(data, options)
 
-    return config if valid else False
+    return config if valid else {}
 
 
-def resolve_type(value: Any) -> Any:
+def resolve_type(value: t.Any) -> t.Any:
     """Attempts to resolve the type of ``value``.
 
     It will return ``value`` as the python type if possible, otherwise will

@@ -28,6 +28,8 @@ Core GPIO Odroid Boards
 __all__ = ["SUPPORTED_BOARDS"]
 
 import subprocess
+import typing as t
+
 from adafruit_platformdetect.constants.boards import (
     ODROID_C1,
     ODROID_C1_PLUS,
@@ -36,8 +38,8 @@ from adafruit_platformdetect.constants.boards import (
     ODROID_XU4,
 )
 
-from gpio.common import PinMode, PinBias, PinAlternate
-from gpio.boards.base import Board
+from ..common import PinAlternate, PinBias, PinMode
+from .base import Board
 
 DIGITAL = PinMode.DIGITAL
 P_UP = PinBias.PULL_UP
@@ -45,7 +47,8 @@ P_DN = PinBias.PULL_DOWN
 
 
 class OdroidC1(Board):
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         self._id = ODROID_C1
 
         # chip, line, soc, board, wpi, modes, biases, alts
@@ -76,7 +79,7 @@ class OdroidC1(Board):
 
 
 class OdroidC1p(OdroidC1):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._id = ODROID_C1_PLUS
 
@@ -89,7 +92,8 @@ class OdroidC1p(OdroidC1):
 
 
 class OdroidC2(Board):
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         self._id = ODROID_C2
 
         # chip, line, soc, board, wpi, modes, biases, alts
@@ -127,7 +131,8 @@ class OdroidC2(Board):
 
 
 class OdroidN2(Board):
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         self._id = ODROID_N2
 
         # chip, line, soc, board, wpi, modes, biases, alts
@@ -159,7 +164,8 @@ class OdroidN2(Board):
 
 
 class OdroidXU(Board):
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         self._id = ODROID_XU4
 
         # Untested attempt to check kernel version as /dev/i2c-? assignments
@@ -176,20 +182,20 @@ class OdroidXU(Board):
                 )
             ]
             if kernel >= [4, 14, 37]:
-                I2C1_SDA = PinAlternate.I2C1_SDA
-                I2C1_SCL = PinAlternate.I2C1_SCL
-                I2C5_SDA = PinAlternate.I2C5_SDA
-                I2C5_SCL = PinAlternate.I2C5_SCL
+                I2C1_sda = PinAlternate.I2C1_SDA
+                I2C1_scl = PinAlternate.I2C1_SCL
+                I2C5_sda = PinAlternate.I2C5_SDA
+                I2C5_scl = PinAlternate.I2C5_SCL
             else:
-                I2C1_SDA = PinAlternate.I2C4_SDA
-                I2C1_SCL = PinAlternate.I2C4_SCL
-                I2C5_SDA = PinAlternate.I2C1_SDA
-                I2C5_SCL = PinAlternate.I2C1_SCL
+                I2C1_sda = PinAlternate.I2C4_SDA
+                I2C1_scl = PinAlternate.I2C4_SCL
+                I2C5_sda = PinAlternate.I2C1_SDA
+                I2C5_scl = PinAlternate.I2C1_SCL
         except:
-            I2C1_SDA = PinAlternate.I2C1_SDA
-            I2C1_SCL = PinAlternate.I2C1_SCL
-            I2C5_SDA = PinAlternate.I2C5_SDA
-            I2C5_SCL = PinAlternate.I2C5_SCL
+            I2C1_sda = PinAlternate.I2C1_SDA
+            I2C1_scl = PinAlternate.I2C1_SCL
+            I2C5_sda = PinAlternate.I2C5_SDA
+            I2C5_scl = PinAlternate.I2C5_SCL
 
         # chip, line, soc, board, wpi, modes, biases, alts
         self._add_pin(0, 18, 18, 7, 7, DIGITAL, P_UP | P_DN)
@@ -213,11 +219,11 @@ class OdroidXU(Board):
         self._add_pin(0, 190, 190, 24, 10, DIGITAL, P_UP | P_DN)
         self._add_pin(0, 191, 191, 21, 13, DIGITAL, P_UP | P_DN)
         self._add_pin(0, 192, 192, 19, 12, DIGITAL, P_UP | P_DN)
-        self._add_pin(0, 209, 209, 3, 8, DIGITAL, P_UP | P_DN, I2C1_SDA)
-        self._add_pin(0, 210, 210, 5, 9, DIGITAL, P_UP | P_DN, I2C1_SCL)
+        self._add_pin(0, 209, 209, 3, 8, DIGITAL, P_UP | P_DN, I2C1_sda)
+        self._add_pin(0, 210, 210, 5, 9, DIGITAL, P_UP | P_DN, I2C1_scl)
 
-        self._add_pin(0, 187, 187, 27, 30, DIGITAL, P_UP | P_DN, I2C5_SDA)
-        self._add_pin(0, 188, 188, 29, 31, DIGITAL, P_UP | P_DN, I2C5_SCL)
+        self._add_pin(0, 187, 187, 27, 30, DIGITAL, P_UP | P_DN, I2C5_sda)
+        self._add_pin(0, 188, 188, 29, 31, DIGITAL, P_UP | P_DN, I2C5_scl)
         self._add_pin(0, 225, 225, -1, -1, DIGITAL, P_UP | P_DN)
         self._add_pin(0, 226, 226, -1, -1, DIGITAL, P_UP | P_DN)
         self._add_pin(0, 227, 227, -1, -1, DIGITAL, P_UP | P_DN)
@@ -225,7 +231,7 @@ class OdroidXU(Board):
         self._add_pin(0, 229, 229, -1, -1, DIGITAL, P_UP | P_DN)
 
 
-SUPPORTED_BOARDS = {
+SUPPORTED_BOARDS: t.Dict[str, t.Type[Board]] = {
     ODROID_C1: OdroidC1,
     ODROID_C1_PLUS: OdroidC1p,
     ODROID_C2: OdroidC2,

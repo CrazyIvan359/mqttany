@@ -27,33 +27,41 @@ Dallas OneWire Core
 
 __all__ = ["load", "start", "stop", "device_message", "poll_message"]
 
+import typing as t
 from threading import Timer
 
 from config import parse_config
-from common import BusMessage, validate_id
 
-from modules.onewire import bus, device
-from modules.onewire.common import (
-    log,
-    CONFIG,
-    nodes,
-    CONF_KEY_POLL_INT,
+from common import SubscribeMessage, validate_id
+
+from . import bus, device
+from .bus.base import OneWireBus
+from .common import (
+    CONF_KEY_ADDRESS,
     CONF_KEY_BUS,
     CONF_KEY_BUS_SCAN,
-    CONF_KEY_NAME,
-    CONF_KEY_ADDRESS,
     CONF_KEY_FIRST_INDEX,
+    CONF_KEY_NAME,
+    CONF_KEY_POLL_INT,
     CONF_OPTIONS,
+    CONFIG,
+    log,
+    nodes,
 )
+from .device.base import OneWireDevice
 
-ow_bus = None
-devices = {}
+ow_bus: OneWireBus = None  # type: ignore
+devices: t.Dict[str, OneWireDevice] = {}
 polling_timer = None
 
 
 def build_device(
-    device_id, bus, device_config={}, device_name=None, address=None, index=None
-):
+    device_id: str,
+    device_config: t.Dict[str, t.Any] = {},
+    device_name: t.Optional[str] = None,
+    address: t.Optional[str] = None,
+    index: t.Optional[int] = None,
+) -> t.Union[OneWireDevice, None]:
     if not validate_id(device_id):
         log.warn("'%s' is not a valid ID and will be ignored", device_id)
         return None
@@ -61,8 +69,8 @@ def build_device(
     valid_address = ow_bus.validateAddress(
         address or device_config.get(CONF_KEY_ADDRESS, None)
     )
-    device_type = device.getDeviceTypeByFamily(address)
     if valid_address:
+        device_type = device.getDeviceTypeByFamily(valid_address)
         clazz = device.getDevice(valid_address)
         if clazz:
             device_id = (
@@ -72,14 +80,18 @@ def build_device(
             )
             device_name = (
                 device_name
-                or f"{device_config.get(CONF_KEY_NAME, address)}"  # use address for devices discovered on bus scan
+                # use address for devices discovered on bus scan
+                or f"{device_config.get(CONF_KEY_NAME, valid_address)}"
                 f"{'' if index is None else f' {index + device_config[CONF_KEY_FIRST_INDEX]}'}"
             )
-            log.debug(
-                "Configuring %s '%s' at address '%s'", device_type, device_name, address
-            )
             device_name = device_name.format(
-                device_id=device_id, device_type=device_type, address=address
+                device_id=device_id, device_type=device_type, address=valid_address
+            )
+            log.debug(
+                "Configuring %s '%s' at address '%s'",
+                device_type,
+                device_name,
+                valid_address,
             )
             return clazz(
                 id=device_id,
@@ -100,20 +112,21 @@ def build_device(
     return None
 
 
-def load(config_raw={}):
+def load(config_raw: t.Dict[str, t.Any] = {}) -> bool:
     """
     Initializes the module
     """
+    conf_options = CONF_OPTIONS
     # add device options from device modules
-    CONF_OPTIONS["regex:.+"].update(device.getConfDeviceOptions())
+    conf_options["regex:.+"] = device.updateConfOptions(conf_options["regex:.+"])
     # add bus types from bus modules
-    CONF_OPTIONS[CONF_KEY_BUS]["selection"].extend(bus.getConfBusTypes())
+    conf_options[CONF_KEY_BUS]["selection"].extend(bus.getConfBusTypes())
     # add bus options from bus modules
-    CONF_OPTIONS.update(bus.getConfBusOptions())
+    conf_options = bus.updateConfOptions(conf_options)
     # make sure wildcard regex match is at the end
-    CONF_OPTIONS.move_to_end("regex:.+")
+    conf_options.move_to_end("regex:.+")
 
-    config_data = parse_config(config_raw, CONF_OPTIONS, log)
+    config_data = parse_config(config_raw, conf_options, log)
     del config_raw
     if config_data:
         log.debug("Config loaded")
@@ -128,13 +141,12 @@ def load(config_raw={}):
         ow_bus = bus_cls()
 
         for device_id in [key for key in CONFIG if isinstance(CONFIG[key], dict)]:
-            device_config = CONFIG.pop(device_id)
+            device_config: t.Dict[str, t.Any] = CONFIG.pop(device_id)
 
             if isinstance(device_config[CONF_KEY_ADDRESS], list):
                 for index in range(len(device_config[CONF_KEY_ADDRESS])):
                     device_object = build_device(
                         device_id=device_id,
-                        bus=ow_bus,
                         device_config=device_config,
                         device_name=device_config[CONF_KEY_NAME][index]
                         if isinstance(device_config[CONF_KEY_NAME], list)
@@ -147,7 +159,7 @@ def load(config_raw={}):
                         nodes[device_id] = device_object.get_node()
             else:
                 device_object = build_device(
-                    device_id=device_id, bus=ow_bus, device_config=device_config
+                    device_id=device_id, device_config=device_config
                 )
                 if device_object:
                     devices[device_id] = device_object
@@ -163,7 +175,7 @@ def load(config_raw={}):
                         log.debug(
                             "Scan found unconfigured device at address '%s',address"
                         )
-                        device_object = build_device(address, ow_bus, address=address)
+                        device_object = build_device(address, address=address)
                         if device_object:
                             devices[device_object.id] = device_object
                             nodes[device_object.id] = device_object.get_node()
@@ -179,7 +191,7 @@ def load(config_raw={}):
         return False
 
 
-def start():
+def start() -> None:
     """
     Actions to be done in the subprocess before the loop starts
     """
@@ -204,7 +216,7 @@ def start():
     poll_all()
 
 
-def stop():
+def stop() -> None:
     """
     Actions to be done in the subprocess after the loop is exited
     """
@@ -217,7 +229,7 @@ def stop():
         devices[id].cleanup()
 
 
-def device_message(message: BusMessage) -> None:
+def device_message(message: SubscribeMessage) -> None:
     """
     Callback for device messages
     """
@@ -228,7 +240,7 @@ def device_message(message: BusMessage) -> None:
         log.debug("Received message on unregistered path: %s", message)
 
 
-def poll_message(message: BusMessage) -> None:
+def poll_message(message: SubscribeMessage) -> None:
     """
     Callback for poll all
     """
@@ -238,7 +250,7 @@ def poll_message(message: BusMessage) -> None:
         log.debug("Received message on unregistered path: %s", message)
 
 
-def poll_all():
+def poll_all() -> None:
     """
     Polls all devices
     """
@@ -247,7 +259,7 @@ def poll_all():
         devices[device_id].publish_state()
 
 
-def poll_interval():
+def poll_interval() -> None:
     """ Polls all devices and restarts the timer """
     log.debug("Polling timer fired")
     global polling_timer

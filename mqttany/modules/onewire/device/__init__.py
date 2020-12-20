@@ -27,42 +27,45 @@ OneWire Device
 
 __all__ = [
     "getDevice",
-    "getConfDeviceOptions",
+    "updateConfOptions",
     "getDeviceTypeByFamily",
 ]
 
-from modules.onewire.device.base import OneWireDevice
-from modules.onewire.device import ds18x20
+import typing as t
+
+from common import update_dict
+
+from . import ds18x20
+from .base import OneWireDevice
 
 
-def getDevice(address):
+def getDevice(address: str) -> t.Union[t.Type[OneWireDevice], None]:
     """
     Returns a class for the device based on device family code or ``None`` if
     one is not available.
     """
     family = int(address[:2], base=16)
-    dev_classes = {}
+    dev_classes: t.Dict[int, t.Type[OneWireDevice]] = {}
     dev_classes.update(ds18x20.SUPPORTED_DEVICES)
     return dev_classes.get(family, None)
 
 
-def getConfDeviceOptions():
+def updateConfOptions(conf_options: t.MutableMapping[str, t.Any]) -> t.Dict[str, t.Any]:
     """
-    Returns all of the device options to add to CONF_OPTIONS
+    Return Conf Options from all device types
     """
-    options = {}
-    options.update(ds18x20.CONF_OPTIONS)
-    return options
+    conf_options = update_dict(conf_options, ds18x20.CONF_OPTIONS)
+    return t.cast(t.Dict[str, t.Any], conf_options)
 
 
-def getDeviceTypeByFamily(family):
+def getDeviceTypeByFamily(family: t.Union[int, str]) -> str:
     """
     Returns the device type based on the family code (can pass full address) or
-    ``None`` if unsupported.
+    ``'UNKNOWN`` if unsupported.
     """
     if isinstance(family, str):
         family = int(family[:2], base=16)
 
-    family_codes = {}
+    family_codes: t.Dict[int, str] = {}
     family_codes.update(ds18x20.FAMILY_CODES)
-    return family_codes.get(family, None)
+    return family_codes.get(family, "UNKNOWN")

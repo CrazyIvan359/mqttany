@@ -25,41 +25,47 @@ OneWire Bus
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ["getBus", "getConfBusOptions", "getConfBusTypes"]
+__all__ = ["getBus", "updateConfOptions", "getConfBusTypes"]
 
-from modules.onewire.bus.base import OneWireBus
-from modules.onewire.bus import wire1
+import typing as t
+from collections import OrderedDict
+
+from common import update_dict
+
+from . import wire1
+from .base import OneWireBus
 
 
-def getBus(bus_type):
+def getBus(bus_type: str) -> t.Union[t.Type[OneWireBus], None]:
     """
     Returns a class for the bus based on bus type setting or ``None`` if
     one is not available.
     """
-    buses = {}
+    buses: t.Dict[str, t.Type[OneWireBus]] = {}
     buses.update(wire1.SUPPORTED_BUS_TYPES)
     return buses.get(bus_type, None)
 
 
-def getConfBusOptions():
+def updateConfOptions(
+    conf_options: t.MutableMapping[str, t.Dict[t.Any, t.Any]]
+) -> "OrderedDict[str, t.Dict[t.Any, t.Any]]":
     """
-    Returns all of the bus options to add to CONF_OPTIONS
+    Return Conf Options from all bus types
     """
-    options = {}
-    options.update(wire1.CONF_OPTIONS)
-    return options
+    conf_options = update_dict(conf_options, wire1.CONF_OPTIONS)
+    return t.cast("OrderedDict[str, t.Dict[t.Any, t.Any]]", conf_options)
 
 
-def getConfBusTypes():
+def getConfBusTypes() -> t.List[str]:
     """
     Returns all of the bus types to add to device selection
     """
-    devices = []
+    devices: t.List[str] = []
     devices.extend(wire1.CONF_BUS_SELECTION)
     return devices
 
 
-def validateAddress(address):
+def validateAddress(address: t.Any) -> t.Union[str, None]:
     """
     Validates a OneWire device address.
     Will remove any invalid characters and compute CRC if needed.

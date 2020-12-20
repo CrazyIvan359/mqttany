@@ -27,9 +27,13 @@ OneWire Device Base
 
 __all__ = ["OneWireDevice"]
 
-from common import BusMessage, BusNode, BusProperty
-from modules.onewire import common
-from modules.onewire.bus import OneWireBus
+import typing as t
+
+from common import BusNode, BusProperty, PublishMessage, SubscribeMessage
+from logger import mqttanyLogger
+
+from .. import common
+from ..bus import OneWireBus
 
 
 class OneWireDevice:
@@ -44,14 +48,15 @@ class OneWireDevice:
         device: str,
         address: str,
         bus: OneWireBus,
-    ):
+        **kwargs: t.Any,
+    ) -> None:
         self._setup = False
         self._id = id
         self._name = name
         self._device = device.upper()
         self._address = address
         self._bus = bus
-        self._log = None  # must be set by subclass
+        self._log: mqttanyLogger = None  # type: ignore - must be set by subclass
 
     def get_node(self) -> BusNode:
         """
@@ -64,7 +69,7 @@ class OneWireDevice:
             properties={"address": BusProperty(name="Address")},
         )
 
-    def setup(self):
+    def setup(self) -> bool:
         """
         Sets up the device and makes sure it is available on the bus.
         Returns ``True`` if device is available, ``False`` otherwise.
@@ -72,7 +77,7 @@ class OneWireDevice:
         """
         if self.address in self._bus.scan():
             common.publish_queue.put_nowait(
-                BusMessage(
+                PublishMessage(
                     path=f"{self.id}/address", content=self.address, mqtt_retained=True
                 )
             )
@@ -96,7 +101,7 @@ class OneWireDevice:
         """
         raise NotImplementedError
 
-    def message_callback(self, message: BusMessage) -> None:
+    def message_callback(self, message: SubscribeMessage) -> None:
         """
         Subclasses MUST override this method.
         Handles messages received for this device.
@@ -104,17 +109,17 @@ class OneWireDevice:
         raise NotImplementedError
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self._id
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @property
-    def device(self):
+    def device(self) -> str:
         return self._device
 
     @property
-    def address(self):
+    def address(self) -> str:
         return self._address

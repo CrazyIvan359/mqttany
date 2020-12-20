@@ -6,6 +6,9 @@
   * LED restructure set/get pixel functions to simplify array subclassing.
   * LED some minor cleanup of array subtypes.
   * MQTT use custom client logger for better control of log messages.
+  * Migrate from pylint to Pylance for code checking in VSCode.
+  * Convert entire codebase to be fully typed.
+  * Migrate CI code check to Pyright from pylint.
 
 * **Fixed**
   * Missing comma in Odroid C1+ and C2 board definitions.

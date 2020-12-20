@@ -25,30 +25,39 @@ GPIO Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = []
+__all__ = [
+    "load",
+    "start",
+    "stop",
+    "pin_message",
+    "poll_message",
+    "pulse_message",
+    "log",
+    "nodes",
+]
+
+import multiprocessing as mproc
 
 from mprop import mproperty
 
+from common import BusMessage
 from modules import ModuleType
+from . import common
+from .common import log, nodes
+from .core import pulse_message  # from pin.digital
+from .core import load, pin_message, poll_message, start, stop
 
-from modules.gpio.core import load, start, stop
-from modules.gpio.core import pin_message, poll_message
-from modules.gpio.core import pulse_message  # from pin.digital
-from modules.gpio import common
-from modules.gpio.common import log, nodes
-
-
-_module_type = ModuleType.INTERFACE
-_publish_queue = None
-subscribe_queue = None
+_module_type = ModuleType.INTERFACE  # type: ignore
+_publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+subscribe_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 
 @mproperty
-def publish_queue(module):
+def publish_queue(module: object) -> "mproc.Queue[BusMessage]":
     return _publish_queue
 
 
 @publish_queue.setter
-def publish_queue(module, value):
-    module._publish_queue = value
+def publish_queue(module: object, value: "mproc.Queue[BusMessage]") -> None:
+    module._publish_queue = value  # type: ignore
     common.publish_queue = value

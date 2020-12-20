@@ -25,47 +25,50 @@ Communication Module Template
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = []
+__all__ = ["load", "start", "stop", "transmit_callback", "transmit_ready", "log"]
 
-from mprop import mproperty
+import multiprocessing as mproc
 
 from modules import ModuleType
+from mprop import mproperty
 
-from modules.comm_pkg_template.core import transmit_callback, transmit_ready
-from modules.comm_pkg_template import common
-from modules.comm_pkg_template.common import log
+from common import BusMessage
 
-_module_type = ModuleType.COMMUNICATION
-_core_queue = None
-_receive_queue = None
+from . import common
+from .common import log
+from .core import load, start, stop, transmit_callback, transmit_ready
+
+_module_type = ModuleType.COMMUNICATION  # type: ignore
+_core_queue: "mproc.Queue[str]" = None  # type: ignore
+_receive_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 # These queues are put in the module's attributes whether they are defined here or not
 # Do not use these names in your module and do not access these objects
-transmit_queue = None
-resend_queue = None
+transmit_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+resend_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 
 @mproperty
-def core_queue(module):
+def core_queue(module: object) -> "mproc.Queue[str]":
     return _core_queue
 
 
 @core_queue.setter
-def core_queue(module, value):
-    module._core_queue = value
+def core_queue(module: object, value: "mproc.Queue[BusMessage]") -> None:
+    module._core_queue = value  # type:ignore
     common.core_queue = value
     # Do not try assigning the queue to attributes of other files as that
     # will likely result in a circular import!
 
 
 @mproperty
-def receive_queue(module):
+def receive_queue(module: object) -> "mproc.Queue[BusMessage]":
     return _receive_queue
 
 
 @receive_queue.setter
-def receive_queue(module, value):
-    module._receive_queue = value
+def receive_queue(module: object, value: "mproc.Queue[BusMessage]") -> None:
+    module._receive_queue = value  # type: ignore
     common.receive_queue = value
     # Do not try assigning the queue to attributes of other files as that
     # will likely result in a circular import!

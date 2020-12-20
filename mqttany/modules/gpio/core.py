@@ -28,37 +28,43 @@ GPIO Module
 __all__ = ["load", "start", "stop", "pin_message", "poll_message", "pulse_message"]
 
 import json
+import typing as t
 from threading import Timer
 
 from config import parse_config
-from common import BusMessage, validate_id
 
-from modules.gpio import common
-from modules.gpio.pin import getPin, updateConfOptions
-from modules.gpio.common import (
-    log,
-    CONFIG,
-    nodes,
-    CONF_KEY_MODE,
-    CONF_KEY_POLL_INT,
-    CONF_KEY_PIN,
-    CONF_KEY_NAME,
+from common import PublishMessage, SubscribeMessage, validate_id
+
+from . import common
+from .common import (
     CONF_KEY_FIRST_INDEX,
+    CONF_KEY_MODE,
+    CONF_KEY_NAME,
+    CONF_KEY_PIN,
     CONF_KEY_PIN_MODE,
+    CONF_KEY_POLL_INT,
     CONF_OPTIONS,
+    CONFIG,
+    log,
+    nodes,
 )
+from .pin import getPin, updateConfOptions
+from .pin.base import Pin
+from .pin.digital import Digital
 
-pins = {}
-pin_from_path = {}
+pins: t.Dict[int, Pin] = {}
+pin_from_path: t.Dict[str, int] = {}
 polling_timer = None
 
 
-def load(config_raw={}):
+def load(config_raw: t.Dict[str, t.Any] = {}) -> bool:
     """
     Initializes the module
     """
 
-    def build_pin(id, pin_config, index=None):
+    def build_pin(
+        id: str, pin_config: t.Dict[str, t.Any], index: t.Optional[int] = None
+    ) -> t.Union[Pin, None]:
         if not validate_id(id):
             log.warn("'%s' is not a valid ID and will be ignored", id)
             return None
@@ -148,7 +154,7 @@ def load(config_raw={}):
         return False
 
 
-def start():
+def start() -> None:
     """
     Actions to be done in the subprocess before the loop starts
     """
@@ -168,7 +174,7 @@ def start():
         polling_timer.start()
 
     common.publish_queue.put_nowait(
-        BusMessage(
+        PublishMessage(
             path="gpio/polling-interval",
             content=CONFIG[CONF_KEY_POLL_INT],
             mqtt_retained=True,
@@ -177,7 +183,7 @@ def start():
     poll_all()
 
 
-def stop():
+def stop() -> None:
     """
     Actions to be done in the subprocess after the loop is exited
     """
@@ -190,7 +196,7 @@ def stop():
         pins[pin].cleanup()
 
 
-def polling_timer_callback():
+def polling_timer_callback() -> None:
     """ Polls all pins and restarts the timer """
     log.debug("Polling timer fired")
     global polling_timer
@@ -199,7 +205,7 @@ def polling_timer_callback():
     poll_all()
 
 
-def poll_all():
+def poll_all() -> None:
     """
     Polls all pins
     """
@@ -208,7 +214,7 @@ def poll_all():
         pins[pin].publish_state()
 
 
-def pin_message(message: BusMessage):
+def pin_message(message: SubscribeMessage) -> None:
     """
     Callback for message matching a pin path
     """
@@ -221,7 +227,7 @@ def pin_message(message: BusMessage):
         log.debug("Received message on unregistered path: %s", message)
 
 
-def poll_message(message: BusMessage):
+def poll_message(message: SubscribeMessage) -> None:
     """
     Callback for message matching the poll all path
     """
@@ -232,20 +238,20 @@ def poll_message(message: BusMessage):
 
 
 # from pin.digital
-def pulse_message(message: BusMessage):
+def pulse_message(message: SubscribeMessage) -> None:
     """
     Callback for message matching pulse path
     """
     if message.path.strip("/") == "gpio/pulse/set":
         try:
-            content_json = json.loads(message.content)
+            payload: t.Dict[str, t.Any] = json.loads(message.content)
         except ValueError:
             log.warn("Received unrecognized PULSE command: %s", message.content)
         else:
-            if content_json.get("pin") in pin_from_path:
-                pin = pins[pin_from_path[content_json["pin"]]]
-                if getattr(pin, "pulse", default=None):
-                    pin.pulse(message.content)
+            if payload.get("pin") in pin_from_path:
+                pin = pins[pin_from_path[payload["pin"]]]
+                if getattr(pin, "pulse", None):
+                    t.cast(Digital, pin).pulse(message.content)
                 else:
                     log.warn(
                         "PULSE command not supported for pin %s (%s)",
@@ -255,7 +261,7 @@ def pulse_message(message: BusMessage):
             else:
                 log.warn(
                     "Received PULSE command for unknown pin %s: %s",
-                    content_json.get("pin"),
+                    payload.get("pin"),
                     message.content,
                 )
     else:

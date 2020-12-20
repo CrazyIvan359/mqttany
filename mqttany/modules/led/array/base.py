@@ -27,12 +27,19 @@ LED Array Base
 
 __all__ = ["baseArray"]
 
-import threading, queue, time, json
+import json
+import queue
+import threading
+import time
+import typing as t
 
-from logger import log_traceback
-from common import DataType, BusMessage, BusProperty, BusNode, POISON_PILL
-from modules.led import common
-from modules.led.common import ANIM_KEY_NAME, ANIM_KEY_REPEAT, ANIM_KEY_PRIORITY, Color
+from common import BusNode, BusProperty, DataType, PublishMessage, SubscribeMessage
+from logger import log_traceback, mqttanyLogger
+
+from .. import common
+from ..common import ANIM_KEY_NAME, ANIM_KEY_PRIORITY, ANIM_KEY_REPEAT, Color
+
+POISON_PILL = {"poison": "pill"}
 
 
 class baseArray:
@@ -44,7 +51,8 @@ class baseArray:
         leds_per_pixel: int,
         color_order: str,
         fps: int,
-    ):
+        **kwargs: t.Any,
+    ) -> None:
         """
         **SUBCLASSES MUST SUPER() THIS METHOD**
         """
@@ -55,15 +63,15 @@ class baseArray:
         self._order = color_order
         self._fps = fps
         self._frame_ms = round(1.0 / fps, 5)
-        self._log = None  # subclasses must assign this
+        self._log: mqttanyLogger = None  # type: ignore - subclasses must assign this
         self._setup = False
         self._array = None
-        self.anims = {}
-        self._anim_thread = None
-        self._anim_cancel = None
-        self._anim_soft_cancel = None
-        self._anim_queue = None
-        self._anim_manager = None
+        self.anims: t.Dict[str, t.Callable[[baseArray, threading.Event], None]] = {}
+        self._anim_thread: threading.Thread = None  # type: ignore
+        self._anim_cancel: threading.Event = None  # type: ignore
+        self._anim_soft_cancel: threading.Event = None  # type: ignore
+        self._anim_queue: "queue.Queue[t.Dict[str,t.Any]]" = None  # type: ignore
+        self._anim_manager: threading.Thread = None  # type: ignore
 
     def get_node(self) -> BusNode:
         """
@@ -99,27 +107,31 @@ class baseArray:
         )
         self._anim_manager.start()
         common.publish_queue.put_nowait(
-            BusMessage(path=f"{self.id}/count", content=self._count, mqtt_retained=True)
+            PublishMessage(
+                path=f"{self.id}/count", content=self._count, mqtt_retained=True
+            )
         )
         common.publish_queue.put_nowait(
-            BusMessage(
+            PublishMessage(
                 path=f"{self.id}/leds-per-pixel",
                 content=self._per_pixel,
                 mqtt_retained=True,
             )
         )
         common.publish_queue.put_nowait(
-            BusMessage(path=f"{self.id}/fps", content=self._fps, mqtt_retained=True)
+            PublishMessage(path=f"{self.id}/fps", content=self._fps, mqtt_retained=True)
         )
         return True
 
-    def message_callback(self, message: BusMessage) -> BusMessage:
+    def message_callback(
+        self, message: SubscribeMessage
+    ) -> t.Union[SubscribeMessage, None]:
         """
         Handles any messages coming to the array.
         Base class method handles animations and brightness. If you need to handle
         additional messages on additional paths you will need to override this method
         and ``get_node``. You can ``super`` this method to handle the standard paths, it
-        will return the ``BusMessage`` it was passed if it cannot match it to a path it
+        will return the ``SubscribeMessage`` it was passed if it cannot match it to a path it
         knows, if it finds a match it will return ``None``.
         """
         if self._setup:
@@ -129,7 +141,7 @@ class baseArray:
 
             elif path == "animation/set":
                 try:
-                    content_json = json.loads(message.content)
+                    content_json: t.Dict[str, t.Any] = json.loads(message.content)
                 except ValueError:
                     self._log.warn(
                         "Received unrecognized animation command: %s", message.content
@@ -189,7 +201,7 @@ class baseArray:
             for pixel_offset in range(self._per_pixel):
                 self._setPixel(start_pixel + pixel_offset, color)
 
-    def setPixelColor(self, pixel: [int, list], color: Color) -> None:
+    def setPixelColor(self, pixel: t.Union[int, t.List[int]], color: Color) -> None:
         """Set LED color using the provided ``Color`` object"""
         if self._setup:
             if isinstance(pixel, int):
@@ -200,7 +212,7 @@ class baseArray:
                     self._setPixel(start_pixel + pixel_offset, color.asInt())
 
     def setPixelColorRGB(
-        self, pixel: [int, list], r: int, g: int, b: int, w: int = 0
+        self, pixel: t.Union[int, t.List[int]], r: int, g: int, b: int, w: int = 0
     ) -> None:
         """Set LED to RGB(W) values provided"""
         if self._setup:
@@ -224,7 +236,7 @@ class baseArray:
         """
         raise NotImplementedError
 
-    def getPixel(self, pixel: int) -> int:
+    def getPixel(self, pixel: int) -> t.Union[int, None]:
         """
         Return the 24/32-bit LED color (``RRGGBB`` or ``WWRRGGBB``) or ``None`` if the
         array is not setup
@@ -233,7 +245,7 @@ class baseArray:
             return self._getPixel(pixel * self._per_pixel)
         return None
 
-    def getPixelColor(self, pixel: int) -> Color:
+    def getPixelColor(self, pixel: int) -> t.Union[Color, None]:
         """
         Returns a ``Color`` object representing the pixel or ``None`` if the array is
         not setup
@@ -242,7 +254,9 @@ class baseArray:
             return Color.fromInt(self._getPixel(pixel * self._per_pixel))
         return None
 
-    def getPixelColorRGB(self, pixel: int) -> tuple:
+    def getPixelColorRGB(
+        self, pixel: int
+    ) -> t.Union[t.Tuple[int, int, int, int], None]:
         """Return a tuple of RGBW representing the pixel"""
         if self._setup:
             return Color.getRGBFromInt(self._getPixel(pixel * self._per_pixel))
@@ -285,10 +299,10 @@ class baseArray:
         return self.getBrightness()
 
     @brightness.setter
-    def brightness(self, value: int):
+    def brightness(self, value: int) -> None:
         self.setBrightness(value)
 
-    def run_animation(self, anim_args: dict) -> None:
+    def run_animation(self, anim_args: t.Dict[str, t.Any]) -> None:
         """
         **DO NOT OVERRIDE THIS METHOD**
         Run animation function in a separate thread.
@@ -304,13 +318,13 @@ class baseArray:
         )
         self._anim_queue.put_nowait(anim_args)
 
-    def _anim_queue_manager(self):
+    def _anim_queue_manager(self) -> None:
         """
         **DO NOT OVERRIDE THIS METHOD**
         Internal animation queue manager
         """
         self._log.trace("Animation Queue Manager for '%s' started", self._name)
-        anim_queue = []
+        anim_queue: t.List[t.Dict[str, t.Any]] = []
         while True:
             try:
                 message = self._anim_queue.get_nowait()
@@ -400,15 +414,15 @@ class baseArray:
 
             time.sleep(0.025)  # 25ms
 
-    def _anim_loop(self, anim_args):
+    def _anim_loop(self, anim_args: t.Dict[str, t.Any]) -> None:
         """
         **DO NOT OVERRIDE THIS METHOD**
         Internal animation thread loop method
         """
-        anim = anim_args[ANIM_KEY_NAME]
-        repeat = anim_args[ANIM_KEY_REPEAT]
-        remain = repeat or 1
-        error_count = 0
+        anim: str = anim_args[ANIM_KEY_NAME]
+        repeat: int = anim_args[ANIM_KEY_REPEAT]
+        remain: int = repeat or 1
+        error_count: int = 0
         kwargs = {  # args to pass into anim function
             k: anim_args[k]
             for k in anim_args
@@ -420,9 +434,9 @@ class baseArray:
                 break
             try:
                 common.publish_queue.put_nowait(
-                    BusMessage(path=f"{self.id}/animation", content=anim)
+                    PublishMessage(path=f"{self.id}/animation", content=anim)
                 )
-                self.anims[anim].__globals__["FRAME_MS"] = self._frame_ms
+                self.anims[anim].__globals__["FRAME_MS"] = self._frame_ms  # type: ignore
                 self.anims[anim](self, self._anim_cancel, **kwargs)
             except:
                 self._log.debug(
@@ -449,5 +463,5 @@ class baseArray:
         else:
             self._log.debug("Finished animation '%s' for array '%s'", anim, self._name)
         common.publish_queue.put_nowait(
-            BusMessage(path=f"{self.id}/animation", content="")
+            PublishMessage(path=f"{self.id}/animation", content="")
         )

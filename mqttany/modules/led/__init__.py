@@ -25,29 +25,30 @@ LED Module
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = []
+__all__ = ["load", "start", "stop", "anim_message", "log", "nodes"]
 
-from mprop import mproperty
+import multiprocessing as mproc
 
 from modules import ModuleType
+from mprop import mproperty
 
-from modules.led.core import load, start, stop
-from modules.led.core import anim_message
-from modules.led import common
-from modules.led.common import log, nodes
+from common import BusMessage
 
+from . import common
+from .common import log, nodes
+from .core import anim_message, load, start, stop
 
-_module_type = ModuleType.INTERFACE
-_publish_queue = None
-subscribe_queue = None
+_module_type = ModuleType.INTERFACE  # type: ignore
+_publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+subscribe_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 
 @mproperty
-def publish_queue(module):
+def publish_queue(module: object) -> "mproc.Queue[BusMessage]":
     return _publish_queue
 
 
 @publish_queue.setter
-def publish_queue(module, value):
-    module._publish_queue = value
+def publish_queue(module: object, value: "mproc.Queue[BusMessage]") -> None:
+    module._publish_queue = value  # type: ignore
     common.publish_queue = value

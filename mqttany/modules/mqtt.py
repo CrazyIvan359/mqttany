@@ -27,16 +27,22 @@ MQTT Module
 
 __all__ = []
 
-from collections import OrderedDict
+import multiprocessing as mproc
 import socket
+import sys
+import typing as t
+from collections import OrderedDict
 from threading import Timer
 
-import logger, version
+import logger
+import version
+from common import BusMessage, PublishMessage, SubscribeMessage
 from config import parse_config
-from common import BusMessage
+
 from modules import ModuleType
 
 try:
+    import paho.mqtt.client as mqtt
     from paho.mqtt.client import (
         MQTT_LOG_DEBUG,
         MQTT_LOG_ERR,
@@ -47,15 +53,15 @@ try:
 except ModuleNotFoundError:
     pass
 
-_module_type = ModuleType.COMMUNICATION
+_module_type = ModuleType.COMMUNICATION  # type: ignore
 
 log = logger.get_logger()
-CONFIG = {}
+CONFIG: t.Dict[str, t.Any] = {}
 
-core_queue = None
-receive_queue = None
-transmit_queue = None
-resend_queue = None
+core_queue: "mproc.Queue[str]" = None  # type: ignore
+receive_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+transmit_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
+resend_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 CONF_KEY_HOST = "host"
 CONF_KEY_PORT = "port"
@@ -69,7 +75,7 @@ CONF_KEY_TOPIC_STATUS = "status topic"
 CONF_KEY_TOPIC_LWT = "lwt topic"
 CONF_KEY_HEARTBEAT_INT = "heartbeat interval"
 
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (CONF_KEY_HOST, {}),
         (CONF_KEY_PORT, {"type": int, "default": 1883}),
@@ -91,17 +97,13 @@ retries = MQTT_MAX_RETRIES
 heartbeat_timer = None
 
 
-def load(config_raw):
+def load(config_raw: t.Dict[str, t.Any]) -> bool:
     """
     This function runs on the main process after the module is imported. It should parse
     and validate the configuration and do other basic setup of the module. Do not start
     any threads or long running tasks here, they should go in the ``start`` function.
     """
-    try:
-        import paho.mqtt.client as mqtt
-
-        del mqtt
-    except ModuleNotFoundError:
+    if not hasattr(sys.modules[__name__], "mqtt"):
         log.error(
             "MQTTany's MQTT module requires 'paho-mqtt' to be installed, "
             "please see the wiki for instructions on how to install requirements"
@@ -133,31 +135,30 @@ def load(config_raw):
         return False
 
 
-def client_logger():
+def client_logger() -> t.Callable[[t.Any, t.Any, int, t.Any], None]:
 
-    LEVEL_MAP = {
-        MQTT_LOG_INFO: logger.DEBUG,
-        MQTT_LOG_NOTICE: logger.DEBUG,
-        MQTT_LOG_WARNING: logger.WARN,
-        MQTT_LOG_ERR: logger.ERROR,
-        MQTT_LOG_DEBUG: logger.TRACE,
+    LEVEL_MAP: t.Dict[int, int] = {
+        MQTT_LOG_INFO: logger.LogLevel.DEBUG,
+        MQTT_LOG_NOTICE: logger.LogLevel.DEBUG,
+        MQTT_LOG_WARNING: logger.LogLevel.WARN,
+        MQTT_LOG_ERR: logger.LogLevel.ERROR,
+        MQTT_LOG_DEBUG: logger.LogLevel.TRACE,
     }
 
     client_log = logger.get_logger(f"{log.name}.client")
 
-    def log_callback(client, userdata, level, buf):
+    def log_callback(client: mqtt, userdata: t.Any, level: int, buf: t.Any) -> None:
         client_log.log(LEVEL_MAP[level], buf)
 
     return log_callback
 
 
-def start():
+def start() -> None:
     """
     This function runs on the module's dedicated process when it is started. Connections
     should be started here and a listener thread should be created for receiving messages
     from the outside connection if required.
     """
-    import paho.mqtt.client as mqtt
 
     global client
     log.debug("Creating MQTT client")
@@ -188,26 +189,32 @@ def start():
     client.loop_start()
 
 
-def stop():
+def stop() -> None:
     """
     This function runs on the module's dedicated process when it is exiting. Connections
     should be closed and threads stopped.
     """
-    import paho.mqtt.client as mqtt
+    local_client = t.cast(mqtt.Client, client)
 
     log.debug("Disconnecting")
-    discon_msg = client.publish(
+    discon_msg = local_client.publish(
         topic=CONFIG[CONF_KEY_TOPIC_LWT], payload="Offline", retain=True
     )
     if discon_msg.rc == mqtt.MQTT_ERR_SUCCESS:
         discon_msg.wait_for_publish()
-    client.disconnect()
+    local_client.disconnect()
     log.debug("Stopping MQTT client loop")
-    client.loop_stop()
+    local_client.loop_stop()
 
 
-def publish(topic, payload, qos=None, retain=None):
-    client.publish(
+def publish(
+    topic: str,
+    payload: t.Union[int, float, bytes, str],
+    qos: t.Optional[int] = None,
+    retain: t.Optional[bool] = None,
+) -> None:
+    local_client = t.cast(mqtt.Client, client)
+    local_client.publish(
         topic=topic,
         payload=payload,
         qos=qos if qos is not None else CONFIG[CONF_KEY_QOS],
@@ -215,13 +222,22 @@ def publish(topic, payload, qos=None, retain=None):
     )
 
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(
+    client: t.Any,
+    userdata: t.Any,
+    flags: t.Dict[str, int],
+    rc: int,
+    reasonCode: t.Any = None,
+    properties: t.Any = None,
+) -> None:
     """
     Gets called when the client connect attempt finishes
     """
-    global retries
 
-    if rc == 0:  # connected successfully
+    global retries
+    local_client = t.cast(mqtt.Client, client)
+
+    if rc == mqtt.CONNACK_ACCEPTED:
         log.info(
             "Connected to broker '%s:%s'", CONFIG[CONF_KEY_HOST], CONFIG[CONF_KEY_PORT]
         )
@@ -231,22 +247,17 @@ def on_connect(client, userdata, flags, rc):
             if flags["session present"]
             else "Starting new session"
         )
-        client.subscribe(f"{CONFIG[CONF_KEY_TOPIC_ROOT]}/+/+/+/#")
+        local_client.subscribe(f"{CONFIG[CONF_KEY_TOPIC_ROOT]}/+/+/+/#")
         publish_heartbeat()
 
-    elif rc == 1:  # refused: incorrect mqtt protocol version
-        log.error("Connection refused: broker uses a different MQTT protocol version")
-        client.disconnect()
-        core_queue.put_nowait(__name__)
-
-    elif rc == 2:  # refused: client_id invalid
+    elif rc == mqtt.CONNACK_REFUSED_IDENTIFIER_REJECTED:
         log.error(
             "Connection refused: client_id '%s' is invalid", CONFIG[CONF_KEY_CLIENTID]
         )
-        client.disconnect()
+        local_client.disconnect()
         core_queue.put_nowait(__name__)
 
-    elif rc == 3:  # refused: server unavailable
+    elif rc == mqtt.CONNACK_REFUSED_SERVER_UNAVAILABLE:
         retries -= 1
         if retries > 0:
             log.warn(
@@ -255,26 +266,16 @@ def on_connect(client, userdata, flags, rc):
             )
         else:  # too many retries, give up
             log.error("Connection to broker failed, server did not respond.")
-            client.disconnect()
+            local_client.disconnect()
             core_queue.put_nowait(__name__)
 
-    elif rc == 4:  # refused: bad username and/or password
-        log.error("Connection refused: username or password incorrect")
-        client.disconnect()
-        core_queue.put_nowait(__name__)
-
-    elif rc == 5:  # refused: not authorized
-        log.error("Connection refused: you are not authorized on this broker")
-        client.disconnect()
-        core_queue.put_nowait(__name__)
-
-    else:  # invalid rc
-        log.error("Connection failed: invalid return code '%s' received", rc)
-        client.disconnect()
+    else:
+        log.error("%s (%s)", mqtt.connack_string(rc), rc)
+        local_client.disconnect()
         core_queue.put_nowait(__name__)
 
 
-def on_disconnect(client, userdata, rc):
+def on_disconnect(client: t.Any, userdata: t.Any, rc: int) -> None:
     """
     Gets called when the client disconnects from the broker
     """
@@ -282,22 +283,23 @@ def on_disconnect(client, userdata, rc):
         heartbeat_timer.cancel()
 
 
-def on_message(client, userdata, message):
+def on_message(client: t.Any, userdata: t.Any, message: t.Any) -> None:
     """
     Gets called when an MQTT message is received
     """
-    import paho.mqtt.client as mqtt
+    message = t.cast(mqtt.MQTTMessage, message)
 
     if mqtt.topic_matches_sub(f"{CONFIG[CONF_KEY_TOPIC_ROOT]}/+/+/+/#", message.topic):
         receive_queue.put_nowait(
-            BusMessage(
-                "/".join(message.topic.strip("/").split("/")[1:]),
-                message.payload.strip(bytes([0])).decode(),
+            SubscribeMessage(
+                path="/".join(message.topic.strip("/").split("/")[1:]),
+                content=message.payload.strip(bytes([0])).decode(),
+                callback="",
             )
         )
 
 
-def publish_heartbeat():
+def publish_heartbeat() -> None:
     """
     Publishes the heartbeat messages and restarts the timer
     """
@@ -312,7 +314,7 @@ def publish_heartbeat():
         heartbeat_timer.start()
 
 
-def transmit_callback(message: BusMessage) -> bool:
+def transmit_callback(message: PublishMessage) -> bool:
     publish(
         topic=f"{CONFIG[CONF_KEY_TOPIC_ROOT]}/{message.path}",
         payload=message.content,
@@ -323,4 +325,5 @@ def transmit_callback(message: BusMessage) -> bool:
 
 
 def transmit_ready() -> bool:
-    return client.is_connected()
+    local_client = t.cast(mqtt.Client, client)
+    return local_client.is_connected()

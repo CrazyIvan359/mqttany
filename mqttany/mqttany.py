@@ -25,8 +25,10 @@ MQTTany
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import time, sys, argparse
+import argparse
 import multiprocessing as mproc
+import sys
+import time
 from queue import Empty as QueueEmptyError
 
 import logger
@@ -35,12 +37,13 @@ import version as mqttanyversion
 __version__ = mqttanyversion.__version__
 
 log = logger.get_logger("core")
-queue_core = mproc.Queue()
+queue_core = mproc.Queue()  # type: mproc.Queue[str]
 
 # pylint: disable=logging-format-interpolation
 
 
 def get_args():
+    # type: () -> argparse.Namespace
     """
     Get arguments
     """
@@ -79,9 +82,9 @@ if __name__ == "__main__":
 
     args = get_args()
     if args.verbose > 1:
-        logger.set_level(logger.TRACE)
+        logger.set_level(logger.LogLevel.TRACE)
     elif args.verbose > 0:
-        logger.set_level(logger.DEBUG)
+        logger.set_level(logger.LogLevel.DEBUG)
 
     import core
     from common import SignalHook

@@ -27,6 +27,7 @@ Module Loader
 
 __all__ = [
     "ModuleType",
+    "call",
     "ATTR_TYPE",
     "ATTR_LOG",
     "ATTR_LOAD",
@@ -43,7 +44,11 @@ __all__ = [
     "ATTR_NODES",
 ]
 
+import types
+import typing as t
 from enum import Enum
+
+from logger import log_traceback
 
 ATTR_TYPE = "_module_type"
 ATTR_LOG = "log"
@@ -64,3 +69,29 @@ ATTR_NODES = "nodes"
 class ModuleType(Enum):
     COMMUNICATION = "Communication"
     INTERFACE = "Interface"
+
+
+def call(module: types.ModuleType, name: str, **kwargs: t.Any) -> t.Any:
+    """
+    Calls ``name`` if defined in ``module``
+    """
+    func = getattr(module, name, None)
+    if func is not None:
+        retval = False
+        if callable(func):
+            try:
+                retval = func(**kwargs)
+            except:
+                module.log.error(  # type: ignore
+                    "An exception occurred while running function '%s'",
+                    getattr(func, "__name__", func),
+                )
+                log_traceback(module.log)  # type: ignore
+            finally:
+                # This function intentionally swallows exceptions. It is only used by
+                # the core to call functions in modules. If there is an error in a
+                # module the core must continue to run in order to exit gracefully.
+                # If the core were to stop because of exceptions in modules, all child
+                # processes would be orphaned and would have to be killed by manually
+                # sending SIG.TERM or SIG.KILL to them.
+                return retval  # pylint: disable=lost-exception

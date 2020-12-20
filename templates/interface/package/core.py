@@ -25,23 +25,26 @@ Interface Module Template
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from config import parse_config
-from common import DataType, BusMessage, BusNode, BusProperty
+import typing as t
 
-from modules.interface_pkg_template import common
-from modules.interface_pkg_template.common import (
-    log,
-    CONFIG,
-    nodes,
-    CONF_KEY_STRING,
+from config import parse_config
+
+from common import BusNode, BusProperty, DataType, SubscribeMessage
+
+from . import common
+from .common import (
     CONF_KEY_FIXED_TYPE,
     CONF_KEY_SELECTION,
+    CONF_KEY_STRING,
     CONF_KEY_SUBSECTION,
     CONF_OPTIONS,
+    CONFIG,
+    log,
+    nodes,
 )
 
 
-def load(config_raw) -> bool:
+def load(config_raw: t.Dict[str, t.Any]) -> bool:
     """
     This function runs on the main process after the module is imported. It should parse
     and validate the configuration and create any dynamic nodes or properties. Do not start
@@ -101,7 +104,7 @@ def stop() -> None:
     pass
 
 
-def message_callback(message: BusMessage) -> None:
+def message_callback(message: SubscribeMessage) -> None:
     """
     Example message handler
     """

@@ -25,28 +25,31 @@ Interface Module Template
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = []
+__all__ = ["load", "start", "stop", "message_callback"]
 
+import multiprocessing as mproc
+import typing as t
 from collections import OrderedDict
 
 import logger
+from common import BusMessage, BusNode, BusProperty, DataType, SubscribeMessage
 from config import parse_config
-from common import DataType, BusMessage, BusNode, BusProperty
 from modules import ModuleType
 
-_module_type = ModuleType.INTERFACE
+_module_type = ModuleType.INTERFACE  # type: ignore
 
 log = logger.get_logger()
-CONFIG = {}
+CONFIG: t.Dict[str, t.Any] = {}
 
 # If the module publishes messages it must have the `publish_queue` attribute. It will
-# be assigned a queue that the module can use `put_nowait()` to put BusMessage objects
-# in the queue to be transmitted by the communication modules.
-publish_queue = None  # omit this if module is subscribe only
+# be assigned a queue that the module can use `put_nowait()` to put PublishMessage
+# objects in the queue to be transmitted by the communication modules.
+# Omit this if module is subscribe only
+publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 # This queue is put in the module's attributes whether it is defined here or not
 # Do not use this name in your module and do not access this object
-subscribe_queue = None
+subscribe_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 # Configuration keys, best to define them here so they can be changed easily
 CONF_KEY_STRING = "string"
@@ -56,7 +59,7 @@ CONF_KEY_SUBSECTION = "sub section"
 
 # Configuration layout for `parse_config`
 # it should be an OrderedDict of `(key, {})`
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (  # an empty dict means any value is valid and option is required
             CONF_KEY_STRING,
@@ -107,10 +110,10 @@ CONF_OPTIONS = OrderedDict(
 
 # Interface modules must have a non-empty dict of Nodes that they provide. This can be
 # partially or entirely populated at runtime in the `load` function.
-nodes = {}
+nodes: t.Dict[str, BusNode] = {}
 
 
-def load(config_raw) -> bool:
+def load(config_raw: t.Dict[str, t.Any]) -> bool:
     """
     This function runs on the main process after the module is imported. It should parse
     and validate the configuration and do other basic setup of the module. Do not start
@@ -168,7 +171,7 @@ def stop() -> None:
     pass
 
 
-def message_callback(message: BusMessage) -> None:
+def message_callback(message: SubscribeMessage) -> None:
     """
     Example message handler
     """

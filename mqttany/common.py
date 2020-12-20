@@ -26,10 +26,12 @@ Common
 # SOFTWARE.
 
 __all__ = [
-    "POISON_PILL",
+    "PoisonPill",
     "SignalHook",
     "DataType",
     "BusMessage",
+    "PublishMessage",
+    "SubscribeMessage",
     "BusProperty",
     "BusNode",
     "validate_id",
@@ -37,18 +39,16 @@ __all__ = [
     "update_dict",
 ]
 
-import collections, signal
-from enum import Enum
-from typing import Dict, List, Optional, Any
-from types import MappingProxyType
+import collections
 import re
+import signal
+import typing as t
+from enum import Enum
+from types import MappingProxyType
 
 import logger
-from logger import log_traceback
 
 log = logger.get_logger()
-
-POISON_PILL = {"stop": True}
 
 
 class SignalHook:
@@ -60,7 +60,7 @@ class SignalHook:
     SIGTERM = signal.SIGTERM
     SIGKILL = signal.SIGKILL
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._last_signal = None
         try:
             signal.signal(signal.SIGINT, self._signal_received)
@@ -75,15 +75,15 @@ class SignalHook:
         except OSError:
             pass
 
-    def _signal_received(self, signum, frame):
+    def _signal_received(self, signum: int, frame: t.Any) -> None:
         self._last_signal = signal.Signals(signum)  # pylint: disable=no-member
 
     @property
-    def signal(self):
+    def signal(self) -> t.Union[signal.Signals, None]:
         return self._last_signal
 
     @property
-    def exit(self):
+    def exit(self) -> bool:
         return self._last_signal in [self.SIGINT, self.SIGTERM, self.SIGKILL]
 
 
@@ -100,30 +100,21 @@ class DataType(Enum):
 
 class BusMessage(object):
     """
-    Message object used in all queues.
+    Base Message object used in all queues.
 
     Args:
         - path (str): path to publish an outgoing message to, or path an incoming message
           was received on.
         - content (str): message content.
-        - mqtt_retained (bool): for outgoing messages on MQTT only, if ``None`` then
-          default from MQTT module will be used.
-        - mqtt_qos (int): for outgoing messages on MQTT only, if ``None`` then
-          default from MQTT module will be used.
-        - callback (str): **Internal Use** for incoming messages this will be set to the
-          name of the function to call if the property is settable.
     """
 
-    __slots__ = "path", "content", "mqtt_retained", "mqtt_qos", "callback"
+    __slots__ = "path", "content"
 
     def __init__(
         self,
         path: str,
-        content: Any,
-        mqtt_retained: Optional[bool] = None,
-        mqtt_qos: Optional[int] = None,
-        callback: Optional[str] = None,
-    ):
+        content: t.Any,
+    ) -> None:
         path = path.strip("/")
         if len(path.split("/")) < 2:
             raise ValueError(
@@ -131,19 +122,90 @@ class BusMessage(object):
             )
         self.path = path
         self.content = content
-        self.mqtt_retained = mqtt_retained
-        self.mqtt_qos = mqtt_qos
-        self.callback = callback
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Message('{self.path}', '{self.content}')"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        return self.__str__()
+
+
+class PublishMessage(BusMessage):
+    """
+    Message object used in Publish queues.
+
+    Args:
+        - path (str): path to publish an outgoing message to.
+        - content (str): message content.
+        - mqtt_retained (bool): for MQTT only, if ``None`` then default from MQTT
+          module will be used.
+        - mqtt_qos (int): for MQTT only, if ``None`` then default from MQTT module will
+          be used.
+    """
+
+    __slots__ = "mqtt_retained", "mqtt_qos"
+
+    def __init__(
+        self,
+        path: str,
+        content: t.Any,
+        mqtt_retained: t.Optional[bool] = None,
+        mqtt_qos: t.Optional[int] = None,
+    ) -> None:
+        super().__init__(path, content)
+        self.mqtt_retained = mqtt_retained
+        self.mqtt_qos = mqtt_qos
+
+    def __str__(self) -> str:
+        return f"PublishMessage('{self.path}', '{self.content}')"
+
+    def __repr__(self) -> str:
         return (
-            f"Message(Path: '{self.path}', Content: '{self.content}', "
-            f"MQTT Retained: '{self.mqtt_retained}', MQTT QOS: '{self.mqtt_qos}', "
+            f"PublishMessage(Path: '{self.path}', Content: '{self.content}', "
+            f"MQTT Retained: '{self.mqtt_retained}', MQTT QOS: '{self.mqtt_qos}')"
+        )
+
+
+class SubscribeMessage(BusMessage):
+    """
+    Message object used in Subscribe queues.
+
+    Args:
+        - path (str): path message was received on.
+        - content (str): message content.
+        - callback (str): **Internal Use** this will be set to the name of the function
+          to call.
+    """
+
+    __slots__ = "callback"
+
+    def __init__(
+        self,
+        path: str,
+        content: t.Any,
+        callback: str,
+    ) -> None:
+        super().__init__(path, content)
+        self.callback = callback
+
+    def __str__(self) -> str:
+        return f"SubscribeMessage('{self.path}', '{self.content}')"
+
+    def __repr__(self) -> str:
+        return (
+            f"SubscribeMessage(Path: '{self.path}', Content: '{self.content}', "
             f"Callback: '{self.callback}')"
         )
+
+
+class PoisonPill(BusMessage):
+    """
+    Special Message object used to shutdown modules
+    """
+
+    def __init__(self) -> None:
+        self.path = ""
+        self.content = None
 
 
 class BusProperty(object):
@@ -170,38 +232,38 @@ class BusProperty(object):
     def __init__(
         self,
         name: str,
-        datatype: Optional[DataType] = DataType.STR,
-        format: Optional[str] = "",
-        unit: Optional[str] = None,
-        settable: Optional[bool] = False,
-        callback: Optional[str] = None,
-        tags: Optional[list] = [],
-    ):
+        datatype: DataType = DataType.STR,
+        format: str = "",
+        unit: t.Optional[str] = None,
+        settable: bool = False,
+        callback: t.Optional[str] = None,
+        tags: t.List[str] = [],
+    ) -> None:
         self.name = name
         self.datatype = datatype
         self.format = format
         self.unit = unit
         self.settable = settable
         self.callback = callback
-        self._tags = []
+        self._tags: t.List[str] = []
         for tag in tags:
             self.add_tag(tag)
 
     @property
-    def tags(self):
+    def tags(self) -> t.Iterable[str]:
         return tuple(self._tags)
 
     @tags.setter
-    def tags(self, value: List[str]):
+    def tags(self, value: t.Iterable[str]) -> None:
         self._tags = []
         for tag in value:
             self.add_tag(tag)
 
     @tags.deleter
-    def tags(self):
+    def tags(self) -> None:
         self._tags = []
 
-    def add_tag(self, tag: str):
+    def add_tag(self, tag: str) -> None:
         if not validate_tag(tag):
             raise KeyError(f"Tag '{tag}' is invalid")
         elif tag in self._tags:
@@ -228,34 +290,34 @@ class BusNode(object):
         self,
         name: str,
         type: str,
-        tags: Optional[List[str]] = [],
-        properties: Optional[Dict[str, BusProperty]] = {},
-    ):
-        self.module = None
+        tags: t.List[str] = [],
+        properties: t.Dict[str, BusProperty] = {},
+    ) -> None:
+        self.module: str = None  # type: ignore
         self.name = name
         self.type = type
-        self._tags = []
+        self._tags: t.List[str] = []
         for tag in tags:
             self.add_tag(tag)
-        self._properties = {}
+        self._properties: t.Dict[str, BusProperty] = {}
         for property_name in properties:
             self.add_property(property_name, properties[property_name])
 
     @property
-    def tags(self):
+    def tags(self) -> t.Iterable[str]:
         return tuple(self._tags)
 
     @tags.setter
-    def tags(self, value: List[str]):
+    def tags(self, value: t.Iterable[str]) -> None:
         self._tags = []
         for tag in value:
             self.add_tag(tag)
 
     @tags.deleter
-    def tags(self):
+    def tags(self) -> None:
         self._tags = []
 
-    def add_tag(self, tag: str):
+    def add_tag(self, tag: str) -> None:
         if not validate_tag(tag):
             raise KeyError(f"Tag '{tag}' is invalid")
         elif tag in self._tags:
@@ -264,70 +326,46 @@ class BusNode(object):
             self._tags.append(tag)
 
     @property
-    def properties(self):
+    def properties(self) -> t.Mapping[str, BusProperty]:
         return MappingProxyType(self._properties)
 
     @properties.setter
-    def properties(self, value: Dict[str, BusProperty]):
+    def properties(self, value: t.Mapping[str, BusProperty]) -> None:
         self._properties = {}
         for name in value:
             self.add_property(name, value[name])
 
     @properties.deleter
-    def properties(self):
+    def properties(self) -> None:
         self._properties = {}
 
-    def add_property(self, id: str, prop: BusProperty):
+    def add_property(self, id: str, prop: BusProperty) -> None:
         if not validate_id(id):
             raise KeyError(f"Property id '{id}' is invalid")
         else:
             self._properties[id] = prop
 
 
-def validate_id(id):
+def validate_id(id: str) -> bool:
     return not re.search("^-|[^a-z0-9-]|-$", id)
 
 
-def validate_tag(tag):
+def validate_tag(tag: str) -> bool:
     return not re.search("[^a-zA-Z0-9]", tag)
 
 
-def update_dict(d: dict, u: dict) -> dict:
+def update_dict(
+    d: t.MutableMapping[t.Any, t.Any], u: t.Mapping[t.Any, t.Any]
+) -> t.MutableMapping[t.Any, t.Any]:
     """
     Recursively update dict ``d`` with dict ``u``
     """
     for k in u:
         dv = d.get(k, {})
-        if not isinstance(dv, collections.Mapping):
+        if not isinstance(dv, collections.MutableMapping):  # type: ignore
             d[k] = u[k]
-        elif isinstance(u[k], collections.Mapping):
+        elif isinstance(u[k], collections.Mapping):  # type: ignore
             d[k] = update_dict(dv, u[k])
         else:
             d[k] = u[k]
     return d
-
-
-def _call(module, name, **kwargs):
-    """
-    Calls ``name`` if defined in ``module``
-    """
-    func = getattr(module, name, None)
-    if func is not None:
-        retval = False
-        if callable(func):
-            try:
-                retval = func(**kwargs)
-            except:
-                module.log.error(
-                    "An exception occurred while running function '%s'",
-                    getattr(func, "__name__", func),
-                )
-                log_traceback(module.log)
-            finally:
-                # This function intentionally swallows exceptions. It is only used by
-                # the core to call functions in modules. If there is an error in a
-                # module the core must continue to run in order to exit gracefully.
-                # If the core were to stop because of exceptions in modules, all child
-                # processes would be orphaned and would have to be killed by manually
-                # sending SIG.TERM or SIG.KILL to them.
-                return retval  # pylint: disable=lost-exception

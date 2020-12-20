@@ -28,7 +28,7 @@ OneWire Bus Base
 __all__ = ["OneWireBus"]
 
 import re
-from typing import List
+import typing as t
 
 re_hex_chars = re.compile("[^a-fA-F0-9]")
 
@@ -38,11 +38,11 @@ class OneWireBus:
     OneWire Bus base class
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     @staticmethod
-    def validateAddress(address) -> str:
+    def validateAddress(address: t.Any) -> t.Union[str, None]:
         """
         Validates a OneWire device address.
         Will remove any invalid characters and compute CRC if needed.
@@ -57,14 +57,14 @@ class OneWireBus:
             return None
 
     @staticmethod
-    def crc8(data: [str, bytes]) -> bytes:
+    def crc8(data: bytes) -> bytes:
         """
         Returns 1 byte CRC-8/MAXIM of the contents of bytes ``data``.
         """
         crc = 0
         for i in range(len(data)):
             byte = data[i]
-            for bit in range(8):
+            for bit in range(8):  # type: ignore
                 mix = (crc ^ byte) & 0x01
                 crc >>= 1
                 if mix:
@@ -86,21 +86,22 @@ class OneWireBus:
         """
         raise NotImplementedError
 
-    def scan(self) -> List[str]:
+    def scan(self) -> t.List[str]:
         """
         Scan bus and return list of addresses found.
         """
         raise NotImplementedError
 
-    def read(self, address: str, length: int) -> bytes:
+    def read(self, address: str, length: int) -> t.Union[bytes, None]:
         """
         Read ``length`` bytes from device (not including crc8).
+        Returns ``None`` if read failed.
         """
         raise NotImplementedError
 
     def write(self, address: str, buffer: bytes) -> bool:
         """
-        Write ``bytes`` to device (not including crc8).
+        Write ``buffer`` to device (not including crc8).
         Returns ``True`` on success, ``False`` otherwise.
         """
         raise NotImplementedError

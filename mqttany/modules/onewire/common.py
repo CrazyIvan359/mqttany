@@ -39,15 +39,18 @@ __all__ = [
     "CONF_OPTIONS",
 ]
 
+import multiprocessing as mproc
+import typing as t
 from collections import OrderedDict
 
 import logger
-from common import DataType, BusNode, BusProperty
+
+from common import BusMessage, BusNode, BusProperty, DataType
 
 log = logger.get_logger("onewire")
-CONFIG = {}
+CONFIG: t.Dict[str, t.Any] = {}
 
-publish_queue = None
+publish_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 nodes = {
     "onewire": BusNode(
         name="OneWire",
@@ -70,7 +73,7 @@ CONF_KEY_NAME = "name"
 CONF_KEY_ADDRESS = "address"
 CONF_KEY_FIRST_INDEX = "first index"
 
-CONF_OPTIONS = OrderedDict(
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = OrderedDict(
     [
         (CONF_KEY_BUS, {"default": "w1", "selection": []}),
         (CONF_KEY_POLL_INT, {"type": int, "default": 60}),

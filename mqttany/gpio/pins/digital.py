@@ -28,15 +28,16 @@ Core GPIO Digital Pin
 __all__ = ["SUPPORTED_PIN_MODES"]
 
 import threading
-from time import sleep
+import typing as t
 from datetime import datetime
-from periphery.gpio import GPIO, GPIOError
+from time import sleep
 
 from logger import get_logger, log_traceback
+from periphery.gpio import GPIO, GPIOError
 
-from gpio import common
-from gpio.common import Mode, PinMode, PinBias, PinEdge
-from gpio.pins.base import Pin
+from .. import common
+from ..common import Mode, PinBias, PinEdge, PinMode
+from .base import Pin
 
 now = datetime.now
 log = get_logger("core.gpio.pin.digital")
@@ -78,21 +79,23 @@ class Digital(Pin):
         pin_mode: PinMode,
         bias: PinBias = PinBias.NONE,
         edge: PinEdge = PinEdge.NONE,
-        interrupt_callback=None,  # MUST be thread-safe
+        interrupt_callback: t.Optional[
+            t.Callable[[bool], t.Any]
+        ] = None,  # MUST be thread-safe
         interrupt_debounce: int = 50,  # sensible default 50ms
-    ):
+    ) -> None:
         super().__init__(gpio_mode, chip, line, pin_soc, pin_board, pin_wpi, pin_mode)
         self._bias = bias
         self._edge = edge
-        self._interrupt_handler = None
+        self._interrupt_handler: Interrupt = None  # type: ignore
         self._interrupt_callback = (
             interrupt_callback if callable(interrupt_callback) else None
         )
         self._interrupt_debounce = interrupt_debounce
-        self._interface = None
+        self._interface: GPIO = None  # type: ignore
         self._setup = False
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.cleanup()
 
     @property
@@ -105,7 +108,7 @@ class Digital(Pin):
         """Returns the pin interrupt edge trigger."""
         return self._edge
 
-    def set_callback(self, callback):
+    def set_callback(self, callback: t.Callable[[bool], t.Any]) -> None:
         """Change the interrupt callback"""
         if callable(callback):
             self._interrupt_callback = callback
@@ -132,7 +135,7 @@ class Digital(Pin):
 
         return self._setup
 
-    def _setup_cdev(self):
+    def _setup_cdev(self) -> bool:
         try:
             log.debug("Setting up pin %s using chardev", self.name)
             self._interface = GPIO(
@@ -165,7 +168,7 @@ class Digital(Pin):
             return True
         return False
 
-    def _setup_sysfs(self):
+    def _setup_sysfs(self) -> bool:
         try:
             log.debug("Setting up pin %s using sysfs", self.name)
             self._interface = GPIO(self.soc, periphery_PinMode[self.mode])
@@ -183,7 +186,7 @@ class Digital(Pin):
             return True
         return False
 
-    def read(self) -> bool:
+    def read(self) -> t.Union[bool, None]:
         """Read the pin state."""
         if self._setup:
             try:
@@ -195,7 +198,7 @@ class Digital(Pin):
     input = read
     get = read
 
-    def write(self, state: bool):
+    def write(self, state: bool) -> None:
         """Write the state of the pin."""
         if self._setup:
             try:
@@ -217,7 +220,7 @@ class Digital(Pin):
     output = write
     set = write
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Perform cleanup when shutting down."""
         if self._interrupt_handler:
             self._interrupt_handler.stop()
@@ -233,24 +236,24 @@ class Interrupt:
     def __init__(
         self,
         pin: Digital,
-    ):
+    ) -> None:
         self._pin = pin
         self._edge = pin.edge
-        self._debounce_s = pin._interrupt_debounce / 1000.0
-        self._state = None
-        self._state_last = None
-        self._start_s = None
-        self._debounce_thread = None
+        self._debounce_s = pin._interrupt_debounce / 1000.0  # type: ignore
+        self._state: t.Union[bool, None] = None
+        self._state_last: t.Union[bool, None] = None
+        self._start_s: float = 0
+        self._debounce_thread: t.Union[threading.Thread, None] = None
         self._debounce_kill = threading.Event()
-        self._poll_thread = None
+        self._poll_thread: t.Union[threading.Thread, None] = None
         self._poll_kill = threading.Event()
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.stop()
 
-    def _poll(self):
+    def _poll(self) -> None:
         while not self._poll_kill.is_set():
-            if self._pin._interface.poll(1):
+            if self._pin._interface.poll(1):  # type: ignore
                 self._state, self._start_s = self.get_event()
                 if self._start_s:
                     if self._debounce_thread:
@@ -271,19 +274,19 @@ class Interrupt:
         while not self._debounce_kill.is_set() and end_us > now().timestamp():
             sleep(0.0005)  # 0.5ms
         if not self._debounce_kill.is_set() and self._state == self._pin.read():
-            if callable(self._pin._interrupt_callback):
+            if callable(self._pin._interrupt_callback):  # type: ignore
                 threading.Thread(
-                    target=self._pin._interrupt_callback, args=(self._state,)
+                    target=self._pin._interrupt_callback, args=(self._state,)  # type: ignore
                 ).run()
         self._debounce_kill.clear()
         self._debounce_thread = None
 
-    def start(self):
+    def start(self) -> None:
         self._state_last = self._pin.read()
         self._poll_thread = threading.Thread(target=self._poll)
         self._poll_thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         self._poll_kill.set()
         if self._poll_thread:
             self._poll_thread.join(1)
@@ -291,22 +294,22 @@ class Interrupt:
         if self._debounce_thread:
             self._debounce_thread.join(1)
 
-    def get_event(self) -> (bool, int):
+    def get_event(self) -> t.Tuple[t.Union[bool, None], float]:
         raise NotImplementedError
 
 
 class cdevInterrupt(Interrupt):
-    def get_event(self) -> (bool, int):
-        edge, ns = self._pin._interface.read_event()
+    def get_event(self) -> t.Tuple[t.Union[bool, None], float]:
+        event = self._pin._interface.read_event()  # type: ignore
         return (
-            edge == periphery_PinEdge[PinEdge.RISING],
-            # round(ns / 1000000000.0, 6),
+            event.edge == periphery_PinEdge[PinEdge.RISING],
+            # round(event.timestamp / 1000000000.0, 6),
             now().timestamp(),
         )
 
 
 class sysfsInterrupt(Interrupt):
-    def get_event(self) -> (bool, int):
+    def get_event(self) -> t.Tuple[t.Union[bool, None], float]:
         state = self._pin.read()
         if (state != self._state_last) and (
             (state and self._edge & PinEdge.RISING)
@@ -314,8 +317,10 @@ class sysfsInterrupt(Interrupt):
         ):
             self._state_last = state
             return state, now().timestamp()
-
         return None, 0
 
 
-SUPPORTED_PIN_MODES = {PinMode.INPUT: Digital, PinMode.OUTPUT: Digital}
+SUPPORTED_PIN_MODES: t.Dict[PinMode, t.Type[Pin]] = {
+    PinMode.INPUT: Digital,
+    PinMode.OUTPUT: Digital,
+}

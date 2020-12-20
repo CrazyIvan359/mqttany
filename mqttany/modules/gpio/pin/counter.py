@@ -27,18 +27,19 @@ GPIO Counter Pin
 
 __all__ = ["SUPPORTED_PIN_MODES", "CONF_OPTIONS"]
 
-import threading
 import enum
-from datetime import datetime
 import statistics
+import threading
+import typing as t
+from datetime import datetime
 
 import logger
-from common import BusMessage, BusProperty, DataType
-from gpio import board, Mode, PinMode, PinBias, PinEdge
+from common import BusProperty, DataType, PublishMessage
+from gpio import Mode, PinBias, PinEdge, PinMode, board
 
-from modules.gpio import common
-from modules.gpio.pin.base import Pin
-from modules.gpio.common import CONFIG, CONF_KEY_PIN_MODE
+from .. import common
+from ..common import CONF_KEY_PIN_MODE, CONFIG
+from .base import Pin
 
 now = datetime.now
 
@@ -70,7 +71,7 @@ CONF_KEY_FUNCTION = "function"
 CONF_KEY_UNIT = "unit"
 CONF_KEY_DIVIDER = "divider"
 
-CONF_OPTIONS = {
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = {
     "regex:.+": {
         CONF_KEY_PIN_MODE: {
             "selection": {"counter": "COUNTER"},
@@ -121,27 +122,39 @@ CONF_OPTIONS = {
 }
 
 
+class CounterEvent(t.NamedTuple):
+    timestamp: float
+    delta: float
+
+
 class Counter(Pin):
     """
     GPIO Counter Pin class
     """
 
     def __init__(
-        self, pin: int, gpio_mode: Mode, id: str, name: str, pin_config: dict = {}
-    ):
+        self,
+        pin: int,
+        gpio_mode: Mode,
+        id: str,
+        name: str,
+        pin_config: t.Dict[str, t.Any] = {},
+    ) -> None:
         pin_config[CONF_KEY_PIN_MODE] = PinMode.INPUT
         super().__init__(pin, gpio_mode, id, name, pin_config)
         self._log = logger.get_logger("gpio.counter")
-        self._bias = pin_config.get(CONF_KEY_RESISTOR, PinBias.NONE)
-        self._interval = max(pin_config[CONF_KEY_COUNTER][CONF_KEY_INTERVAL], 5)
-        self._edge = pin_config[CONF_KEY_COUNTER][CONF_KEY_INTERRUPT]
-        self._function = pin_config[CONF_KEY_COUNTER][CONF_KEY_FUNCTION]
-        self._unit = pin_config[CONF_KEY_COUNTER][CONF_KEY_UNIT]
+        self._bias: PinBias = pin_config.get(CONF_KEY_RESISTOR, PinBias.NONE)
+        self._interval: int = max(pin_config[CONF_KEY_COUNTER][CONF_KEY_INTERVAL], 5)
+        self._edge: PinEdge = pin_config[CONF_KEY_COUNTER][CONF_KEY_INTERRUPT]
+        self._function: Function = pin_config[CONF_KEY_COUNTER][CONF_KEY_FUNCTION]
+        self._unit: Unit = pin_config[CONF_KEY_COUNTER][CONF_KEY_UNIT]
         self._divider = float(pin_config[CONF_KEY_COUNTER][CONF_KEY_DIVIDER])
-        self._timer = None
+        self._timer: t.Union[threading.Timer, None] = None
         self._data_lock = threading.Lock()
-        self._data = []
-        self._functions = {
+        self._data: t.List[CounterEvent] = []
+        self._functions: t.Dict[
+            Function, t.Callable[[t.List[float]], t.Union[float, str]]
+        ] = {
             Function.RAW: lambda data: f'{{"pulses": {[round(f * self._unit.value) for f in data]}}}',
             Function.COUNT: lambda data: len(data) * self._divider,
             Function.AVERAGE: lambda data: getattr(  # use fmean if available
@@ -220,7 +233,7 @@ class Counter(Pin):
 
         return self._setup
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Cleanup actions when stopping
         """
@@ -229,10 +242,10 @@ class Counter(Pin):
             self._timer = None
         super().cleanup()
 
-    def publish_state(self):
+    def publish_state(self) -> None:
         """No-op. Counters operate using their own timing."""
 
-    def message_callback(self, path: str, content: str):
+    def message_callback(self, path: str, content: str) -> None:
         """
         Handles messages on the pin's paths. Path will have the pin's path removed,
         ex. path may only be ``set``.
@@ -246,17 +259,17 @@ class Counter(Pin):
                 content,
             )
 
-    def interrupt(self, state: bool):
+    def interrupt(self, state: bool) -> None:
         now_ns = now().timestamp()
         self._data_lock.acquire()
         try:
             self._data.append(
-                (now_ns, (now_ns - self._data[-1][0]) if self._data else 0)
+                CounterEvent(now_ns, (now_ns - self._data[-1][0]) if self._data else 0)
             )
         finally:
             self._data_lock.release()
 
-    def report(self):
+    def report(self) -> None:
         """Report counter data"""
         end_ns = now().timestamp()
         self._timer = threading.Timer(self._interval, self.report)
@@ -299,7 +312,7 @@ class Counter(Pin):
             self._function.name,
             message,
         )
-        common.publish_queue.put_nowait(BusMessage(path=self.path, content=message))
+        common.publish_queue.put_nowait(PublishMessage(path=self.path, content=message))
 
 
-SUPPORTED_PIN_MODES = {"COUNTER": Counter}
+SUPPORTED_PIN_MODES: t.Dict[t.Union[PinMode, str], t.Type[Pin]] = {"COUNTER": Counter}

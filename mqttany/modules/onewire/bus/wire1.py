@@ -28,15 +28,16 @@ OneWire wire1 Bus
 __all__ = ["CONF_OPTIONS", "CONF_BUS_SELECTION", "SUPPORTED_BUS_TYPES"]
 
 import os
-from typing import List
+import typing as t
 
 import logger
-from modules.onewire.bus.base import OneWireBus
+
+from .base import OneWireBus
 
 log = logger.get_logger("onewire.wire1")
 
-CONF_OPTIONS = {}
-CONF_BUS_SELECTION = ["w1", "W1", "wire1", "WIRE1", "Wire1"]
+CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = {}
+CONF_BUS_SELECTION: t.List[str] = ["w1", "W1", "wire1", "WIRE1", "Wire1"]
 
 BUS_PATH = "/sys/bus/w1/devices"
 DEVICE_RAW = "rw"
@@ -55,11 +56,11 @@ class Wire1(OneWireBus):
         """
         return os.path.exists(BUS_PATH)
 
-    def scan(self) -> List[str]:
+    def scan(self) -> t.List[str]:
         """
         Scan bus and return list of addresses found
         """
-        devices = []
+        devices: t.List[str] = []
         if os.path.exists(BUS_PATH):
             for filename in os.listdir(BUS_PATH):
                 if "w1" not in filename:
@@ -68,7 +69,7 @@ class Wire1(OneWireBus):
                         devices.append(filename)
         return devices
 
-    def read(self, address: str, length: int) -> bytes:
+    def read(self, address: str, length: int) -> t.Union[bytes, None]:
         """
         Read ``length`` bytes from device (not including crc8).
         """
@@ -84,7 +85,7 @@ class Wire1(OneWireBus):
         # TODO
         raise NotImplementedError
 
-    def read_rw(self, address: str, length: int) -> bytes:
+    def read_rw(self, address: str, length: int) -> t.Union[bytes, None]:
         """
         Read raw bytes from ``rw`` device file.
         Returns ``length`` bytes (not including crc8), will be ``None`` if read fails.
@@ -101,7 +102,7 @@ class Wire1(OneWireBus):
             )
         return buffer
 
-    def read_slave(self, address: str, length: int) -> bytes:
+    def read_slave(self, address: str, length: int) -> t.Union[bytes, None]:
         """
         Read raw bytes from ``w1_slave`` file.
         Returns ``length`` bytes (not including crc8), will be ``None`` if read fails.
@@ -150,7 +151,7 @@ class Wire1(OneWireBus):
             )
         return buffer
 
-    def write_raw(self, address, buffer):
+    def write_raw(self, address: str, buffer: bytes) -> bool:
         """
         Write raw bytes to device
         """
@@ -159,4 +160,6 @@ class Wire1(OneWireBus):
         # log.trace("Attempting to read from 'w1_slave' file '%s'", path)
 
 
-SUPPORTED_BUS_TYPES = {bus_type: Wire1 for bus_type in CONF_BUS_SELECTION}
+SUPPORTED_BUS_TYPES: t.Dict[str, t.Type[OneWireBus]] = {
+    bus_type: Wire1 for bus_type in CONF_BUS_SELECTION
+}
