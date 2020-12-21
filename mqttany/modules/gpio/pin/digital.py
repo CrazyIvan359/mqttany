@@ -384,7 +384,7 @@ class Digital(Pin):
                         )
                         return
 
-                    state = str(resolve_type(content))
+                    state = str(resolve_type(state))
                     if state in TEXT_STATE:
                         self._pulse(time, TEXT_STATE[state])
                     else:
