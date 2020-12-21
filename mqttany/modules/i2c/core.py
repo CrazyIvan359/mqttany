@@ -53,6 +53,8 @@ polling_timer = None
 
 
 def build_device(device_id, device_config):
+    from smbus2 import SMBus
+
     if not validate_id(device_id):
         log.warn("'%s' is not a valid ID and will be ignored", device_id)
         return None
@@ -67,7 +69,7 @@ def build_device(device_id, device_config):
 
     if bus is not None:
         if bus not in buses:
-            buses[bus] = None
+            buses[bus] = SMBus()
     else:
         log.error("Failed to configure %s '%s', bus is invalid.", device.upper(), name)
         return None
@@ -145,12 +147,9 @@ def start():
     """
     Actions to be done in the subprocess before the loop starts
     """
-    from smbus2 import SMBus
-
     # Open I2C buses
     log.debug("Opening I2C bus streams")
     for bus in buses:
-        buses[bus] = SMBus()
         try:
             buses[bus].open(bus)
         except IOError as err:

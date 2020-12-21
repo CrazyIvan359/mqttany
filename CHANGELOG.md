@@ -6,6 +6,7 @@
   * Missing comma in Odroid C1+ and C2 board definitions.
   * GPIO Digital pin pulse message handler using entire payload as state instead of
     JSON property `'state'`.
+  * I2C Bus instance referencing error, devices not able to access the bus instance.
 
 ## 0.12.2
 
