@@ -43,9 +43,10 @@ __all__ = [
     "ANIM_KEY_NAME",
     "ANIM_KEY_REPEAT",
     "ANIM_KEY_PRIORITY",
+    "Color",
 ]
 
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 import logger
 
@@ -105,3 +106,59 @@ CONF_OPTIONS = OrderedDict(
 ANIM_KEY_NAME = "anim"
 ANIM_KEY_REPEAT = "repeat"
 ANIM_KEY_PRIORITY = "priority"
+
+
+class Color(namedtuple("Color", ["r", "g", "b", "w"])):
+    r: int
+    g: int
+    b: int
+    w: int = 0
+
+    def asInt(self) -> int:
+        """
+        Returns a 24/32-bit representation of this color (``RRGGBB`` or ``WWRRGGBB``)
+        """
+        color = self.b
+        color += self.g << 8
+        color += self.r << 16
+        color += self.w << 24
+        return color
+
+    @classmethod
+    def fromInt(cls, color: int):
+        # rtype: Color
+        """
+        Creates a ``Color`` instance from a 24/32-bit color (``RRGGBB`` or ``WWRRGGBB``)
+        """
+        return cls.__new__(
+            cls,
+            color >> 16 & 0xFF,
+            color >> 8 & 0xFF,
+            color & 0xFF,
+            color >> 24 & 0xFF,
+        )
+
+    @staticmethod
+    def getIntFromRGB(r: int, g: int, b: int, w: int = 0) -> int:
+        """
+        Converts the RGB(W) components provided into a 24/32-bit ``int`` in the format
+        ``RRGGBB`` or ``WWRRGGBB``.
+        """
+        color = b
+        color += g << 8
+        color += r << 16
+        color += w << 24
+        return color
+
+    @staticmethod
+    def getRGBFromInt(color: int) -> tuple:
+        """
+        Coverts a 24/32-bit ``int`` in the format ``RRGGBB`` or ``WWRRGGBB`` into a
+        tuple of its R, G, B, and W components.
+        """
+        return (
+            color >> 16 & 0xFF,
+            color >> 8 & 0xFF,
+            color & 0xFF,
+            color >> 24 & 0xFF,
+        )

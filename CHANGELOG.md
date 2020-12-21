@@ -2,6 +2,10 @@
 
 ## Development
 
+* **Changed**
+  * LED restructure set/get pixel functions to simplify array subclassing.
+  * LED some minor cleanup of array subtypes.
+
 * **Fixed**
   * Missing comma in Odroid C1+ and C2 board definitions.
   * GPIO Digital pin pulse message handler using entire payload as state instead of

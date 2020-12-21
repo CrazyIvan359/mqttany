@@ -32,7 +32,7 @@ import threading, queue, time, json
 from logger import log_traceback
 from common import DataType, BusMessage, BusProperty, BusNode, POISON_PILL
 from modules.led import common
-from modules.led.common import ANIM_KEY_NAME, ANIM_KEY_REPEAT, ANIM_KEY_PRIORITY
+from modules.led.common import ANIM_KEY_NAME, ANIM_KEY_REPEAT, ANIM_KEY_PRIORITY, Color
 
 
 class baseArray:
@@ -171,23 +171,82 @@ class baseArray:
         """Update the LED strip"""
         raise NotImplementedError
 
-    def setPixelColor(self, pixel: [int, str, list], color: int) -> None:
-        """Set LED to 24/32-bit color value (``WWRRGGBB`` or ``RRGGBB``)"""
+    def _setPixel(self, pixel: int, color: int) -> None:
+        """
+        SUBCLASSES MUST OVERRIDE THIS FUNCTION
+
+        This function should set the individual pixel specified **only** in the
+        underlying array interface, it should not concern itself with the
+        *LEDs per Pixel* value. The color value is provided as a 24/32-bit ``int`` in
+        the format ``WWRRGGBB`` or ``RRGGBB``.
+        """
         raise NotImplementedError
+
+    def setPixel(self, pixel: int, color: int) -> None:
+        """Set LED to 24/32-bit color value (``WWRRGGBB`` or ``RRGGBB``)"""
+        if self._setup:
+            start_pixel = pixel * self._per_pixel
+            for pixel_offset in range(self._per_pixel):
+                self._setPixel(start_pixel + pixel_offset, color)
+
+    def setPixelColor(self, pixel: [int, list], color: Color) -> None:
+        """Set LED color using the provided ``Color`` object"""
+        if self._setup:
+            if isinstance(pixel, int):
+                pixel = [pixel]
+            for pix in pixel:
+                start_pixel = pix * self._per_pixel
+                for pixel_offset in range(self._per_pixel):
+                    self._setPixel(start_pixel + pixel_offset, color.asInt())
 
     def setPixelColorRGB(
-        self, pixel: [int, str, list], red: int, green: int, blue: int, white: int = 0
+        self, pixel: [int, list], r: int, g: int, b: int, w: int = 0
     ) -> None:
         """Set LED to RGB(W) values provided"""
+        if self._setup:
+            if isinstance(pixel, int):
+                pixel = [pixel]
+            for pix in pixel:
+                start_pixel = pix * self._per_pixel
+                for pixel_offset in range(self._per_pixel):
+                    self._setPixel(
+                        start_pixel + pixel_offset, Color.getIntFromRGB(r, g, b, w)
+                    )
+
+    def _getPixel(self, pixel: int) -> int:
+        """
+        SUBCLASSES MUST OVERRIDE THIS FUNCTION
+
+        This function should return the individual pixel specified from the underlying
+        array interface, it should not concern itself with the *LEDs per Pixel* value.
+        The color should be returned as a 24/32-bit ``int`` in the format ``WWRRGGBB``
+        or ``RRGGBB`` (the ``Color`` class has static methods to help with this).
+        """
         raise NotImplementedError
 
-    def getPixelColor(self, pixel: int) -> int:
-        """Return the 24/32-bit LED color (``RRGGBB`` or ``WWRRGGBB``)"""
-        raise NotImplementedError
+    def getPixel(self, pixel: int) -> int:
+        """
+        Return the 24/32-bit LED color (``RRGGBB`` or ``WWRRGGBB``) or ``None`` if the
+        array is not setup
+        """
+        if self._setup:
+            return self._getPixel(pixel * self._per_pixel)
+        return None
 
-    def getPixelColorRGB(self, pixel: int):
-        """Return an object with RGB(W) attributes"""
-        raise NotImplementedError
+    def getPixelColor(self, pixel: int) -> Color:
+        """
+        Returns a ``Color`` object representing the pixel or ``None`` if the array is
+        not setup
+        """
+        if self._setup:
+            return Color.fromInt(self._getPixel(pixel * self._per_pixel))
+        return None
+
+    def getPixelColorRGB(self, pixel: int) -> tuple:
+        """Return a tuple of RGBW representing the pixel"""
+        if self._setup:
+            return Color.getRGBFromInt(self._getPixel(pixel * self._per_pixel))
+        return None
 
     def getBrightness(self) -> int:
         """Get LED strip brightness"""

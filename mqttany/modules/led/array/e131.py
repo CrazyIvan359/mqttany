@@ -31,7 +31,7 @@ import logger
 
 from common import BusMessage, BusNode, BusProperty
 from modules.led import common
-from modules.led.common import CONF_KEY_OUTPUT
+from modules.led.common import CONF_KEY_OUTPUT, Color
 from modules.led.array.base import baseArray
 
 log = logger.get_logger("led.sacn")
@@ -221,7 +221,7 @@ class sacnArray(baseArray):
         """
         Update the LEDs
         """
-        if not self._setup:
+        if not self._setup or not sender:
             return
 
         if self._sync is not None:
@@ -242,67 +242,26 @@ class sacnArray(baseArray):
             sender.flush(self._universes)
             sender.manual_flush = False
 
-    def setPixelColor(self, pixel: [int, str, list], color: int) -> None:
+    def _setPixel(self, pixel: int, color: int) -> None:
         """Set LED to 24/32-bit color value"""
-        if not self._setup:
-            return
-        color = int(color)
-        self.setPixelColorRGB(
-            pixel,
-            # fmt: off
-            color >> 16 & 0xFF,
-            color >> 8  & 0xFF,
-            color       & 0xFF,
-            color >> 24 & 0xFF,
-            # fmt: on
+        index = pixel * self.colors
+        self._dmx_data[index + self._order_map["r"]] = color >> 16 & 0xFF
+        self._dmx_data[index + self._order_map["g"]] = color >> 8 & 0xFF
+        self._dmx_data[index + self._order_map["b"]] = color & 0xFF
+        if self.colors == 4:
+            self._dmx_data[index + self._order_map["w"]] = color >> 24 & 0xFF
+
+    def _getPixel(self, pixel: int) -> int:
+        """
+        Return the 24/32-bit LED color (``RRGGBB`` or ``WWRRGGBB``)
+        """
+        index = pixel * self.colors
+        return Color.getIntFromRGB(
+            self._dmx_data[index + self._order_map["r"]],
+            self._dmx_data[index + self._order_map["g"]],
+            self._dmx_data[index + self._order_map["b"]],
+            self._dmx_data[index + self._order_map["w"]] if self.colors == 4 else 0,
         )
-
-    def setPixelColorRGB(
-        self, pixel: [int, str, list], red: int, green: int, blue: int, white: int = 0
-    ) -> None:
-        """Set LED to RGB(W) values provided"""
-        if not self._setup:
-            return
-        index = int(pixel) * self._per_pixel  # account for multiple chips per "pixel"
-        for p in range(0, self._per_pixel):
-            self._dmx_data[(index + p) * self.colors + self._order_map["r"]] = int(red)
-            self._dmx_data[(index + p) * self.colors + self._order_map["g"]] = int(
-                green
-            )
-            self._dmx_data[(index + p) * self.colors + self._order_map["b"]] = int(blue)
-            if self.colors == 4:
-                self._dmx_data[(index + p) * self.colors + self._order_map["w"]] = int(
-                    white
-                )
-
-    def getPixelColor(self, pixel: int) -> int:
-        """Return the 24/32-bit LED color"""
-        if not self._setup:
-            return None
-        index = int(pixel) * self._per_pixel * self.colors
-        color = 0x00
-        color += self._dmx_data[index + self._order_map["r"]] << 16
-        color += self._dmx_data[index + self._order_map["g"]] << 8
-        color += self._dmx_data[index + self._order_map["b"]]
-        if self.colors == 4:
-            color += self._dmx_data[index + self._order_map["w"]] << 24
-        return color
-
-    def getPixelColorRGB(self, pixel: int):
-        """Return an object with RGB(W) attributes"""
-        if not self._setup:
-            return None
-        index = int(pixel) * self._per_pixel * self.colors
-        c = lambda: None
-        setattr(c, "red", self._dmx_data[index * self.colors + self._order_map["r"]])
-        setattr(c, "green", self._dmx_data[index * self.colors + self._order_map["g"]])
-        setattr(c, "blue", self._dmx_data[index * self.colors + self._order_map["b"]])
-        setattr(c, "white", 0)
-        if self.colors == 4:
-            setattr(
-                c, "white", self._dmx_data[index * self.colors + self._order_map["w"]]
-            )
-        return c
 
     def getBrightness(self) -> int:
         """Get LED strip brightness"""

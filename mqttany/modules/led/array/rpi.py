@@ -202,7 +202,7 @@ class rpiArray(baseArray):
                 self._array.begin()
             except:
                 self._log.error("An error occured while setting up '%s'", self._name)
-                self._log.traceback(self._log)
+                logger.log_traceback(self._log)
                 return False
             else:
                 super().begin()
@@ -244,47 +244,11 @@ class rpiArray(baseArray):
             return
         self._array.show()
 
-    def setPixelColor(self, pixel: [int, str, list], color: int) -> None:
-        """Set LED to 24/32-bit color value"""
-        if not self._setup:
-            return
-        index = int(pixel) * self._per_pixel  # account for multiple chips per "pixel"
-        for p in range(0, self._per_pixel):
-            self._array.setPixelColor(index + p, int(color))
+    def _setPixel(self, pixel: int, color: int) -> None:
+        self._array.setPixelColor(pixel, color)
 
-    def setPixelColorRGB(
-        self, pixel: [int, str, list], red: int, green: int, blue: int, white: int = 0
-    ) -> None:
-        """Set LED to RGB(W) values provided"""
-        if not self._setup:
-            return
-        index = int(pixel) * self._per_pixel  # account for multiple chips per "pixel"
-        for p in range(0, self._per_pixel):
-            self._array.setPixelColorRGB(
-                index + p, int(red), int(green), int(blue), int(white)
-            )
-
-    def getPixelColor(self, pixel: int) -> int:
-        """Return the 24/32-bit LED color"""
-        if not self._setup:
-            return None
-        index = int(pixel) * self._per_pixel  # account for multiple chips per "pixel"
-        return self._array.getPixelColor(index)
-
-    def getPixelColorRGB(self, pixel: int):
-        """Return an object with RGB(W) attributes"""
-        if not self._setup:
-            return None
-        index = int(pixel) * self._per_pixel  # account for multiple chips per "pixel"
-        led_color = self._array.getPixelColor(index)
-        c = lambda: None
-        # fmt: off
-        setattr(c, "white", led_color >> 24 & 0xFF)
-        setattr(c, "red",   led_color >> 16 & 0xFF)
-        setattr(c, "green", led_color >> 8  & 0xFF)
-        setattr(c, "blue",  led_color       & 0xFF)
-        # fmt: on
-        return c
+    def _getPixel(self, pixel: int) -> int:
+        return self._array.getPixelColor(pixel)
 
     def getBrightness(self) -> int:
         """Get LED strip brightness"""
