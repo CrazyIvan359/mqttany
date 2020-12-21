@@ -83,7 +83,7 @@ class OdroidC1p(OdroidC1):
         # chip, line, soc, board, wpi, modes, biases, alts
         self._add_pin(0, 6, 6, -1, -1, DIGITAL, PinBias.NONE)
         self._add_pin(0, 8, 8, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 9, 9, -1 - 1, DIGITAL, P_UP)
+        self._add_pin(0, 9, 9, -1, -1, DIGITAL, P_UP)
         self._add_pin(0, 10, 10, -1, -1, DIGITAL, P_UP)
         self._add_pin(0, 11, 11, -1, -1, DIGITAL, P_UP)
 
@@ -121,7 +121,7 @@ class OdroidC2(Board):
 
         self._add_pin(0, 128, 128, -1, -1, DIGITAL, P_UP)
         self._add_pin(0, 130, 130, -1, -1, DIGITAL, P_UP)
-        self._add_pin(0, 131, 131, -1 - 1, DIGITAL, P_UP)
+        self._add_pin(0, 131, 131, -1, -1, DIGITAL, P_UP)
         self._add_pin(0, 132, 132, -1, -1, DIGITAL, P_UP)
         self._add_pin(0, 133, 133, -1, -1, DIGITAL, P_UP)
 

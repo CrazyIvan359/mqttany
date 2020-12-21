@@ -2,6 +2,9 @@
 
 ## Development
 
+* **Fixed**
+  * Missing comma in Odroid C1+ and C2 board definitions.
+
 ## 0.12.2
 
 * **Changed**
