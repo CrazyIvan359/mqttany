@@ -36,6 +36,17 @@ from config import parse_config
 from common import BusMessage
 from modules import ModuleType
 
+try:
+    from paho.mqtt.client import (
+        MQTT_LOG_DEBUG,
+        MQTT_LOG_ERR,
+        MQTT_LOG_INFO,
+        MQTT_LOG_NOTICE,
+        MQTT_LOG_WARNING,
+    )
+except ModuleNotFoundError:
+    pass
+
 _module_type = ModuleType.COMMUNICATION
 
 log = logger.get_logger()
@@ -122,6 +133,24 @@ def load(config_raw):
         return False
 
 
+def client_logger():
+
+    LEVEL_MAP = {
+        MQTT_LOG_INFO: logger.DEBUG,
+        MQTT_LOG_NOTICE: logger.DEBUG,
+        MQTT_LOG_WARNING: logger.WARN,
+        MQTT_LOG_ERR: logger.ERROR,
+        MQTT_LOG_DEBUG: logger.TRACE,
+    }
+
+    client_log = logger.get_logger(f"{log.name}.client")
+
+    def log_callback(client, userdata, level, buf):
+        client_log.log(LEVEL_MAP[level], buf)
+
+    return log_callback
+
+
 def start():
     """
     This function runs on the module's dedicated process when it is started. Connections
@@ -148,7 +177,7 @@ def start():
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_message = on_message  # called for messages without a specfic subscriber
-    client.enable_logger(logger=logger.get_logger(f"{log.name}.client"))
+    client.on_log = client_logger()
 
     log.debug("Queuing connect event")
     client.connect_async(

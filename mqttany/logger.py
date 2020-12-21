@@ -25,13 +25,23 @@ Logger
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ["get_logger", "set_level", "log_traceback", "uninit"]
+__all__ = [
+    "get_logger",
+    "set_level",
+    "log_traceback",
+    "uninit",
+    "TRACE",
+    "DEBUG",
+    "INFO",
+    "WARN",
+    "ERROR",
+]
 
 import os, sys, errno, inspect, traceback
 from types import MethodType
 import logging
 from logging import handlers
-from logging import DEBUG, INFO, WARNING as WARN
+from logging import DEBUG, INFO, WARNING as WARN, ERROR
 import colorlog
 
 TRACE = 5  # trace level logging
