@@ -48,6 +48,13 @@ class Wire1(OneWireBus):
     OneWire Bus wrapping the Kernel wire1 driver
     """
 
+    @staticmethod
+    def valid() -> bool:
+        """
+        Returns ``True`` if the bus is available
+        """
+        return os.path.exists(BUS_PATH)
+
     def scan(self) -> List[str]:
         """
         Scan bus and return list of addresses found
@@ -60,13 +67,6 @@ class Wire1(OneWireBus):
                     if filename is not None:
                         devices.append(filename)
         return devices
-
-    @property
-    def valid(self):
-        """
-        Returns ``True`` if the bus is available
-        """
-        return os.path.exists(BUS_PATH)
 
     def read(self, address: str, length: int) -> bytes:
         """

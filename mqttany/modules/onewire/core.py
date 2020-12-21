@@ -120,11 +120,12 @@ def load(config_raw={}):
         CONFIG.update(config_data)
         del config_data
 
-        global ow_bus
-        ow_bus = bus.getBus(CONFIG[CONF_KEY_BUS])
-        if not ow_bus.valid:
+        bus_cls = bus.getBus(CONFIG[CONF_KEY_BUS])
+        if bus_cls is None or not bus_cls.valid():
             log.error("OneWire bus is not available")
             return False
+        global ow_bus
+        ow_bus = bus_cls()
 
         for device_id in [key for key in CONFIG if isinstance(CONFIG[key], dict)]:
             device_config = CONFIG.pop(device_id)

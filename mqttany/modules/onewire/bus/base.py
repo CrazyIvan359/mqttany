@@ -79,8 +79,8 @@ class OneWireBus:
         """
         return f"{address[:2]}-{address[2:]}"[:-2].lower()
 
-    @property
-    def valid(self) -> bool:
+    @staticmethod
+    def valid() -> bool:
         """
         Returns ``True`` if the bus is available.
         """

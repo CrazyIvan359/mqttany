@@ -12,6 +12,7 @@
   * GPIO Digital pin pulse message handler using entire payload as state instead of
     JSON property `'state'`.
   * I2C Bus instance referencing error, devices not able to access the bus instance.
+  * OneWire bus not being instantiated.
 
 ## 0.12.2
 
