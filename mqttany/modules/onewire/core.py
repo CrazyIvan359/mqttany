@@ -243,8 +243,8 @@ def poll_all():
     Polls all devices
     """
     log.debug("Polling all devices")
-    for dev in devices:
-        dev.publish_state()
+    for device_id in devices:
+        devices[device_id].publish_state()
 
 
 def poll_interval():
