@@ -33,6 +33,9 @@ from collections import OrderedDict
 import logger
 from config import parse_config
 from common import BusMessage, BusNode, BusProperty
+from modules import ModuleType
+
+_module_type = ModuleType.INTERFACE
 
 CONF_KEY_DEFAULT_DISPLAY = "default display"
 CONF_KEY_STARTUP_COMMANDS = "startup commands"

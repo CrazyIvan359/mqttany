@@ -14,6 +14,7 @@
   * I2C Bus instance referencing error, devices not able to access the bus instance.
   * OneWire bus not being instantiated.
   * OneWire polling not referencing device instance.
+  * XSET module missing module type.
 
 ## 0.12.2
 
