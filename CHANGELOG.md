@@ -1,24 +1,29 @@
 # MQTTany Change Log
 
-## Development
+## 0.13.0
+
+* ***BREAKING CHANGE***
+  * LED restructure set/get pixel functions to simplify array subclassing.
+    [#92](https://github.com/CrazyIvan359/mqttany/pull/92)
 
 * **Changed**
-  * LED restructure set/get pixel functions to simplify array subclassing.
-  * LED some minor cleanup of array subtypes.
-  * MQTT use custom client logger for better control of log messages.
-  * Migrate from pylint to Pylance for code checking in VSCode.
-  * Convert entire codebase to be fully typed.
-  * Migrate CI code check to Pyright from pylint.
+  * LED some minor cleanup of array subtypes. [#92](https://github.com/CrazyIvan359/mqttany/pull/92)
+  * MQTT use custom client logger for better control of log messages. [#93](https://github.com/CrazyIvan359/mqttany/pull/93)
+  * Migrate from pylint to Pylance for code checking in VSCode. [#96](https://github.com/CrazyIvan359/mqttany/pull/96)
+  * Convert entire codebase to be fully typed. [#96](https://github.com/CrazyIvan359/mqttany/pull/96)
+  * Migrate CI code check to Pyright from pylint. [#96](https://github.com/CrazyIvan359/mqttany/pull/96)
   * OneWire move `get_w1_address` function from base `bus` class to wire-1 bus class.
+    [#97](https://github.com/CrazyIvan359/mqttany/pull/97)
 
 * **Fixed**
-  * Missing comma in Odroid C1+ and C2 board definitions.
+  * Missing comma in Odroid C1+ and C2 board definitions. [#89](https://github.com/CrazyIvan359/mqttany/pull/89)
   * GPIO Digital pin pulse message handler using entire payload as state instead of
-    JSON property `'state'`.
+    JSON property `'state'`. [#90](https://github.com/CrazyIvan359/mqttany/pull/90)
   * I2C Bus instance referencing error, devices not able to access the bus instance.
-  * OneWire bus not being instantiated.
-  * OneWire polling not referencing device instance.
-  * XSET module missing module type.
+    [#91](https://github.com/CrazyIvan359/mqttany/pull/91)
+  * OneWire bus not being instantiated. [#94](https://github.com/CrazyIvan359/mqttany/pull/94)
+  * OneWire polling not referencing device instance. [#94](https://github.com/CrazyIvan359/mqttany/pull/94)
+  * XSET module missing module type. [#95](https://github.com/CrazyIvan359/mqttany/pull/95)
 
 ## 0.12.2
 
