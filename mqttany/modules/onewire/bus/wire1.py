@@ -56,6 +56,13 @@ class Wire1(OneWireBus):
         """
         return os.path.exists(BUS_PATH)
 
+    @staticmethod
+    def get_w1_address(address: str) -> str:
+        """
+        Returns the ``xx-xxxxxxxxxxxx`` style w1 address from the full 8 byte address.
+        """
+        return f"{address[:2]}-{address[2:]}"[:-2].lower()
+
     def scan(self) -> t.List[str]:
         """
         Scan bus and return list of addresses found

@@ -73,13 +73,6 @@ class OneWireBus:
         return bytes([crc])
 
     @staticmethod
-    def get_w1_address(address: str) -> str:
-        """
-        Returns the ``xx-xxxxxxxxxxxx`` style w1 address from the full 8 byte address.
-        """
-        return f"{address[:2]}-{address[2:]}"[:-2].lower()
-
-    @staticmethod
     def valid() -> bool:
         """
         Returns ``True`` if the bus is available.

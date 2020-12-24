@@ -9,6 +9,7 @@
   * Migrate from pylint to Pylance for code checking in VSCode.
   * Convert entire codebase to be fully typed.
   * Migrate CI code check to Pyright from pylint.
+  * OneWire move `get_w1_address` function from base `bus` class to wire-1 bus class.
 
 * **Fixed**
   * Missing comma in Odroid C1+ and C2 board definitions.
