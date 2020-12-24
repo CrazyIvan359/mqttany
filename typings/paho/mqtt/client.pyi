@@ -1,18 +1,3 @@
-# Copyright (c) 2012-2019 Roger Light and others
-#
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the Eclipse Public License v1.0
-# and Eclipse Distribution License v1.0 which accompany this distribution.
-#
-# The Eclipse Public License is available at
-#    http://www.eclipse.org/legal/epl-v10.html
-# and the Eclipse Distribution License is available at
-#   http://www.eclipse.org/org/documents/edl-v10.php.
-#
-# Contributors:
-#    Roger Light - initial API and implementation
-#    Ian Craggs - MQTT V5 support
-
 import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -57,45 +42,17 @@ MQTT_ERR_UNKNOWN: int = 13
 MQTT_ERR_ERRNO: int = 14
 MQTT_ERR_QUEUE_SIZE: int = 15
 
-
-def connack_string(connack_code: int) -> str:
-    ...
-
-
-def topic_matches_sub(sub: str, topic: str) -> bool:
-    ...
-
+def connack_string(connack_code: int) -> str: ...
+def topic_matches_sub(sub: str, topic: str) -> bool: ...
 
 class MQTTMessageInfo(object):
     mid: int
     rc: int
-
-    def __init__(self, mid: int) -> None:
-        ...
-
-    def wait_for_publish(self) -> None:
-        ...
-
-    def is_published(self) -> bool:
-        ...
-
+    def __init__(self, mid: int) -> None: ...
+    def wait_for_publish(self) -> None: ...
+    def is_published(self) -> bool: ...
 
 class MQTTMessage(object):
-    """This is a class that describes an incoming or outgoing message. It is
-    passed to the on_message callback as the message parameter.
-
-    Members:
-
-    topic : String/bytes. topic that the message was published on.
-    payload : String/bytes the message payload.
-    qos : Integer. The message Quality of Service 0, 1 or 2.
-    retain : Boolean. If true, the message is a retained message and not fresh.
-    mid : Integer. The message id.
-    properties: Properties class. In MQTT v5.0, the properties associated with the message.
-
-    On Python 3, topic must be bytes.
-    """
-
     timestamp: int
     state: int
     dup: bool
@@ -104,18 +61,11 @@ class MQTTMessage(object):
     qos: int
     retain: bool
     info: MQTTMessageInfo
-
-    def __init__(self, mid: int = ..., topic: bytes = ...) -> None:
-        ...
-
+    def __init__(self, mid: int = ..., topic: bytes = ...) -> None: ...
     @property
-    def topic(self) -> str:
-        ...
-
+    def topic(self) -> str: ...
     @topic.setter
-    def topic(self, value: str) -> None:
-        ...
-
+    def topic(self, value: str) -> None: ...
 
 class Client(object):
     def __init__(
@@ -125,9 +75,7 @@ class Client(object):
         userdata: Optional[Any] = ...,
         protocol: int = ...,
         transport: str = ...,
-    ) -> None:
-        ...
-
+    ) -> None: ...
     def connect_async(
         self,
         host: str,
@@ -137,12 +85,10 @@ class Client(object):
         bind_port: int = ...,
         clean_start: int = ...,
         properties: Any = ...,
-    ) -> int:
-        ...
-
-    def reconnect_delay_set(self, min_delay: int = ..., max_delay: int = ...) -> None:
-        ...
-
+    ) -> int: ...
+    def reconnect_delay_set(
+        self, min_delay: int = ..., max_delay: int = ...
+    ) -> None: ...
     def publish(
         self,
         topic: str,
@@ -150,31 +96,21 @@ class Client(object):
         qos: int = ...,
         retain: bool = ...,
         properties: Optional[Any] = ...,
-    ) -> MQTTMessageInfo:
-        ...
-
+    ) -> MQTTMessageInfo: ...
     def username_pw_set(
         self, username: Union[str, None], password: Optional[str] = ...
-    ) -> None:
-        ...
-
-    def is_connected(self) -> bool:
-        ...
-
+    ) -> None: ...
+    def is_connected(self) -> bool: ...
     def disconnect(
         self, reasoncode: Optional[int] = ..., properties: Optional[Any] = ...
-    ) -> int:
-        ...
-
+    ) -> int: ...
     def subscribe(
         self,
         topic: str,
         qos: int = ...,
         options: Optional[Any] = ...,
         properties: Optional[Any] = ...,
-    ) -> Tuple[int, int]:
-        ...
-
+    ) -> Tuple[int, int]: ...
     def will_set(
         self,
         topic: str,
@@ -182,61 +118,36 @@ class Client(object):
         qos: int = ...,
         retain: bool = ...,
         properties: Optional[Any] = ...,
-    ) -> None:
-        ...
-
-    def loop_start(self) -> None:
-        ...
-
-    def loop_stop(self, force: bool = ...) -> Union[int, bool]:
-        ...
-
+    ) -> None: ...
+    def loop_start(self) -> None: ...
+    def loop_stop(self, force: bool = ...) -> Union[int, bool]: ...
     @property
-    def on_log(self) -> Union[Callable[[Client, Any, int, Any], None], None]:
-        ...
-
+    def on_log(self) -> Union[Callable[[Client, Any, int, Any], None], None]: ...
     @on_log.setter
-    def on_log(self, func: Callable[[Client, Any, int, Any], None]) -> None:
-        ...
-
+    def on_log(self, func: Callable[[Client, Any, int, Any], None]) -> None: ...
     @property
     def on_connect(
         self,
-    ) -> Union[Callable[[Client, Any, Dict[str, int], int, Any, Any], None], None]:
-        ...
-
+    ) -> Union[Callable[[Client, Any, Dict[str, int], int, Any, Any], None], None]: ...
     @on_connect.setter
     def on_connect(
         self, func: Callable[[Client, Any, Dict[str, int], int, Any, Any], None]
-    ) -> None:
-        ...
-
+    ) -> None: ...
     @property
     def on_subscribe(
         self,
     ) -> Union[
         Callable[[Client, Any, int, List[int], List[Any], List[Any]], None], None
-    ]:
-        ...
-
+    ]: ...
     @on_subscribe.setter
     def on_subscribe(
         self, func: Callable[[Client, Any, int, List[int], List[Any], List[Any]], None]
-    ) -> None:
-        ...
-
+    ) -> None: ...
     @property
-    def on_message(self) -> Union[Callable[[Client, Any, MQTTMessage], None], None]:
-        ...
-
+    def on_message(self) -> Union[Callable[[Client, Any, MQTTMessage], None], None]: ...
     @on_message.setter
-    def on_message(self, func: Callable[[Client, Any, MQTTMessage], None]) -> None:
-        ...
-
+    def on_message(self, func: Callable[[Client, Any, MQTTMessage], None]) -> None: ...
     @property
-    def on_disconnect(self) -> Union[Callable[[Client, Any, int], None], None]:
-        ...
-
+    def on_disconnect(self) -> Union[Callable[[Client, Any, int], None], None]: ...
     @on_disconnect.setter
-    def on_disconnect(self, func: Callable[[Client, Any, int], None]) -> None:
-        ...
+    def on_disconnect(self, func: Callable[[Client, Any, int], None]) -> None: ...

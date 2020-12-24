@@ -1,12 +1,6 @@
 import typing as t
 
 class mproperty(object):
-    """
-    Use this descriptor as a decorator in the same way that you would use
-    'property', but only apply it to module-level functions, and watch as your
-    module gains properties!
-    """
-
     __slots__ = "fget", "fset", "fdel", "doc"
     def __init__(
         self,
