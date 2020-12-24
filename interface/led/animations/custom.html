@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Custom &mdash; MQTTany v0.12.0 documentation</title>
+  <title>Custom &mdash; MQTTany v0.13.0 documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                v0.12.0
+                v0.13.0
               </div>
             
           
@@ -291,7 +291,7 @@ use <code class="docutils literal notranslate"><span class="pre">repeat:</span> 
 <h2>Function Signature<a class="headerlink" href="#function-signature" title="Permalink to this headline">¶</a></h2>
 <p>Your animation function must have the following signature for it to work
 reliably:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">anim_blink</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">cancel</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">anim_blink</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">baseArray</span><span class="p">,</span> <span class="n">cancel</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -356,37 +356,46 @@ This should be called when you are done setting LEDs
 and want to display those changes on the physical
 array.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setPixelColor(pixel,</span> <span class="pre">color:</span> <span class="pre">Color)</span></code></p></td>
+<td><p>Sets the specified <code class="docutils literal notranslate"><span class="pre">pixel</span></code> value of the <code class="docutils literal notranslate"><span class="pre">Color</span></code>
+instance passed.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getPixelColor(pixel)</span> <span class="pre">-&gt;</span> <span class="pre">Color</span></code></p></td>
+<td><p>Returns a <code class="docutils literal notranslate"><span class="pre">Color</span></code> instance with <code class="docutils literal notranslate"><span class="pre">r</span></code>, <code class="docutils literal notranslate"><span class="pre">g</span></code>,
+<code class="docutils literal notranslate"><span class="pre">b</span></code>, and <code class="docutils literal notranslate"><span class="pre">w</span></code> properties representing the pixel
+color.</p></td>
+</tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setPixelColorRGB</span></code>
 <code class="docutils literal notranslate"><span class="pre">(pixel,</span> <span class="pre">red,</span> <span class="pre">green,</span> <span class="pre">blue,</span> <span class="pre">white=0)</span></code></p></td>
 <td><p>Sets the specified <code class="docutils literal notranslate"><span class="pre">pixel</span></code> to the provided
 <code class="docutils literal notranslate"><span class="pre">red</span></code>, <code class="docutils literal notranslate"><span class="pre">green</span></code>, <code class="docutils literal notranslate"><span class="pre">blue</span></code>, and <code class="docutils literal notranslate"><span class="pre">white</span></code> values.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getPixelColorRGB(pixel)</span></code></p></td>
-<td><p>Returns an object with <code class="docutils literal notranslate"><span class="pre">red</span></code>, <code class="docutils literal notranslate"><span class="pre">green</span></code>, <code class="docutils literal notranslate"><span class="pre">blue</span></code>,
-and <code class="docutils literal notranslate"><span class="pre">white</span></code> properties representing the pixel
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getPixelColorRGB(pixel)</span> <span class="pre">-&gt;</span> <span class="pre">tuple</span></code></p></td>
+<td><p>Returns a tuple of <code class="docutils literal notranslate"><span class="pre">red</span></code>, <code class="docutils literal notranslate"><span class="pre">green</span></code>, <code class="docutils literal notranslate"><span class="pre">blue</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">white</span></code> integers representing the pixel
 color.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setPixelColor(pixel,</span> <span class="pre">color)</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setPixel(pixel,</span> <span class="pre">color:</span> <span class="pre">int)</span></code></p></td>
 <td><p>Sets the specified <code class="docutils literal notranslate"><span class="pre">pixel</span></code> to a 24-bit <code class="docutils literal notranslate"><span class="pre">RRGGBB</span></code>
 or 32-bit <code class="docutils literal notranslate"><span class="pre">WWRRGGBB</span></code> value.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getPixelColor(pixel)</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getPixel(pixel)</span> <span class="pre">-&gt;</span> <span class="pre">int</span></code></p></td>
 <td><p>Returns a 24-bit <code class="docutils literal notranslate"><span class="pre">RRGGBB</span></code> or 32-bit <code class="docutils literal notranslate"><span class="pre">WWRRGGBB</span></code>
 value representing the pixel color.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setBrightness(brightness)</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setBrightness(brightness:</span> <span class="pre">int)</span></code></p></td>
 <td><p>Sets the brightness for the array. Also available
 as the property <code class="docutils literal notranslate"><span class="pre">brightness</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getBrightness()</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">getBrightness()</span> <span class="pre">-&gt;</span> <span class="pre">int</span></code></p></td>
 <td><p>Returns the current brightness for the array. Also
 available as the property <code class="docutils literal notranslate"><span class="pre">brightness</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">numPixels()</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">numPixels()</span> <span class="pre">-&gt;</span> <span class="pre">int</span></code></p></td>
 <td><p>Returns the number of pixels in the array. Also
 available as the property <code class="docutils literal notranslate"><span class="pre">count</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">numColors()</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">numColors()</span> <span class="pre">-&gt;</span> <span class="pre">int</span></code></p></td>
 <td><p>Returns the number of color channels (3 for RGB or
 4 for RGBW). Also available as the property
 <code class="docutils literal notranslate"><span class="pre">colors</span></code>.</p></td>
@@ -431,7 +440,8 @@ animation file.</p>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">log</span></code></p></td>
 <td><p>This gives you a logger that logs to
-<code class="docutils literal notranslate"><span class="pre">mqttany.led.anim.{anim</span> <span class="pre">name}</span></code> for outputting log messages.</p></td>
+<code class="docutils literal notranslate"><span class="pre">mqttany.led.anim.{anim</span> <span class="pre">name}</span></code> for outputting log messages.
+It will be an instance of <code class="docutils literal notranslate"><span class="pre">logger.mqttanyLogger</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">FRAME_MIN</span></code></p></td>
 <td><p>The configuration value <code class="docutils literal notranslate"><span class="pre">anim</span> <span class="pre">fps</span></code> is used to calulate the
@@ -440,11 +450,62 @@ as <code class="docutils literal notranslate"><span class="pre">FRAME_MS</span><
 See the built in fade animations to see how you might use this
 value.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">parse_color(array,</span> <span class="pre">c=None,</span> <span class="pre">r=-1,</span></code>
-<code class="docutils literal notranslate"><span class="pre">g=-1,</span> <span class="pre">b=-1,</span> <span class="pre">w=-1,</span> <span class="pre">pixel=None)</span></code></p></td>
-<td><p>This function can be used to determine a 24/32-bit color from
-the animation arguments <code class="docutils literal notranslate"><span class="pre">color</span></code>, <code class="docutils literal notranslate"><span class="pre">red</span></code>, <code class="docutils literal notranslate"><span class="pre">green</span></code>,
-<code class="docutils literal notranslate"><span class="pre">blue</span></code>, <code class="docutils literal notranslate"><span class="pre">white</span></code> as used in the
+<tr class="row-even"><td><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Color</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="n">r</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">g</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">w</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">asInt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">fromInt</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Color</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">getIntFromRGB</span><span class="p">(</span>
+        <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">g</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">w</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">getRGBFromInt</span><span class="p">(</span>
+        <span class="n">color</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span>
+        <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span>
+    <span class="p">]:</span> <span class="o">...</span>
+</pre></div>
+</div>
+</td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">Color</span></code> class is used by some of the <code class="docutils literal notranslate"><span class="pre">baseArray</span></code>
+methods and the utility function <code class="docutils literal notranslate"><span class="pre">parse_color</span></code>. It is also
+injected into each animation so you can make use of it as
+well. It provides easy access to each of the color components
+and can convert those components into a single integer
+(<code class="docutils literal notranslate"><span class="pre">WWRRGGBB</span></code> format). There is an alternate constructor to
+create a <code class="docutils literal notranslate"><span class="pre">Color</span></code> instance from a color stored as an integer
+(<code class="docutils literal notranslate"><span class="pre">fromInt</span></code>). There are also static methods to convert from
+components to single value and vice versa (<code class="docutils literal notranslate"><span class="pre">getIntFromRGB</span></code>
+and <code class="docutils literal notranslate"><span class="pre">getRGBFromInt</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parse_color</span><span class="p">(</span>
+    <span class="n">array</span><span class="p">,</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">pixel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</td>
+<td><p>This function can be used to get a <code class="docutils literal notranslate"><span class="pre">Color</span></code> instance from the
+animation arguments <code class="docutils literal notranslate"><span class="pre">color</span></code>, <code class="docutils literal notranslate"><span class="pre">red</span></code>, <code class="docutils literal notranslate"><span class="pre">green</span></code>, <code class="docutils literal notranslate"><span class="pre">blue</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">white</span></code> as used in the
 <a class="reference internal" href="built-in.html#set-array"><span class="std std-ref">set.array</span></a>
 animation. If <code class="docutils literal notranslate"><span class="pre">pixel</span></code> is provided, any component with a
 value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> (must provide at least 1 new value) will use
@@ -452,7 +513,13 @@ the current channel value from the specified pixel. It will
 return <code class="docutils literal notranslate"><span class="pre">None</span></code> if it cannot determine a color from the values
 provided.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">parse_pixel(array,</span> <span class="pre">p)</span></code></p></td>
+<tr class="row-even"><td><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parse_pixel</span><span class="p">(</span>
+    <span class="n">array</span><span class="p">,</span>
+    <span class="n">p</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</td>
 <td><p>This can be used to parse various pixel range arguments as
 used with the <code class="docutils literal notranslate"><span class="pre">pixel</span></code> argument for the
 <a class="reference internal" href="built-in.html#set-pixel"><span class="std std-ref">set.pixel</span></a>

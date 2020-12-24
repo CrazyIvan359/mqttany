@@ -12,12 +12,12 @@ This simply turns all channels on every LED to maximum.
 
 .. code-block:: python
 
-    def anim_on(array, cancel, **kwargs):
+    def anim_on(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
         """
         Turns on the array
         """
         for i in range(array.count):
-            array.setPixelColorRGB(i, 255, 255, 255, 255)
+            array.setPixel(i, 0xFFFFFFFF)
         array.show()
 
 Here we are just iterating over all the LEDs in the array and setting their
@@ -39,14 +39,16 @@ This sets the brightness value for the array and shows how to use an argument.
 
 .. code-block:: python
 
-    def anim_set_brightness(array, cancel, **kwargs):
+    def anim_set_brightness(
+        array: baseArray, cancel: threading.Event, **kwargs: t.Any
+    ) -> None:
         """
         Sets the array brightness
         """
         brightness = kwargs.get("brightness", None)
 
         if brightness is None:
-            log.warn("set.brightness: Missing argument 'brightness'")
+            log.warn("Missing argument 'brightness'")
             return
 
         array.setBrightness(int(brightness))

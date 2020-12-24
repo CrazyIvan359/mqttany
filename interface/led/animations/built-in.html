@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Built-in &mdash; MQTTany v0.12.0 documentation</title>
+  <title>Built-in &mdash; MQTTany v0.13.0 documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                v0.12.0
+                v0.13.0
               </div>
             
           
@@ -268,12 +268,12 @@ and serve as examples to get you started writing your own animations.</p>
 <div class="section" id="on">
 <h2><code class="docutils literal notranslate"><span class="pre">on</span></code><a class="headerlink" href="#on" title="Permalink to this headline">¶</a></h2>
 <p>This simply turns all channels on every LED to maximum.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">anim_on</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">cancel</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">anim_on</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">baseArray</span><span class="p">,</span> <span class="n">cancel</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Turns on the array</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">count</span><span class="p">):</span>
-        <span class="n">array</span><span class="o">.</span><span class="n">setPixelColorRGB</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+        <span class="n">array</span><span class="o">.</span><span class="n">setPixel</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mh">0xFFFFFFFF</span><span class="p">)</span>
     <span class="n">array</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -289,14 +289,16 @@ each pixel.</p>
 <div class="section" id="set-brightness">
 <h2><code class="docutils literal notranslate"><span class="pre">set.brightness</span></code><a class="headerlink" href="#set-brightness" title="Permalink to this headline">¶</a></h2>
 <p>This sets the brightness value for the array and shows how to use an argument.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">anim_set_brightness</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">cancel</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">anim_set_brightness</span><span class="p">(</span>
+    <span class="n">array</span><span class="p">:</span> <span class="n">baseArray</span><span class="p">,</span> <span class="n">cancel</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sets the array brightness</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">brightness</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;brightness&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">brightness</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;set.brightness: Missing argument &#39;brightness&#39;&quot;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Missing argument &#39;brightness&#39;&quot;</span><span class="p">)</span>
         <span class="k">return</span>
 
     <span class="n">array</span><span class="o">.</span><span class="n">setBrightness</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">brightness</span><span class="p">))</span>

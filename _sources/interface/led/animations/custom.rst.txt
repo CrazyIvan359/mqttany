@@ -42,7 +42,7 @@ reliably:
 
 .. code-block:: python
 
-    def anim_blink(array, cancel, **kwargs):
+    def anim_blink(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
 
 +--------------+----------------------------------------------------------------+
 |  Parameter   |                          Description                           |
@@ -88,29 +88,36 @@ set LED colors. The ``array`` object received will be subclassed from
 |                                        | and want to display those changes on the physical    |
 |                                        | array.                                               |
 +----------------------------------------+------------------------------------------------------+
+| ``setPixelColor(pixel, color: Color)`` | Sets the specified ``pixel`` value of the ``Color``  |
+|                                        | instance passed.                                     |
++----------------------------------------+------------------------------------------------------+
+| ``getPixelColor(pixel) -> Color``      | Returns a ``Color`` instance with ``r``, ``g``,      |
+|                                        | ``b``, and ``w`` properties representing the pixel   |
+|                                        | color.                                               |
++----------------------------------------+------------------------------------------------------+
 | ``setPixelColorRGB``                   | Sets the specified ``pixel`` to the provided         |
 | ``(pixel, red, green, blue, white=0)`` | ``red``, ``green``, ``blue``, and ``white`` values.  |
 +----------------------------------------+------------------------------------------------------+
-| ``getPixelColorRGB(pixel)``            | Returns an object with ``red``, ``green``, ``blue``, |
-|                                        | and ``white`` properties representing the pixel      |
+| ``getPixelColorRGB(pixel) -> tuple``   | Returns a tuple of ``red``, ``green``, ``blue``,     |
+|                                        | and ``white`` integers representing the pixel        |
 |                                        | color.                                               |
 +----------------------------------------+------------------------------------------------------+
-| ``setPixelColor(pixel, color)``        | Sets the specified ``pixel`` to a 24-bit ``RRGGBB``  |
+| ``setPixel(pixel, color: int)``        | Sets the specified ``pixel`` to a 24-bit ``RRGGBB``  |
 |                                        | or 32-bit ``WWRRGGBB`` value.                        |
 +----------------------------------------+------------------------------------------------------+
-| ``getPixelColor(pixel)``               | Returns a 24-bit ``RRGGBB`` or 32-bit ``WWRRGGBB``   |
+| ``getPixel(pixel) -> int``             | Returns a 24-bit ``RRGGBB`` or 32-bit ``WWRRGGBB``   |
 |                                        | value representing the pixel color.                  |
 +----------------------------------------+------------------------------------------------------+
-| ``setBrightness(brightness)``          | Sets the brightness for the array. Also available    |
+| ``setBrightness(brightness: int)``     | Sets the brightness for the array. Also available    |
 |                                        | as the property ``brightness``.                      |
 +----------------------------------------+------------------------------------------------------+
-| ``getBrightness()``                    | Returns the current brightness for the array. Also   |
+| ``getBrightness() -> int``             | Returns the current brightness for the array. Also   |
 |                                        | available as the property ``brightness``.            |
 +----------------------------------------+------------------------------------------------------+
-| ``numPixels()``                        | Returns the number of pixels in the array. Also      |
+| ``numPixels() -> int``                 | Returns the number of pixels in the array. Also      |
 |                                        | available as the property ``count``.                 |
 +----------------------------------------+------------------------------------------------------+
-| ``numColors()``                        | Returns the number of color channels (3 for RGB or   |
+| ``numColors() -> int``                 | Returns the number of color channels (3 for RGB or   |
 |                                        | 4 for RGBW). Also available as the property          |
 |                                        | ``colors``.                                          |
 +----------------------------------------+------------------------------------------------------+
@@ -143,6 +150,7 @@ animation file.
 +======================================+================================================================+
 | ``log``                              | This gives you a logger that logs to                           |
 |                                      | ``mqttany.led.anim.{anim name}`` for outputting log messages.  |
+|                                      | It will be an instance of ``logger.mqttanyLogger``.            |
 +--------------------------------------+----------------------------------------------------------------+
 | ``FRAME_MIN``                        | The configuration value ``anim fps`` is used to calulate the   |
 |                                      | duration of each frame in milliseconds and is made available   |
@@ -150,22 +158,56 @@ animation file.
 |                                      | See the built in fade animations to see how you might use this |
 |                                      | value.                                                         |
 +--------------------------------------+----------------------------------------------------------------+
-| ``parse_color(array, c=None, r=-1,`` | This function can be used to determine a 24/32-bit color from  |
-| ``g=-1, b=-1, w=-1, pixel=None)``    | the animation arguments ``color``, ``red``, ``green``,         |
-|                                      | ``blue``, ``white`` as used in the                             |
-|                                      | :ref:`interface/led/animations/built-in:\`\`set.array\`\``     |
-|                                      | animation. If ``pixel`` is provided, any component with a      |
-|                                      | value of ``-1`` (must provide at least 1 new value) will use   |
-|                                      | the current channel value from the specified pixel. It will    |
-|                                      | return ``None`` if it cannot determine a color from the values |
-|                                      | provided.                                                      |
-+--------------------------------------+----------------------------------------------------------------+
-| ``parse_pixel(array, p)``            | This can be used to parse various pixel range arguments as     |
-|                                      | used with the ``pixel`` argument for the                       |
-|                                      | :ref:`interface/led/animations/built-in:\`\`set.pixel\`\``     |
-|                                      | animation. It will return a list of all pixel indices          |
-|                                      | specified or an empty list if it is unable to parse the input. |
+| .. code-block:: python               | The ``Color`` class is used by some of the ``baseArray``       |
+|                                      | methods and the utility function ``parse_color``. It is also   |
+|   class Color(t.NamedTuple):         | injected into each animation so you can make use of it as      |
+|       r: int                         | well. It provides easy access to each of the color components  |
+|       g: int                         | and can convert those components into a single integer         |
+|       b: int                         | (``WWRRGGBB`` format). There is an alternate constructor to    |
+|       w: int = 0                     | create a ``Color`` instance from a color stored as an integer  |
+|                                      | (``fromInt``). There are also static methods to convert from   |
+|       def asInt(self) -> int: ...    | components to single value and vice versa (``getIntFromRGB``   |
+|                                      | and ``getRGBFromInt``).                                        |
+|       @classmethod                   |                                                                |
+|       def fromInt(                   |                                                                |
+|           cls, color: int            |                                                                |
+|       ) -> Color: ...                |                                                                |
 |                                      |                                                                |
+|       @staticmethod                  |                                                                |
+|       def getIntFromRGB(             |                                                                |
+|           r: int,                    |                                                                |
+|           g: int,                    |                                                                |
+|           b: int,                    |                                                                |
+|           w: int = 0,                |                                                                |
+|       ) -> int: ...                  |                                                                |
+|                                      |                                                                |
+|       @staticmethod                  |                                                                |
+|       def getRGBFromInt(             |                                                                |
+|           color: int,                |                                                                |
+|       ) -> t.Tuple[                  |                                                                |
+|           int, int, int, int         |                                                                |
+|       ]: ...                         |                                                                |
+|                                      |                                                                |
++--------------------------------------+----------------------------------------------------------------+
+| .. code-block:: python               | This function can be used to get a ``Color`` instance from the |
+|                                      | animation arguments ``color``, ``red``, ``green``, ``blue``,   |
+|   parse_color(                       | and ``white`` as used in the                                   |
+|       array,                         | :ref:`interface/led/animations/built-in:\`\`set.array\`\``     |
+|       color = None,                  | animation. If ``pixel`` is provided, any component with a      |
+|       r = -1,                        | value of ``-1`` (must provide at least 1 new value) will use   |
+|       g = -1,                        | the current channel value from the specified pixel. It will    |
+|       b = -1,                        | return ``None`` if it cannot determine a color from the values |
+|       w = -1,                        | provided.                                                      |
+|       pixel = None,                  |                                                                |
+|   )                                  |                                                                |
+|                                      |                                                                |
++--------------------------------------+----------------------------------------------------------------+
+| .. code-block:: python               | This can be used to parse various pixel range arguments as     |
+|                                      | used with the ``pixel`` argument for the                       |
+|   parse_pixel(                       | :ref:`interface/led/animations/built-in:\`\`set.pixel\`\``     |
+|       array,                         | animation. It will return a list of all pixel indices          |
+|       p,                             | specified or an empty list if it is unable to parse the input. |
+|   )                                  |                                                                |
 |                                      | Pixels may be specified in any of the following ways:          |
 |                                      |                                                                |
 |                                      | .. code-block:: python                                         |
