@@ -163,6 +163,7 @@ def load_animations() -> t.Dict[str, t.Callable[[baseArray, threading.Event], No
     for func_name in anims:
         func_globals = t.cast(t.Dict[str, t.Any], anims[func_name].__globals__)  # type: ignore
         func_globals["log"] = logger.get_logger(f"led.anim.{func_name}")
+        func_globals["Color"] = Color
         for util in utils:
             func_globals[util.__name__] = util
 
