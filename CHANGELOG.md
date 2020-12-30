@@ -2,6 +2,9 @@
 
 ## Development
 
+* **Fixed**
+  * *Unknown* and *Generic Linux* boards missing superclass init.
+
 ## 0.13.0
 
 * ***BREAKING CHANGE***

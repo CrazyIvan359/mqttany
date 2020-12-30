@@ -38,12 +38,14 @@ from .base import Board
 
 class Unknown(Board):
     def __init__(self) -> None:
+        super().__init__()
         self._id = "UNRECOGNIZED"
         self._chips.append(999)  # dummy
 
 
 class Generic(Board):
     def __init__(self) -> None:
+        super().__init__()
         self._id = GENERIC_LINUX_PC
         self._chips.append(999)  # dummy
 
