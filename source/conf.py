@@ -44,7 +44,7 @@ else:
 # -- Project information -----------------------------------------------------
 
 project = "MQTTany"
-copyright = "2020, MQTTany Contributors"
+copyright = "2021, MQTTany Contributors"
 author = "Michael Murton"
 
 # The full version, including alpha/beta/rc tags

@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2019-2020 MQTTany contributors
+Copyright (c) 2019-2021 MQTTany contributors
 
 MQTTany's LED Module includes a modified version of the sacn library written by
 Hundemeier (https://github.com/Hundemeier/sacn).
