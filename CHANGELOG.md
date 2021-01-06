@@ -2,6 +2,11 @@
 
 ## Development
 
+* **Fixed**
+  * Bug introduced in [#96](https://github.com/CrazyIvan359/mqttany/pull/96) causing MCP230xx devices to be uncontrollable and not report pin states.
+  Register properties on classes were renamed but not changed in all places.
+  [[#105](https://github.com/CrazyIvan359/mqttany/pull/105)]
+
 ## 0.14.2
 
 * **Fixed**

@@ -423,7 +423,7 @@ class MCP230xx(I2CDevice):
         Subclasses may override this method
         """
         if self._setup:
-            self._gpio = 0
+            self.gpio = 0
             for pin in self._pins:
                 if pin is not None:
                     pin.state = False  # set all pins to configured OFF
@@ -658,9 +658,9 @@ class MCP23008(MCP230xx):
         self._log = logger.get_logger("i2c.mcp23008")
         self._pin_max = 7
         self._pins: t.List[Pin] = [None] * (self._pin_max + 1)  # type: ignore
-        self._gpio = 0x00
-        self._iodir = 0xFF
-        self._gppu = 0x00
+        self.gpio = 0x00
+        self.iodir = 0xFF
+        self.gppu = 0x00
         super()._build_pins(device_config)
 
     def setup(self) -> bool:
@@ -682,16 +682,16 @@ class MCP23008(MCP230xx):
             0x00,
             bytes(
                 [
-                    self._iodir,
+                    self.iodir,
                     0x00,  # IPOL
                     0x00,  # GPINTEN
                     0x00,  # DEFVAL
                     0x00,  # INTCON
                     0x04,  # IOCON
-                    self._gppu,
+                    self.gppu,
                     0x00,  # INTF
                     0x00,  # INTCAP
-                    self._gpio,
+                    self.gpio,
                 ]
             ),
         ):
@@ -702,10 +702,10 @@ class MCP23008(MCP230xx):
     def read_gpio(self) -> None:
         gpio = self._read_byte(self._GPIO)
         if gpio is not None:
-            self._gpio = gpio
+            self.gpio = gpio
 
     def write_gpio(self) -> None:
-        self._write_byte(self._GPIO, self._gpio)
+        self._write_byte(self._GPIO, self.gpio)
 
 
 class MCP23017(MCP230xx):
@@ -753,9 +753,9 @@ class MCP23017(MCP230xx):
         self._log = logger.get_logger("i2c.mcp23017")
         self._pin_max = 15
         self._pins: t.List[Pin] = [None] * (self._pin_max + 1)  # type: ignore
-        self._gpio = 0x0000
-        self._iodir = 0xFFFF
-        self._gppu = 0x0000
+        self.gpio = 0x0000
+        self.iodir = 0xFFFF
+        self.gppu = 0x0000
         super()._build_pins(device_config)
 
     def setup(self) -> bool:
@@ -777,8 +777,8 @@ class MCP23017(MCP230xx):
             0x00,
             bytes(
                 [
-                    self._iodir & 0xFF,  # IODIRA
-                    self._iodir >> 8,  # IODIRB
+                    self.iodir & 0xFF,  # IODIRA
+                    self.iodir >> 8,  # IODIRB
                     0x00,  # IPOLA
                     0x00,  # IPOLB
                     0x00,  # GPINTENA
@@ -789,14 +789,14 @@ class MCP23017(MCP230xx):
                     0x00,  # INTCONB
                     0x04,  # IOCON
                     0x04,  # IOCON
-                    self._gppu & 0xFF,  # GPPUA
-                    self._gppu >> 8,  # GPPUB
+                    self.gppu & 0xFF,  # GPPUA
+                    self.gppu >> 8,  # GPPUB
                     0x00,  # INTFA
                     0x00,  # INTFB
                     0x00,  # INTCAPA
                     0x00,  # INTCAPB
-                    self._gpio & 0xFF,  # GPIOA
-                    self._gpio >> 8,  # GPIOB
+                    self.gpio & 0xFF,  # GPIOA
+                    self.gpio >> 8,  # GPIOB
                 ]
             ),
         ):
@@ -807,10 +807,10 @@ class MCP23017(MCP230xx):
     def read_gpio(self) -> None:
         gpio = self._read_word(self._GPIOA)
         if gpio is not None:
-            self._gpio = gpio
+            self.gpio = gpio
 
     def write_gpio(self) -> None:
-        self._write_word(self._GPIOA, self._gpio)
+        self._write_word(self._GPIOA, self.gpio)
 
 
 SUPPORTED_DEVICES: t.Dict[str, t.Type[I2CDevice]] = {
