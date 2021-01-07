@@ -34,6 +34,7 @@ from adafruit_platformdetect.constants.boards import (
     RASPBERRY_PI_3A_PLUS,
     RASPBERRY_PI_3B,
     RASPBERRY_PI_3B_PLUS,
+    RASPBERRY_PI_4B,
     RASPBERRY_PI_A,
     RASPBERRY_PI_A_PLUS,
     RASPBERRY_PI_B_PLUS,
@@ -226,6 +227,12 @@ class RPI3Ap(RPI40p):
         self._id = RASPBERRY_PI_3A_PLUS
 
 
+class RPI4B(RPI40p):
+    def __init__(self) -> None:
+        super().__init__()
+        self._id = RASPBERRY_PI_4B
+
+
 SUPPORTED_BOARDS: t.Dict[str, t.Type[Board]] = {
     RASPBERRY_PI_A: RPIA,
     RASPBERRY_PI_B_REV1: RPIBr1,
@@ -238,4 +245,5 @@ SUPPORTED_BOARDS: t.Dict[str, t.Type[Board]] = {
     RASPBERRY_PI_3B: RPI3B,
     RASPBERRY_PI_3B_PLUS: RPI3Bp,
     RASPBERRY_PI_3A_PLUS: RPI3Ap,
+    RASPBERRY_PI_4B: RPI4B,
 }

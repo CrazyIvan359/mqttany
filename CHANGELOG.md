@@ -4,6 +4,7 @@
 
 * **Added**
   * Kernel version check to determine GPIO cdev availability and capabilities.
+  * Raspberry Pi 4B support.
 
 * **Fixed**
   * *Unknown* and *Generic Linux* boards missing superclass init.
