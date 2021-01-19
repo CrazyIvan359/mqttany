@@ -42,6 +42,7 @@ import logger
 
 log = logger.get_logger("core.gpio")
 cdev = False
+cdev_bias = False
 sysfs = False
 
 

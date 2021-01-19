@@ -2,8 +2,14 @@
 
 ## Development
 
+* **Added**
+  * Kernel version check to determine GPIO cdev availability and capabilities.
+
 * **Fixed**
   * *Unknown* and *Generic Linux* boards missing superclass init.
+  * GPIO error `Failed to setup GPIOxx using cdev, an invalid argument was given`
+    caused by attempting to use cdev bias setting that was only introduced in Linux
+    kernel v5.5. Fixes [#106](https://github.com/CrazyIvan359/mqttany/issues/106).
 
 ## 0.13.0
 

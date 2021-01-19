@@ -116,16 +116,27 @@ class Digital(Pin):
     def setup(self) -> bool:
         """Setup the pin before use, returns ``True`` on success."""
         if not self._setup:
+            sysfs_failover = True
             if common.cdev:
+                if self._bias != PinBias.NONE and not common.cdev_bias:
+                    self._bias = PinBias.NONE
+                    log.warn(
+                        "Unable to set resistor on %s, this requires a kernel version "
+                        "of 5.5 or higher",
+                        self.name,
+                    )
                 if self._setup_cdev():
                     if self.edge:
                         self._interrupt_handler = cdevInterrupt(self)
                     self._setup = True
-                elif common.sysfs and self._setup_sysfs():  # failover to sysfs
-                    if self.edge:
-                        self._interrupt_handler = sysfsInterrupt(self)
-                    self._setup = True
-            elif common.sysfs:
+                    sysfs_failover = False
+            if common.sysfs and sysfs_failover:
+                if self._bias != PinBias.NONE:
+                    self._bias = PinBias.NONE
+                    log.warn(
+                        "Unable to set resistor on %s as sysfs does not support this",
+                        self.name,
+                    )
                 if self._setup_sysfs():
                     if self.edge:
                         self._interrupt_handler = sysfsInterrupt(self)
@@ -135,6 +146,13 @@ class Digital(Pin):
 
         return self._setup
 
+    def _set_bias_pinctrl(self):
+        """
+        For cdev on kernel <5.5 and sysfs, attempts to set bias resistor using `ioctl`
+        calls to `pinctrl`
+        """
+        pass
+
     def _setup_cdev(self) -> bool:
         try:
             log.debug("Setting up pin %s using chardev", self.name)
@@ -142,7 +160,7 @@ class Digital(Pin):
                 f"/dev/gpiochip{self.chip}",
                 self.line,
                 periphery_PinMode[self.mode],
-                edge=periphery_PinEdge[self.edge],
+                edge="none" if not common.cdev_bias else periphery_PinEdge[self.edge],
                 bias=periphery_PinBias[self.bias],
                 label="MQTTany",
             )

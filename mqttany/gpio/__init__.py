@@ -37,6 +37,7 @@ __all__ = [
 ]
 
 import os
+import platform
 import adafruit_platformdetect
 from adafruit_platformdetect.constants import boards as board_ids
 
@@ -45,9 +46,19 @@ from .common import log, Mode, PinMode, PinBias, PinEdge, PinAlternate
 from .boards import get_board, Unknown
 
 board = get_board()
-common.cdev = os.access(
-    f"/dev/gpiochip{board.chips[0]}", os.F_OK | os.R_OK | os.W_OK, effective_ids=True
-)
+
+# Check cdev GPIO availability and capabilities
+kernel_version = tuple([int(s) for s in platform.release().split(".")[:2]])
+if kernel_version >= (4, 9):
+    common.cdev = os.access(
+        f"/dev/gpiochip{board.chips[0]}",
+        os.F_OK | os.R_OK | os.W_OK,
+        effective_ids=True,
+    )
+if kernel_version >= (5, 5):
+    common.cdev_bias = True
+
+# Check sysfs GPIO availability
 common.sysfs = os.access(
     "/sys/class/gpio/export", os.F_OK | os.W_OK, effective_ids=True
 )
@@ -77,30 +88,18 @@ def init() -> None:
             log.warn("Attempting to fall back to sysfs")
             if common.sysfs:
                 log.debug("Falling back to sysfs")
-            elif os.access("/sys/class/gpio/export", os.F_OK, effective_ids=True):
-                log.warn(
-                    "Detected sysfs GPIO but this account (%s) does not have R/W "
-                    "permissions",
-                    os.getlogin(),
-                )
-                log.warn(
-                    "Read/Write access is required on the following directory: "
-                    "'/sys/class/gpio/export'"
-                )
 
-        else:
-            if common.sysfs:
-                log.debug("Detected sysfs GPIO interface")
-            elif os.access("/sys/class/gpio/export", os.F_OK, effective_ids=True):
-                log.warn(
-                    "Detected sysfs GPIO but this account (%s) does not have R/W "
-                    "permissions",
-                    os.getlogin(),
-                )
-                log.warn(
-                    "Read/Write access is required on the following directory: "
-                    "'/sys/class/gpio/export'"
-                )
+        if common.sysfs:
+            log.debug("Detected sysfs GPIO interface")
+        elif os.access("/sys/class/gpio/export", os.F_OK, effective_ids=True):
+            log.warn(
+                "Detected sysfs GPIO but this account (%s) does not have "
+                "permission to access '/sys/class/gpio/export'",
+                os.getlogin(),
+            )
+            log.warn(
+                "Access is required on the following directory: " "'/sys/class/gpio/'"
+            )
 
         if not common.cdev and not common.sysfs:
             log.warn("No GPIO interface is available, some features may not work")
