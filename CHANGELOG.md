@@ -1,17 +1,18 @@
 # MQTTany Change Log
 
-## Development
+## 0.14.0
 
 * **Added**
-  * Kernel version check to determine GPIO cdev availability and capabilities.
-  * Raspberry Pi 4B support.
-  * Raspberry Pi pull down support to board definitions since they support it.
+  * Kernel version check to determine GPIO cdev availability and capabilities. [#108](https://github.com/CrazyIvan359/mqttany/pull/108)
+  * Raspberry Pi 4B support. [#109](https://github.com/CrazyIvan359/mqttany/pull/109)
+  * Raspberry Pi pull down support to board definitions since they support it. [#111](https://github.com/CrazyIvan359/mqttany/pull/111)
 
 * **Fixed**
-  * *Unknown* and *Generic Linux* boards missing superclass init.
+  * *Unknown* and *Generic Linux* boards missing superclass init. [#103](https://github.com/CrazyIvan359/mqttany/pull/103)
   * GPIO error `Failed to setup GPIOxx using cdev, an invalid argument was given`
     caused by attempting to use cdev bias setting that was only introduced in Linux
     kernel v5.5. Fixes [#106](https://github.com/CrazyIvan359/mqttany/issues/106).
+    [#108](https://github.com/CrazyIvan359/mqttany/pull/108)
 
 ## 0.13.0
 
