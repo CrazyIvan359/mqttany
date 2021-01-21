@@ -25,5 +25,21 @@
             "editor.quickSuggestions": false,
             "files.trimTrailingWhitespace": false
         }
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "MQTTany",
+                "type": "python",
+                "request": "launch",
+                "program": "./mqttany/mqttany.py",
+                "console": "integratedTerminal",
+                "args": [
+                    "-vv",
+                    "test.yml"
+                ]
+            }
+        ]
     }
 }
