@@ -179,7 +179,7 @@ Supported Boards
 
 .. rubric:: :doc:`Raspberry Pi <board/raspi>`
 
-* All up to 3B+ should work, but not all have been tested.
+* All up to 4B should work, but not all have been tested.
 
 .. rubric:: :doc:`Odroid <board/odroid>`
 
