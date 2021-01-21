@@ -48,7 +48,7 @@ copyright = "2021, MQTTany Contributors"
 author = "Michael Murton"
 
 # The full version, including alpha/beta/rc tags
-release = "v0.13.0"
+release = "v0.13.0-dev"
 version = release
 
 # Provide global replace directives
