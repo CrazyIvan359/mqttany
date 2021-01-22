@@ -2,6 +2,10 @@
 
 ## Development
 
+* **Fixed**
+  * Bug introduced in [#108](https://github.com/CrazyIvan359/mqttany/pull/108) causing
+    interrupts to not work on kernels <5.5.
+
 ## 0.14.0
 
 * **Added**
