@@ -6,7 +6,7 @@
 
 * **Fixed**
   * Bug introduced in [#108](https://github.com/CrazyIvan359/mqttany/pull/108) causing
-    interrupts to not work on kernels <5.5.
+    interrupts to not work on kernels <5.5. [[#113](https://github.com/CrazyIvan359/mqttany/pull/113)]
 
 ## 0.14.0
 
