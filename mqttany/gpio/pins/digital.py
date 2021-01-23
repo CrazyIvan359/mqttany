@@ -161,7 +161,9 @@ class Digital(Pin):
                 self.line,
                 periphery_PinMode[self.mode],
                 edge=periphery_PinEdge[self.edge],
-                bias="none" if not common.cdev_bias else periphery_PinBias[self.bias],
+                bias="default"
+                if not common.cdev_bias
+                else periphery_PinBias[self.bias],
                 label="MQTTany",
             )
         except GPIOError as err:

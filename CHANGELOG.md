@@ -2,6 +2,11 @@
 
 ## Development
 
+* **Fixed**
+  * Bug introduced in [#108](https://github.com/CrazyIvan359/mqttany/pull/108) and not
+    fixed in [#113](https://github.com/CrazyIvan359/mqttany/pull/113) caused by passing
+    an invalid bias setting to periphery.
+
 ## 0.14.1
 
 * **Fixed**
