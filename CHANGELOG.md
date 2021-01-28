@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## Development
+## 0.14.2
 
 * **Fixed**
   * Bug introduced in [#108](https://github.com/CrazyIvan359/mqttany/pull/108) and not
