@@ -49,7 +49,7 @@ resend_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 
 @mproperty
-def core_queue(module: object) -> "mproc.Queue[str]":
+def core_queue(module: object) -> "mproc.Queue[str]":  # type: ignore
     return _core_queue
 
 
@@ -62,7 +62,7 @@ def core_queue(module: object, value: "mproc.Queue[BusMessage]") -> None:
 
 
 @mproperty
-def receive_queue(module: object) -> "mproc.Queue[BusMessage]":
+def receive_queue(module: object) -> "mproc.Queue[BusMessage]":  # type: ignore
     return _receive_queue
 
 

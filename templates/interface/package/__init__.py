@@ -44,7 +44,7 @@ subscribe_queue: "mproc.Queue[BusMessage]" = None  # type: ignore
 
 
 @mproperty
-def publish_queue(module: object) -> "mproc.Queue[BusMessage]":
+def publish_queue(module: object) -> "mproc.Queue[BusMessage]":  # type: ignore
     return _publish_queue
 
 
