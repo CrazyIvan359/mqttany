@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## Development
+## 0.14.3
 
 * **Fixed**
   * Bug introduced in [#96](https://github.com/CrazyIvan359/mqttany/pull/96) causing MCP230xx devices to be uncontrollable and not report pin states.
