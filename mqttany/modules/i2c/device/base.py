@@ -127,7 +127,7 @@ class I2CDevice:
         """
         raise NotImplementedError
 
-    def _read_byte(self, register: int) -> t.Union[int, None]:
+    def _read_byte(self, register: int, silent: bool = False) -> t.Union[int, None]:
         """
         Read byte from I2C device.
         Returns ``int`` or ``None`` if read fails.
@@ -145,20 +145,21 @@ class I2CDevice:
                     self._bus_path,
                 )
             else:
-                self._log.trace(
-                    "Read byte 0x%02x from register 0x%02x on %s '%s' at address "
-                    "0x%02x on I2C bus '%s'",
-                    data,
-                    register,
-                    self._device,
-                    self._name,
-                    self._address,
-                    self._bus_path,
-                )
+                if not silent:
+                    self._log.trace(
+                        "Read byte 0x%02x from register 0x%02x on %s '%s' at address "
+                        "0x%02x on I2C bus '%s'",
+                        data,
+                        register,
+                        self._device,
+                        self._name,
+                        self._address,
+                        self._bus_path,
+                    )
                 return data
         return None
 
-    def _write_byte(self, register: int, data: int) -> bool:
+    def _write_byte(self, register: int, data: int, silent: bool = False) -> bool:
         """
         Write byte to I2C device.
         Returns ``True`` if success, ``False`` otherwise.
@@ -176,20 +177,21 @@ class I2CDevice:
                     self._bus_path,
                 )
             else:
-                self._log.trace(
-                    "Wrote byte 0x%02x to register 0x%02x on %s '%s' at address "
-                    "0x%02x on I2C bus '%s'",
-                    data,
-                    register,
-                    self._device,
-                    self._name,
-                    self._address,
-                    self._bus_path,
-                )
+                if not silent:
+                    self._log.trace(
+                        "Wrote byte 0x%02x to register 0x%02x on %s '%s' at address "
+                        "0x%02x on I2C bus '%s'",
+                        data,
+                        register,
+                        self._device,
+                        self._name,
+                        self._address,
+                        self._bus_path,
+                    )
                 return True
         return False
 
-    def _read_word(self, register: int) -> t.Union[int, None]:
+    def _read_word(self, register: int, silent: bool = False) -> t.Union[int, None]:
         """
         Read 16-bit word from I2C device.
         Returns ``int`` or ``None`` if read fails.
@@ -207,20 +209,21 @@ class I2CDevice:
                     self._bus_path,
                 )
             else:
-                self._log.trace(
-                    "Read word 0x%04x from register 0x%02x on %s '%s' at address "
-                    "0x%02x on I2C bus '%s'",
-                    data,
-                    register,
-                    self._device,
-                    self._name,
-                    self._address,
-                    self._bus_path,
-                )
+                if not silent:
+                    self._log.trace(
+                        "Read word 0x%04x from register 0x%02x on %s '%s' at address "
+                        "0x%02x on I2C bus '%s'",
+                        data,
+                        register,
+                        self._device,
+                        self._name,
+                        self._address,
+                        self._bus_path,
+                    )
                 return data
         return None
 
-    def _write_word(self, register: int, data: int) -> bool:
+    def _write_word(self, register: int, data: int, silent: bool = False) -> bool:
         """
         Write 16-bit word to I2C device.
         Returns ``True`` if success, ``False`` otherwise.
@@ -238,20 +241,23 @@ class I2CDevice:
                     self._bus_path,
                 )
             else:
-                self._log.trace(
-                    "Wrote word 0x%04x to register 0x%02x on %s '%s' at address "
-                    "0x%02x on I2C bus '%s'",
-                    data,
-                    register,
-                    self._device,
-                    self._name,
-                    self._address,
-                    self._bus_path,
-                )
+                if not silent:
+                    self._log.trace(
+                        "Wrote word 0x%04x to register 0x%02x on %s '%s' at address "
+                        "0x%02x on I2C bus '%s'",
+                        data,
+                        register,
+                        self._device,
+                        self._name,
+                        self._address,
+                        self._bus_path,
+                    )
                 return True
         return False
 
-    def _read_block(self, register: int, length: int) -> t.Union[t.Sequence[int], None]:
+    def _read_block(
+        self, register: int, length: int, silent: bool = False
+    ) -> t.Union[t.Sequence[int], None]:
         """
         Read up to 32 bytes from I2C device.
         Returns list of ``bytes`` or ``None`` if read fails.
@@ -269,21 +275,24 @@ class I2CDevice:
                     self._bus_path,
                 )
             else:
-                self._log.trace(
-                    "Read %d bytes %s from register 0x%02x on %s '%s' at address "
-                    "0x%02x on I2C bus '%s'",
-                    len(data),
-                    data,
-                    register,
-                    self._device,
-                    self._name,
-                    self._address,
-                    self._bus_path,
-                )
+                if not silent:
+                    self._log.trace(
+                        "Read %d bytes %s from register 0x%02x on %s '%s' at address "
+                        "0x%02x on I2C bus '%s'",
+                        len(data),
+                        data,
+                        register,
+                        self._device,
+                        self._name,
+                        self._address,
+                        self._bus_path,
+                    )
                 return data
         return None
 
-    def _write_block(self, register: int, data: t.Sequence[int]) -> bool:
+    def _write_block(
+        self, register: int, data: t.Sequence[int], silent: bool = False
+    ) -> bool:
         """
         Write list of up to 32 bytes to I2C device.
         Returns ``True`` if success, ``False`` otherwise.
@@ -301,17 +310,18 @@ class I2CDevice:
                     self._bus_path,
                 )
             else:
-                self._log.trace(
-                    "Wrote %d bytes %s to register 0x%02x on %s '%s' at address 0x%02x "
-                    "on I2C bus '%s'",
-                    len(data),
-                    data,
-                    register,
-                    self._device,
-                    self._name,
-                    self._address,
-                    self._bus_path,
-                )
+                if not silent:
+                    self._log.trace(
+                        "Wrote %d bytes %s to register 0x%02x on %s '%s' at address 0x%02x "
+                        "on I2C bus '%s'",
+                        len(data),
+                        data,
+                        register,
+                        self._device,
+                        self._name,
+                        self._address,
+                        self._bus_path,
+                    )
                 return True
         return False
 
