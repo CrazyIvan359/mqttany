@@ -2,12 +2,16 @@
 
 ## Development
 
+* **Added**
+  * I2C Add interrupt support to MCP230xx devices. Supports interrupts via polling device rapidly or using interrupt pin and a GPIO pin on the host device.
+
 * **Fixed**
   * Automatic checks on GitHub will now work correctly again.
     This was caused by a change in pylance/pyright related to re-exports in stubs.
     [[#128](https://github.com/CrazyIvan359/mqttany/pull/128)]
   * LED fix custom animations getting prefix `*` instead of actual module name. Fixes [#119](https://github.com/CrazyIvan359/mqttany/issues/119).
     [[#122](https://github.com/CrazyIvan359/mqttany/pull/122)]
+  * I2C MCP230xx devices would not turn off their outputs on shutdown because `setup` flag was never set.
 
 ## 0.14.3
 
