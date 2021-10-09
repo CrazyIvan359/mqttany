@@ -27,6 +27,7 @@ I2C Device MCP230xx
 __all__ = ["CONF_OPTIONS", "SUPPORTED_DEVICES"]
 
 import json
+from os import device_encoding
 import typing as t
 from collections import OrderedDict
 from enum import Enum
@@ -35,6 +36,7 @@ from threading import Timer
 import logger
 from common import BusNode, BusProperty, PublishMessage, SubscribeMessage, validate_id
 from config import resolve_type
+from gpio import Mode, PinBias, PinEdge, PinMode, board
 
 from .. import common
 from ..common import CONF_KEY_DEVICE, CONF_KEY_NAME
@@ -59,9 +61,13 @@ class Resistor(Enum):
 TEXT_STATE = {False: "OFF", "OFF": False, True: "ON", "ON": True}
 
 CONF_KEY_MCP = "mcp230xx"
+CONF_KEY_INT_PIN = "interrupt pin"
+CONF_KEY_INT_RESISTOR = "interrupt pin resistor"
+CONF_KEY_INT_POLLING = "interrupt polling interval"
 CONF_KEY_PIN = "pin"
 CONF_KEY_DIRECTION = "direction"
 CONF_KEY_RESISTOR = "resistor"
+CONF_KEY_INTERRUPT = "interrupt"
 CONF_KEY_INVERT = "invert"
 CONF_KEY_INITIAL = "initial state"
 CONF_KEY_FIRST_INDEX = "first index"
@@ -75,6 +81,33 @@ CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = {
                 (
                     "conditions",
                     [(CONF_KEY_DEVICE, "mcp23008"), (CONF_KEY_DEVICE, "mcp23017")],
+                ),
+                (
+                    CONF_KEY_INT_PIN,
+                    {
+                        "default": -1,
+                        "type": int,
+                    },
+                ),
+                (
+                    CONF_KEY_INT_RESISTOR,
+                    {
+                        "default": Resistor.PULL_UP,
+                        "selection": {
+                            "pullup": Resistor.PULL_UP,
+                            "up": Resistor.PULL_UP,
+                            "off": Resistor.OFF,
+                            False: Resistor.OFF,
+                            "none": Resistor.OFF,
+                        },
+                    },
+                ),
+                (
+                    CONF_KEY_INT_POLLING,
+                    {
+                        "default": 0,
+                        "type": int,
+                    },
                 ),
                 (
                     "regex:.+",
@@ -100,6 +133,15 @@ CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = {
                                 "off": Resistor.OFF,
                                 False: Resistor.OFF,
                                 "none": Resistor.OFF,
+                            },
+                        },
+                        CONF_KEY_INTERRUPT: {
+                            "default": PinEdge.NONE,
+                            "selection": {
+                                "rising": PinEdge.RISING,
+                                "falling": PinEdge.FALLING,
+                                "both": PinEdge.BOTH,
+                                "none": PinEdge.NONE,
                             },
                         },
                         CONF_KEY_INVERT: {"type": bool, "default": False},
@@ -148,6 +190,7 @@ class Pin(object):
         name: str,
         direction: Direction,
         resistor: Resistor,
+        interrupt: PinEdge,
         invert: bool,
         initial: bool,
         device: I2CDevice,
@@ -156,14 +199,23 @@ class Pin(object):
         self._id = id
         self._name = name
         self._direction = direction
+        self._resistor = Resistor.OFF
         self._invert = invert
         self._device = t.cast(MCP230xx, device)
         self._path = f"{self._device.id}/{self.id}"
         self._pulse_timer = None
+        self._last_state = None
 
         if direction == Direction.INPUT:
+            self._resistor = resistor
             if resistor == Resistor.PULL_UP:
                 self._device.gppu = _set_bit(self._device.gppu, pin)
+            if interrupt != PinEdge.NONE:
+                self._device.gpinten = _set_bit(self._device.gpinten, pin)
+                if interrupt != PinEdge.BOTH:
+                    self._device.intcon = _set_bit(self._device.intcon, pin)
+                    if interrupt == PinEdge.FALLING:
+                        self._device.defval = _set_bit(self._device.defval, pin)
         else:
             self._device.iodir = _clear_bit(self._device.iodir, pin)
             self.state = initial
@@ -373,6 +425,14 @@ class Pin(object):
     def direction(self) -> Direction:
         return self._direction
 
+    @property
+    def resistor(self) -> Resistor:
+        return self._resistor
+
+    @property
+    def invert(self) -> bool:
+        return self._invert
+
 
 class MCP230xx(I2CDevice):
     """
@@ -387,14 +447,33 @@ class MCP230xx(I2CDevice):
         address: int,
         bus: object,
         bus_path: str,
+        device_config: t.Dict[str, t.Any],
     ) -> None:
-        super().__init__(id, name, device, address, bus, bus_path)
+        super().__init__(id, name, device, address, bus, bus_path, device_config)
         self._pin_from_path: t.Dict[str, int] = {}
         self._pin_max: int = 0
         self._pins: t.List[Pin] = []
         self.gpio: int = 0x0  # set by subclass
         self.iodir: int = 0x0
         self.gppu: int = 0x0
+        self.gpinten: int = 0x0
+        self.intcon: int = 0x0
+        self.defval: int = 0x0
+        self.intf: int = 0x0
+        self._int_pin: int = device_config[CONF_KEY_INT_PIN]
+        self._int_pin_resistor: Resistor = device_config[CONF_KEY_RESISTOR]
+        self._int_poll_timer = None
+        self._int_poll_int: float = device_config[CONF_KEY_INT_POLLING]
+
+        if self._int_poll_int < 50:
+            self.log.warn(
+                "Interrupt Polling Interval of %dms is invalid for device '%s', "
+                "adjusting to minimum 50ms",
+                self._int_poll_int,
+                self.name,
+            )
+            self._int_poll_int = 50
+        self._int_poll_int = self._int_poll_int / 1000.0
 
     def get_node(self) -> BusNode:
         node = super().get_node()
@@ -416,6 +495,26 @@ class MCP230xx(I2CDevice):
             )
             node.add_property(str(pin.pin), node.properties[pin.id])
         return node
+
+    def setup(self) -> bool:
+        if not super().setup():
+            return False
+
+        if self._int_poll_int:
+            self.log.debug(
+                "Starting interrupt polling timer with interval of %ds for device '%s'",
+                self._int_poll_int,
+                self.name,
+            )
+            self._int_poll_timer = Timer(self._int_poll_int, self._poll_interval)
+            self._int_poll_timer.start()
+
+        if self._int_pin > -1:
+            # TODO gpio polling
+            pass
+
+        self._setup = True
+        return True
 
     def cleanup(self) -> None:
         """
@@ -487,6 +586,27 @@ class MCP230xx(I2CDevice):
             else:
                 self._log.debug("Received message on unregistered path: %s", message)
 
+    def _poll_interval(self) -> None:
+        """
+        Triggers interrupt check and restarts the timer
+        """
+        self.log.trace("Interrupt polling timer fired for device '%s'", self.name)
+        self._int_poll_timer = Timer(self._int_poll_int, self._poll_interval)
+        self._int_poll_timer.start()
+        self._poll_interrupts()
+
+    def _poll_interrupts(self) -> None:
+        """
+        Reads interrupt register(s) and publishes any pins with an active interrupt
+        """
+        self.read_intf()
+        self.log.trace("Reading interrupt register for device '%s'", self.name)
+        if self.intf:
+            self.read_gpio()
+            for i in range(self._pin_max + 1):
+                if _get_bit(self.intf, i):
+                    self._pins[i].publish_state()
+
     def _build_pins(self, device_config: t.Dict[str, t.Any]) -> None:
         """
         Setup device pins from config
@@ -511,10 +631,7 @@ class MCP230xx(I2CDevice):
                         pin=pin_config[CONF_KEY_PIN],
                         id=pin_id,
                         name=pin_config[CONF_KEY_NAME],
-                        direction=pin_config[CONF_KEY_DIRECTION],
-                        resistor=pin_config[CONF_KEY_RESISTOR],
-                        invert=pin_config[CONF_KEY_INVERT],
-                        initial=pin_config[CONF_KEY_INITIAL],
+                        pin_config=pin_config,
                     )
             elif isinstance(pin_config[CONF_KEY_PIN], list):  # Multiple pin definition
                 if isinstance(pin_config[CONF_KEY_NAME], list) and len(
@@ -539,10 +656,7 @@ class MCP230xx(I2CDevice):
                             pin=pin_config[CONF_KEY_PIN][index],
                             id=f"{pin_id}-{index + pin_config[CONF_KEY_FIRST_INDEX]}",
                             name=name,
-                            direction=pin_config[CONF_KEY_DIRECTION],
-                            resistor=pin_config[CONF_KEY_RESISTOR],
-                            invert=pin_config[CONF_KEY_INVERT],
-                            initial=pin_config[CONF_KEY_INITIAL],
+                            pin_config=pin_config,
                         )
 
     def _setup_pin(
@@ -550,10 +664,7 @@ class MCP230xx(I2CDevice):
         pin: int,
         id: str,
         name: str,
-        direction: Direction,
-        resistor: Resistor,
-        invert: bool,
-        initial: bool,
+        pin_config: t.Dict[str, t.Any],
     ) -> None:
         """
         Setup pin for given options
@@ -585,31 +696,38 @@ class MCP230xx(I2CDevice):
                 pin=pin,
                 id=id,
                 name=name,
-                direction=direction,
-                resistor=resistor,
-                invert=invert,
-                initial=initial,
+                direction=pin_config[CONF_KEY_DIRECTION],
+                resistor=pin_config[CONF_KEY_RESISTOR],
+                interrupt=pin_config[CONF_KEY_INTERRUPT],
+                invert=pin_config[CONF_KEY_INVERT],
+                initial=pin_config[CONF_KEY_INITIAL],
                 device=self,
             )
             self._pin_from_path[id] = pin
             self._log.debug(
                 "Configured pin GP%02d '%s' on %s '%s' with options: %s",
                 pin,
-                name,
+                self._pins[pin].name,
                 self.device,
                 self.name,
                 {
                     "ID": id,
-                    CONF_KEY_DIRECTION: direction.name,
-                    CONF_KEY_RESISTOR: resistor.name,
-                    CONF_KEY_INVERT: invert,
-                    CONF_KEY_INITIAL: TEXT_STATE[initial],
+                    CONF_KEY_DIRECTION: self._pins[pin].direction.name,
+                    CONF_KEY_RESISTOR: self._pins[pin].resistor.name,
+                    CONF_KEY_INVERT: self._pins[pin].invert,
+                    CONF_KEY_INITIAL: TEXT_STATE[pin_config[CONF_KEY_INITIAL]],
                 },
             )
 
     def read_gpio(self) -> None:
         """
         Read the GP register(s)
+        """
+        raise NotImplementedError
+
+    def read_intf(self) -> None:
+        """
+        Read the Interrupt Flag register(s)
         """
         raise NotImplementedError
 
@@ -654,13 +772,17 @@ class MCP23008(MCP230xx):
         bus_path: str,
         device_config: t.Dict[str, t.Any],
     ) -> None:
-        super().__init__(id, name, device, address, bus, bus_path)
+        super().__init__(id, name, device, address, bus, bus_path, device_config)
         self._log = logger.get_logger("i2c.mcp23008")
         self._pin_max = 7
         self._pins: t.List[Pin] = [None] * (self._pin_max + 1)  # type: ignore
         self.gpio = 0x00
         self.iodir = 0xFF
         self.gppu = 0x00
+        self.gpinten: int = 0x00
+        self.intcon: int = 0x00
+        self.defval: int = 0x00
+        self.intf: int = 0x00
         super()._build_pins(device_config)
 
     def setup(self) -> bool:
@@ -684,9 +806,9 @@ class MCP23008(MCP230xx):
                 [
                     self.iodir,
                     0x00,  # IPOL
-                    0x00,  # GPINTEN
-                    0x00,  # DEFVAL
-                    0x00,  # INTCON
+                    self.gpinten,  # GPINTEN
+                    self.defval,  # DEFVAL
+                    self.intcon,  # INTCON
                     0x04,  # IOCON
                     self.gppu,
                     0x00,  # INTF
@@ -703,6 +825,11 @@ class MCP23008(MCP230xx):
         gpio = self._read_byte(self._GPIO)
         if gpio is not None:
             self.gpio = gpio
+
+    def read_intf(self) -> None:
+        intf = self._read_byte(self._INTF)
+        if intf is not None:
+            self.intf = intf
 
     def write_gpio(self) -> None:
         self._write_byte(self._GPIO, self.gpio)
@@ -749,13 +876,17 @@ class MCP23017(MCP230xx):
         bus_path: str,
         device_config: t.Dict[str, t.Any],
     ):
-        super().__init__(id, name, device, address, bus, bus_path)
+        super().__init__(id, name, device, address, bus, bus_path, device_config)
         self._log = logger.get_logger("i2c.mcp23017")
         self._pin_max = 15
         self._pins: t.List[Pin] = [None] * (self._pin_max + 1)  # type: ignore
         self.gpio = 0x0000
         self.iodir = 0xFFFF
         self.gppu = 0x0000
+        self.gpinten: int = 0x0000
+        self.intcon: int = 0x0000
+        self.defval: int = 0x0000
+        self.intf: int = 0x0000
         super()._build_pins(device_config)
 
     def setup(self) -> bool:
@@ -781,14 +912,14 @@ class MCP23017(MCP230xx):
                     self.iodir >> 8,  # IODIRB
                     0x00,  # IPOLA
                     0x00,  # IPOLB
-                    0x00,  # GPINTENA
-                    0x00,  # GPINTENB
-                    0x00,  # DEFVALA
-                    0x00,  # DEFVALB
-                    0x00,  # INTCONA
-                    0x00,  # INTCONB
-                    0x04,  # IOCON
-                    0x04,  # IOCON
+                    self.gpinten & 0xFF,  # GPINTENA
+                    self.gpinten >> 8,  # GPINTENB
+                    self.defval & 0xFF,  # DEFVALA
+                    self.defval >> 8,  # DEFVALB
+                    self.intcon & 0xFF,  # INTCONA
+                    self.intcon >> 8,  # INTCONB
+                    0x44,  # IOCON
+                    0x44,  # IOCON
                     self.gppu & 0xFF,  # GPPUA
                     self.gppu >> 8,  # GPPUB
                     0x00,  # INTFA
@@ -808,6 +939,11 @@ class MCP23017(MCP230xx):
         gpio = self._read_word(self._GPIOA)
         if gpio is not None:
             self.gpio = gpio
+
+    def read_intf(self) -> None:
+        intf = self._read_word(self._INTFA)
+        if intf is not None:
+            self.intf = intf
 
     def write_gpio(self) -> None:
         self._write_word(self._GPIOA, self.gpio)

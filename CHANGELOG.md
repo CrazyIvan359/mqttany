@@ -2,6 +2,12 @@
 
 ## Development
 
+* **Added**
+  * I2C Add interrupt support to MCP230xx devices. Supports interrupts via polling device rapidly or using interrupt pin and a GPIO pin on the host device.
+
+* **Fixed**
+  * I2C MCP230xx devices would not turn off their outputs on shutdown because `setup` flag was never set.
+
 ## 0.14.3
 
 * **Fixed**
