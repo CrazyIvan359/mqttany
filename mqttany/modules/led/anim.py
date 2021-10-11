@@ -91,6 +91,7 @@ def load_animations() -> t.Dict[str, t.Callable[[baseArray, threading.Event], No
                         "Attempting to import animation file '%s'",
                         os.path.join(animpath, filename),
                     )
+                    mod_name = os.path.splitext(filename)[0]
                     mod_anims = []
 
                     try:
@@ -108,9 +109,7 @@ def load_animations() -> t.Dict[str, t.Callable[[baseArray, threading.Event], No
                         log_traceback(log)
                         log.error("Animation file '%s' was not loaded", filename)
                     else:
-                        log.trace(
-                            "Animation file '%s' imported successfully", module.__name__
-                        )
+                        log.trace("Animation file '%s' imported successfully", mod_name)
 
                         # get all functions in module that start with "anim_" and don't have a conflicting name
                         mod_anims = dict(inspect.getmembers(module, inspect.isfunction))
@@ -127,27 +126,25 @@ def load_animations() -> t.Dict[str, t.Callable[[baseArray, threading.Event], No
                                 mod_anims.pop(func_name, None)
                                 log.warn(
                                     "Ignoring animation '%s.%s' in '%s' as it is not callable",
-                                    module.__name__,
+                                    mod_name,
                                     func_name[5:],
                                     os.path.join(animpath, filename),
                                 )
-                            elif f"{module.__name__}.{func_name[5:]}" in mod_anims:
+                            elif f"{mod_name}.{func_name[5:]}" in mod_anims:
                                 mod_anims.pop(func_name, None)
                                 log.warn(
                                     "Duplicate animation '%s.%s' in '%s' is being ignored",
-                                    module.__name__,
+                                    mod_name,
                                     func_name[5:],
                                     os.path.join(animpath, filename),
                                 )
 
                         # add all functions to main anim list, names are "module.funcname" with "anim_" prefix removed
                         for func_name in mod_anims:
-                            anims[f"{module.__name__}.{func_name[5:]}"] = mod_anims[
-                                func_name
-                            ]
+                            anims[f"{mod_name}.{func_name[5:]}"] = mod_anims[func_name]
                             log.trace(
                                 "Animation '%s.%s' added",
-                                module.__name__,
+                                mod_name,
                                 func_name[5:],
                             )
 
