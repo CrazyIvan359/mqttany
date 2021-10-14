@@ -460,12 +460,12 @@ class MCP230xx(I2CDevice):
         self.intcon: int = 0x0
         self.defval: int = 0x0
         self.intf: int = 0x0
-        self._int_pin: int = device_config[CONF_KEY_INT_PIN]
-        self._int_pin_resistor: Resistor = device_config[CONF_KEY_RESISTOR]
+        self._int_pin: int = device_config[CONF_KEY_MCP][CONF_KEY_INT_PIN]
+        self._int_pin_resistor: Resistor = device_config[CONF_KEY_MCP][CONF_KEY_INT_RESISTOR]
         self._int_poll_timer = None
-        self._int_poll_int: float = device_config[CONF_KEY_INT_POLLING]
+        self._int_poll_int: float = device_config[CONF_KEY_MCP][CONF_KEY_INT_POLLING]
 
-        if self._int_poll_int < 50:
+        if self._int_poll_int < 50 and self._int_poll_int>0:
             self.log.warn(
                 "Interrupt Polling Interval of %dms is invalid for device '%s', "
                 "adjusting to minimum 50ms",
@@ -473,7 +473,8 @@ class MCP230xx(I2CDevice):
                 self.name,
             )
             self._int_poll_int = 50
-        self._int_poll_int = self._int_poll_int / 1000.0
+        if self._int_poll_int:
+            self._int_poll_int = self._int_poll_int / 1000.0
 
     def get_node(self) -> BusNode:
         node = super().get_node()
