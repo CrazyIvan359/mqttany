@@ -260,7 +260,9 @@ def poll_all() -> None:
 
 
 def poll_interval() -> None:
-    """ Polls all devices and restarts the timer """
+    """
+    Polls all devices and restarts the timer
+    """
     log.debug("Polling timer fired")
     global polling_timer
     polling_timer = Timer(CONFIG[CONF_KEY_POLL_INT], poll_interval)

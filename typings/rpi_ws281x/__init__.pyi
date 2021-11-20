@@ -1,1 +1,1 @@
-from .rpi_ws281x import PixelStrip
+from .rpi_ws281x import PixelStrip as PixelStrip

@@ -30,6 +30,9 @@ __all__ = ["SUPPORTED_TYPES", "CONF_OPTIONS"]
 import os
 import typing as t
 
+if t.TYPE_CHECKING:
+    import rpi_ws281x
+
 import gpio
 import logger
 from common import BusNode, BusProperty, DataType, PublishMessage
@@ -125,6 +128,7 @@ class rpiArray(baseArray):
         """
         super().__init__(id, name, count, leds_per_pixel, color_order, fps)
         self._log = logger.get_logger(f"led.rpi.{self.id}")
+        self._array = None  # type:rpi_ws281x.PixelStrip
         self._init_brightness = (
             255
             if init_brightness > 255

@@ -50,7 +50,7 @@ class I2CDevice:
         *args: t.Any,
         **kwargs: t.Any,
     ) -> None:
-        from smbus2 import SMBus
+        from smbus2.smbus2 import SMBus
 
         self._setup = False
         self._id = id

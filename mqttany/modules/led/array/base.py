@@ -65,7 +65,6 @@ class baseArray:
         self._frame_ms = round(1.0 / fps, 5)
         self._log: mqttanyLogger = None  # type: ignore - subclasses must assign this
         self._setup = False
-        self._array = None
         self.anims: t.Dict[str, t.Callable[[baseArray, threading.Event], None]] = {}
         self._anim_thread: threading.Thread = None  # type: ignore
         self._anim_cancel: threading.Event = None  # type: ignore
@@ -177,7 +176,6 @@ class baseArray:
             self._anim_queue.put_nowait(POISON_PILL)
             self._anim_manager.join()
         self._setup = False
-        self._array = None
 
     def show(self) -> None:
         """Update the LED strip"""

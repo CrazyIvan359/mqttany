@@ -34,7 +34,7 @@ from config import parse_config
 from common import SubscribeMessage, validate_id
 
 from .common import CONF_KEY_ADDRESS  # pylint: disable=unused-import
-from .common import CONF_KEY_BUS_SCAN  # type: ignore
+from .common import CONF_KEY_BUS_SCAN
 from .common import (
     CONF_KEY_BUS,
     CONF_KEY_DEVICE,
@@ -58,7 +58,7 @@ polling_timer = None
 def build_device(
     device_id: str, device_config: t.Dict[str, t.Any]
 ) -> t.Union[I2CDevice, None]:
-    from smbus2 import SMBus
+    from smbus2.smbus2 import SMBus
 
     if not validate_id(device_id):
         log.warn("'%s' is not a valid ID and will be ignored", device_id)
@@ -115,7 +115,7 @@ def load(config_raw: t.Dict[str, t.Any] = {}) -> bool:
     Initializes the module
     """
     try:
-        from smbus2 import SMBus
+        from smbus2.smbus2 import SMBus
 
         del SMBus
     except ModuleNotFoundError:
@@ -152,7 +152,7 @@ def start() -> None:
     """
     Actions to be done in the subprocess before the loop starts
     """
-    from smbus2 import SMBus
+    from smbus2.smbus2 import SMBus
 
     # Open I2C buses
     log.debug("Opening I2C bus streams")
@@ -239,7 +239,9 @@ def poll_all() -> None:
 
 
 def poll_interval() -> None:
-    """ Polls all devices and restarts the timer """
+    """
+    Polls all devices and restarts the timer
+    """
     log.debug("Polling timer fired")
     global polling_timer
     polling_timer = Timer(CONFIG[CONF_KEY_POLL_INT], poll_interval)

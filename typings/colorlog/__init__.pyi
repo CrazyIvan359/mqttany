@@ -1,1 +1,1 @@
-from colorlog.colorlog import ColoredFormatter
+from colorlog.colorlog import ColoredFormatter as ColoredFormatter

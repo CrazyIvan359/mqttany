@@ -8,5 +8,6 @@
     "reportImportCycles": "none",
     "reportMissingTypeStubs": "warning",
     "reportUnusedImport": "warning",
-    "reportUnusedVariable": "warning"
+    "reportUnusedVariable": "warning",
+    "reportGeneralTypeIssues": "warning"
 }

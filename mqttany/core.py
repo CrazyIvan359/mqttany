@@ -263,7 +263,7 @@ def _load_modules(
 
                 elif getattr(module, ATTR_TYPE) == ModuleType.INTERFACE:
                     bus.setup_interface_module(module)
-                    if not getattr(module, ATTR_NODES, {}):
+                    if not getattr(module, ATTR_NODES, None):
                         log.error(
                             "Module '%s' contains no valid nodes and will not be loaded",
                             module_name,

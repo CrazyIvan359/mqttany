@@ -29,6 +29,8 @@ __all__ = ["SUPPORTED_TYPES", "CONF_OPTIONS"]
 
 import typing as t
 
+from sacn.sender import sACNsender
+
 import logger
 from common import BusNode, BusProperty, PublishMessage
 
@@ -54,7 +56,7 @@ CONF_OPTIONS: t.MutableMapping[str, t.Dict[str, t.Any]] = {
     }
 }
 
-sender = None
+sender: sACNsender = None  # type:ignore
 sender_started = False
 
 

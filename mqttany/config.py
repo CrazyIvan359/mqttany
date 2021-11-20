@@ -229,7 +229,7 @@ def parse_config(
             return True
 
         valid = True
-        config = {}
+        config: t.Dict[str, t.Any] = {}
         for key in options:
             if not isinstance(options[key], dict):
                 continue  # 'required' option, skip

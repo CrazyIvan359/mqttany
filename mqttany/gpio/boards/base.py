@@ -182,7 +182,7 @@ class Board:
         self.log = logger.get_logger("core.gpio.board")
 
     @property
-    def chips(self) -> t.Tuple[int]:
+    def chips(self) -> t.Tuple[int, ...]:
         """Returns a tuple of the gpiochip numbers available on this board."""
         return tuple(self._chips)
 

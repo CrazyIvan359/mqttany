@@ -181,7 +181,7 @@ def setup_interface_module(module: types.ModuleType) -> None:
     setattr(module, ATTR_QSUBSCRIBE, subscribe_queues[module_name])
     log.debug("Module '%s' added as a subscriber", module_name)
 
-    nodes = getattr(module, ATTR_NODES, {})
+    nodes: t.Dict[str, BusNode] = getattr(module, ATTR_NODES, {})  # type:ignore
     for id in nodes:
         if id not in data_tree:
             nodes[id].module = f"modules.{module_name}"

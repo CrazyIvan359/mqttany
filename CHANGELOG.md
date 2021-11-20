@@ -2,6 +2,11 @@
 
 ## Development
 
+* **Fixed**
+  * Automatic checks on GitHub will now work correctly again.
+    This was caused by a change in pylance/pyright related to re-exports in stubs.
+    [[#128](https://github.com/CrazyIvan359/mqttany/pull/128)]
+
 ## 0.14.3
 
 * **Fixed**

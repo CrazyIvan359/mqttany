@@ -197,7 +197,9 @@ def stop() -> None:
 
 
 def polling_timer_callback() -> None:
-    """ Polls all pins and restarts the timer """
+    """
+    Polls all pins and restarts the timer
+    """
     log.debug("Polling timer fired")
     global polling_timer
     polling_timer = Timer(CONFIG[CONF_KEY_POLL_INT], polling_timer_callback)

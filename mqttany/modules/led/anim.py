@@ -94,9 +94,12 @@ def load_animations() -> t.Dict[str, t.Callable[[baseArray, threading.Event], No
                     mod_anims = []
 
                     try:
-                        spec = importlib.util.spec_from_file_location("*", filename)  # type: ignore
-                        module = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(module)  # type: ignore
+                        spec = importlib.util.spec_from_file_location("*", filename)
+                        if spec is not None:
+                            module = importlib.util.module_from_spec(spec)
+                            spec.loader.exec_module(module)  # type:ignore
+                        else:
+                            raise ImportError()
                     except:
                         log.error(
                             "An error occured while importing animation file '%s'",
@@ -270,7 +273,7 @@ def parse_pixel(
             Can mix and match any of the above in the list
 
     """
-    pixels = []
+    pixels: t.List[int] = []
     if p is None:
         return pixels
     if isinstance(p, (int, str)):
@@ -526,7 +529,7 @@ def anim_fade_pixel(array: baseArray, cancel: threading.Event, **kwargs: t.Any) 
     duration = float(kwargs.get("duration", 0))
     frame_time = t.cast(float, FRAME_MS)  # type: ignore - frame time, default minimum 16.7ms = ~60fps
     frame_overrun = 0.0
-    pixels = {}
+    pixels: t.Dict[int, t.Dict[str, float]] = {}
 
     # make sure we got a new color
     color = parse_color(array, c, r, g, b, w)
@@ -615,10 +618,10 @@ def anim_fade_pixel(array: baseArray, cancel: threading.Event, **kwargs: t.Any) 
                 pixels[pixel][f"{channel}_curr"] += pixels[pixel][f"{channel}_step"]
             array.setPixelColorRGB(
                 pixel,
-                pixels[pixel]["r_curr"],
-                pixels[pixel]["g_curr"],
-                pixels[pixel]["b_curr"],
-                pixels[pixel]["w_curr"],
+                int(pixels[pixel]["r_curr"]),
+                int(pixels[pixel]["g_curr"]),
+                int(pixels[pixel]["b_curr"]),
+                int(pixels[pixel]["w_curr"]),
             )
         array.show()
         frame_count -= 1

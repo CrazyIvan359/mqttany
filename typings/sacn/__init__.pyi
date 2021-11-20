@@ -1,1 +1,1 @@
-from sacn.sender import sACNsender
+from sacn.sender import sACNsender as sACNsender

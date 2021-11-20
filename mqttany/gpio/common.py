@@ -47,7 +47,7 @@ sysfs = False
 
 
 class Mode(enum.Enum):
-    """ Pin Numbering mode """
+    """Pin Numbering mode"""
 
     SOC = enum.auto()
     BOARD = enum.auto()
@@ -55,7 +55,7 @@ class Mode(enum.Enum):
 
 
 class PinMode(enum.Flag):
-    """ Pin operating mode """
+    """Pin operating mode"""
 
     INPUT = enum.auto()
     OUTPUT = enum.auto()
@@ -63,7 +63,7 @@ class PinMode(enum.Flag):
 
 
 class PinBias(enum.Flag):
-    """ Pin bias resistor setting """
+    """Pin bias resistor setting"""
 
     NONE = 0
     PULL_UP = enum.auto()
@@ -71,7 +71,7 @@ class PinBias(enum.Flag):
 
 
 class PinEdge(enum.Flag):
-    """ Pin change trigger edge """
+    """Pin change trigger edge"""
 
     NONE = 0
     RISING = enum.auto()
@@ -80,7 +80,7 @@ class PinEdge(enum.Flag):
 
 
 class PinAlternate(enum.Flag):
-    """ Pin alternate functions """
+    """Pin alternate functions"""
 
     NONE = 0
     I2C0_SDA = enum.auto()
