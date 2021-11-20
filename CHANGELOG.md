@@ -7,6 +7,7 @@
     This was caused by a change in pylance/pyright related to re-exports in stubs.
     [[#128](https://github.com/CrazyIvan359/mqttany/pull/128)]
   * LED fix custom animations getting prefix `*` instead of actual module name. Fixes [#119](https://github.com/CrazyIvan359/mqttany/issues/119).
+    [[#122](https://github.com/CrazyIvan359/mqttany/pull/122)]
 
 ## 0.14.3
 
