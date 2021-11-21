@@ -1,73 +1,38 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Raspberry Pi &mdash; MQTTany v0.14.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-
-    
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Streaming ACN" href="sacn.html" />
     <link rel="prev" title="Custom" href="../animations/custom.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
-          
-
-          
+            <a href="../../../index.html" class="icon icon-home"> MQTTany
           </a>
-
-          
-            
-            
               <div class="version">
                 v0.14.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -75,18 +40,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../start.html">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../start.html#modules">Modules</a></li>
@@ -192,75 +146,34 @@
 <li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">MQTTany</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content style-external-links">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="../../index.html">Interface Modules</a> &raquo;</li>
-        
           <li><a href="../index.html">LED</a> &raquo;</li>
-        
       <li>Raspberry Pi</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../../../_sources/interface/led/outputs/raspi.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="raspberry-pi">
-<h1>Raspberry Pi<a class="headerlink" href="#raspberry-pi" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="raspberry-pi">
+<h1>Raspberry Pi<a class="headerlink" href="#raspberry-pi" title="Permalink to this headline"></a></h1>
 <p>You can connect an array to a limited selection of pins on most Raspberry Pi
 boards. This support is provided by the <code class="docutils literal notranslate"><span class="pre">rpi_ws281x</span></code> library, see it on
 <a class="reference external" href="https://github.com/jgarff/rpi_ws281x">GitHub</a> for details.</p>
@@ -274,8 +187,8 @@ shifter when connecting them to GPIO pins.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="paths">
-<h2>Paths<a class="headerlink" href="#paths" title="Permalink to this headline">¶</a></h2>
+<section id="paths">
+<h2>Paths<a class="headerlink" href="#paths" title="Permalink to this headline"></a></h2>
 <p>Some additional statistics are published when using this output mode.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -307,9 +220,9 @@ is started.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline"></a></h2>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">led</span><span class="p">:</span>
 
   <span class="nt">array_name</span><span class="p">:</span>
@@ -320,8 +233,8 @@ is started.</p></td>
       <span class="c1">#invert: false</span>
 </pre></div>
 </div>
-<div class="section" id="array-definition">
-<h3>Array Definition<a class="headerlink" href="#array-definition" title="Permalink to this headline">¶</a></h3>
+<section id="array-definition">
+<h3>Array Definition<a class="headerlink" href="#array-definition" title="Permalink to this headline"></a></h3>
 <p>The following additional options are added to array definitions when using
 this interface.</p>
 <table class="docutils align-default">
@@ -362,17 +275,17 @@ if you are using an inverting buffer.</p>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section" id="output-selection">
-<h2>Output Selection<a class="headerlink" href="#output-selection" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="output-selection">
+<h2>Output Selection<a class="headerlink" href="#output-selection" title="Permalink to this headline"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The documentation for <code class="docutils literal notranslate"><span class="pre">rpi_ws281x</span></code> is not clear on this and I have not
 tested it, but it may be possible to use multiple interfaces at once.</p>
 </div>
-<div class="section" id="spi">
-<h3>SPI<a class="headerlink" href="#spi" title="Permalink to this headline">¶</a></h3>
+<section id="spi">
+<h3>SPI<a class="headerlink" href="#spi" title="Permalink to this headline"></a></h3>
 <p>The SPI interface is the safest way to control your LEDs using a Pi and the
 only one available on all models. Connect them to <code class="docutils literal notranslate"><span class="pre">SPI0-MOSI</span></code> (GPIO10) using
 a level shifter. When using the SPI interface to control your LEDs you cannot
@@ -387,9 +300,9 @@ apply these changes:</p>
 core_freq=250
 </pre></div>
 </div>
-</div>
-<div class="section" id="pwm">
-<h3>PWM<a class="headerlink" href="#pwm" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="pwm">
+<h3>PWM<a class="headerlink" href="#pwm" title="Permalink to this headline"></a></h3>
 <p>The hardware PWM on the Pi is the only interface with 2 outputs. In order to
 achieve the required timing it uses DMA and requires root privileges.</p>
 <ul class="simple">
@@ -409,9 +322,9 @@ Add the following to <code class="docutils literal notranslate"><span class="pre
 hdmi_force_edid_audio=1
 </pre></div>
 </div>
-</div>
-<div class="section" id="pcm">
-<h3>PCM<a class="headerlink" href="#pcm" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="pcm">
+<h3>PCM<a class="headerlink" href="#pcm" title="Permalink to this headline"></a></h3>
 <p>The hardware PCM can also be used to control a single array of LEDs. It also
 uses DMA and requires root privileges.</p>
 <ul class="simple">
@@ -420,64 +333,39 @@ It is present on the B+, 2B, 3B, 3B+, and Zero.</p></li>
 </ul>
 <p>When using PCM you will not be able to use any digital/I2S audio devices,
 analog/PWM audio and the SPI interface are free for use though.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="sacn.html" class="btn btn-neutral float-right" title="Streaming ACN" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="../animations/custom.html" class="btn btn-neutral float-left" title="Custom" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../animations/custom.html" class="btn btn-neutral float-left" title="Custom" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sacn.html" class="btn btn-neutral float-right" title="Streaming ACN" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2021, MQTTany Contributors
-
-    </p>
+    <p>&#169; Copyright 2021, MQTTany Contributors.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(false);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

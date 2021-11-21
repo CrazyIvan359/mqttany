@@ -63,7 +63,7 @@ Example message to trigger this animation:
 .. code-block:: python
 
     {
-        "anim": "brightness",
+        "anim": "set.brightness",
         "brightness": 128
     }
 

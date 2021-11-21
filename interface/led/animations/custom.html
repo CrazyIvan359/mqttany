@@ -1,73 +1,38 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Custom &mdash; MQTTany v0.14.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-
-    
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Raspberry Pi" href="../outputs/raspi.html" />
     <link rel="prev" title="Built-in" href="built-in.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
-          
-
-          
+            <a href="../../../index.html" class="icon icon-home"> MQTTany
           </a>
-
-          
-            
-            
               <div class="version">
                 v0.14.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -75,18 +40,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../start.html">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../start.html#modules">Modules</a></li>
@@ -192,106 +146,92 @@
 <li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">MQTTany</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content style-external-links">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="../../index.html">Interface Modules</a> &raquo;</li>
-        
           <li><a href="../index.html">LED</a> &raquo;</li>
-        
           <li><a href="../animations.html">Animations</a> &raquo;</li>
-        
       <li>Custom</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../../../_sources/interface/led/animations/custom.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="custom">
-<h1>Custom<a class="headerlink" href="#custom" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="custom">
+<h1>Custom<a class="headerlink" href="#custom" title="Permalink to this headline"></a></h1>
 <p>Custom animations are just Python functions, but they allow you to do
 limitless things with your LEDs.</p>
-<div class="section" id="file-location">
-<h2>File Location<a class="headerlink" href="#file-location" title="Permalink to this headline">¶</a></h2>
+<section id="file-location">
+<h2>File Location<a class="headerlink" href="#file-location" title="Permalink to this headline"></a></h2>
 <p>The default location for custom animation files is <code class="docutils literal notranslate"><span class="pre">/etc/mqttany/led-anim/</span></code>,
 but you can specify multiple other locations using the <code class="docutils literal notranslate"><span class="pre">anim</span> <span class="pre">dir</span></code> option in
 the config file.</p>
+</section>
+<section id="file-header">
+<h2>File Header<a class="headerlink" href="#file-header" title="Permalink to this headline"></a></h2>
+<p>You will likely want to add the following to the top of each of your files to
+get the best experience writing your own animations. This will provide type
+hints and autocompletion while creating animations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">typing</span> <span class="k">as</span> <span class="nn">t</span>
+
+<span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">threading</span><span class="o">,</span> <span class="nn">sys</span>
+
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/opt/mqttany&quot;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">mqttany.modules.led.anim</span> <span class="kn">import</span> <span class="n">parse_color</span><span class="p">,</span> <span class="n">parse_pixel</span>
+    <span class="kn">from</span> <span class="nn">mqttany.modules.led.array.base</span> <span class="kn">import</span> <span class="n">baseArray</span>
+    <span class="kn">from</span> <span class="nn">mqttany.modules.led.common</span> <span class="kn">import</span> <span class="n">Color</span>
+    <span class="kn">from</span> <span class="nn">mqttany.logger</span> <span class="kn">import</span> <span class="n">mqttanyLogger</span>
+
+    <span class="n">log</span><span class="p">:</span> <span class="n">mqttanyLogger</span>
+    <span class="n">FRAME_MS</span><span class="p">:</span> <span class="nb">float</span>
+</pre></div>
 </div>
-<div class="section" id="function-naming">
-<h2>Function Naming<a class="headerlink" href="#function-naming" title="Permalink to this headline">¶</a></h2>
+<p>If you did not install MQTTany in the default <code class="docutils literal notranslate"><span class="pre">/opt/mqttany</span></code> directory you
+will need to modify the path in the above header or otherwise ensure that the
+imports are available.</p>
+</section>
+<section id="function-naming">
+<h2>Function Naming<a class="headerlink" href="#function-naming" title="Permalink to this headline"></a></h2>
 <p>Only functions with names starting with <code class="docutils literal notranslate"><span class="pre">anim_</span></code> will be imported as
 animations. They will be added to the animation dictionary as
 <code class="docutils literal notranslate"><span class="pre">filename.func_name</span></code>, <code class="docutils literal notranslate"><span class="pre">func_name</span></code> will have the <code class="docutils literal notranslate"><span class="pre">anim_</span></code> prefix removed.</p>
 <p><em>Ex.</em> An animation function called <code class="docutils literal notranslate"><span class="pre">anim_blink</span></code> in a file named
 <code class="docutils literal notranslate"><span class="pre">example.py</span></code> will be known as <code class="docutils literal notranslate"><span class="pre">example.blink</span></code> when triggering via MQTT or
 from other animations.</p>
-</div>
-<div class="section" id="looping">
-<h2>Looping<a class="headerlink" href="#looping" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="looping">
+<h2>Looping<a class="headerlink" href="#looping" title="Permalink to this headline"></a></h2>
 <p>Animation functions should not loop to repeat the same action themselves, this
 is done by the animation manager for the array based on the <code class="docutils literal notranslate"><span class="pre">repeat</span></code>
 parameter. Animation functions should <strong>NEVER</strong> run an infinite loop, always
 use <code class="docutils literal notranslate"><span class="pre">repeat:</span> <span class="pre">0</span></code> to accomplish this.</p>
-</div>
-<div class="section" id="function-signature">
-<h2>Function Signature<a class="headerlink" href="#function-signature" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="function-signature">
+<h2>Function Signature<a class="headerlink" href="#function-signature" title="Permalink to this headline"></a></h2>
 <p>Your animation function must have the following signature for it to work
 reliably:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">anim_blink</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">baseArray</span><span class="p">,</span> <span class="n">cancel</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">anim_blink</span><span class="p">(</span>
+    <span class="n">array</span><span class="p">,</span>  <span class="c1"># type: baseArray</span>
+    <span class="n">cancel</span><span class="p">,</span>  <span class="c1"># type: threading.Event</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>  <span class="c1"># type: t.Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -307,8 +247,8 @@ reliably:</p>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">array</span></code></p></td>
 <td><p>This is the LED array object subclassed from
-<code class="docutils literal notranslate"><span class="pre">led.array.baseLED</span></code>. All operations to change the LEDs are
-done using this object. See
+<code class="docutils literal notranslate"><span class="pre">led.array.base.baseArray</span></code>. All operations to change the
+LEDs are done using this object. See
 <a class="reference internal" href="#array-object"><span class="std std-ref">array Object</span></a>
 for details.</p></td>
 </tr>
@@ -333,12 +273,12 @@ provided.</p>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="array-object">
-<h2><code class="docutils literal notranslate"><span class="pre">array</span></code> Object<a class="headerlink" href="#array-object" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="array-object">
+<h2><code class="docutils literal notranslate"><span class="pre">array</span></code> Object<a class="headerlink" href="#array-object" title="Permalink to this headline"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">array</span></code> object provides methods to get information about the array and
 set LED colors. The <code class="docutils literal notranslate"><span class="pre">array</span></code> object received will be subclassed from
-<code class="docutils literal notranslate"><span class="pre">modules.led.array.baseArray</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">modules.led.array.base.baseArray</span></code>.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 43%" />
@@ -365,8 +305,8 @@ instance passed.</p></td>
 <code class="docutils literal notranslate"><span class="pre">b</span></code>, and <code class="docutils literal notranslate"><span class="pre">w</span></code> properties representing the pixel
 color.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setPixelColorRGB</span></code>
-<code class="docutils literal notranslate"><span class="pre">(pixel,</span> <span class="pre">red,</span> <span class="pre">green,</span> <span class="pre">blue,</span> <span class="pre">white=0)</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">setPixelColorRGB</span>
+<span class="pre">(pixel,</span> <span class="pre">red,</span> <span class="pre">green,</span> <span class="pre">blue,</span> <span class="pre">white=0)</span></code></p></td>
 <td><p>Sets the specified <code class="docutils literal notranslate"><span class="pre">pixel</span></code> to the provided
 <code class="docutils literal notranslate"><span class="pre">red</span></code>, <code class="docutils literal notranslate"><span class="pre">green</span></code>, <code class="docutils literal notranslate"><span class="pre">blue</span></code>, and <code class="docutils literal notranslate"><span class="pre">white</span></code> values.</p></td>
 </tr>
@@ -421,9 +361,9 @@ the array off after your animation finishes:</p>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="globals">
-<h2>Globals<a class="headerlink" href="#globals" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="globals">
+<h2>Globals<a class="headerlink" href="#globals" title="Permalink to this headline"></a></h2>
 <p>Some useful values and functions are inserted into the globals for all
 animations and can be used as if they had been defined or imported in your
 animation file.</p>
@@ -446,7 +386,7 @@ It will be an instance of <code class="docutils literal notranslate"><span class
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">FRAME_MIN</span></code></p></td>
 <td><p>The configuration value <code class="docutils literal notranslate"><span class="pre">anim</span> <span class="pre">fps</span></code> is used to calulate the
 duration of each frame in milliseconds and is made available
-as <code class="docutils literal notranslate"><span class="pre">FRAME_MS</span></code> to help with the frame timing of animations.
+as <code class="docutils literal notranslate"><span class="pre">FRAME_MIN</span></code> to help with the frame timing of animations.
 See the built in fade animations to see how you might use this
 value.</p></td>
 </tr>
@@ -544,63 +484,38 @@ specified or an empty list if it is unable to parse the input.</p>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../outputs/raspi.html" class="btn btn-neutral float-right" title="Raspberry Pi" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="built-in.html" class="btn btn-neutral float-left" title="Built-in" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="built-in.html" class="btn btn-neutral float-left" title="Built-in" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../outputs/raspi.html" class="btn btn-neutral float-right" title="Raspberry Pi" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2021, MQTTany Contributors
-
-    </p>
+    <p>&#169; Copyright 2021, MQTTany Contributors.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(false);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

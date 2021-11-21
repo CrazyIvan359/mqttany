@@ -1,73 +1,38 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Counter Pin &mdash; MQTTany v0.14.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-
-    
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="I2C" href="../../i2c/index.html" />
     <link rel="prev" title="Digital Pin" href="digital.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
-          
-
-          
+            <a href="../../../index.html" class="icon icon-home"> MQTTany
           </a>
-
-          
-            
-            
               <div class="version">
                 v0.14.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -75,18 +40,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../start.html">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../start.html#modules">Modules</a></li>
@@ -192,75 +146,34 @@
 <li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">MQTTany</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content style-external-links">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="../../index.html">Interface Modules</a> &raquo;</li>
-        
           <li><a href="../index.html">GPIO</a> &raquo;</li>
-        
       <li>Counter Pin</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../../../_sources/interface/gpio/pin/counter.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="counter-pin">
-<h1>Counter Pin<a class="headerlink" href="#counter-pin" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="counter-pin">
+<h1>Counter Pin<a class="headerlink" href="#counter-pin" title="Permalink to this headline"></a></h1>
 <p>Counter pins allow you to count pulses in various ways. You can simply count
 the number of pulses in a given period, apply a function to the pulses, or
 output the raw intervals. There is the option to scale the results up if you
@@ -272,8 +185,8 @@ use when returning intervals.</p>
 interval timer fires. They publish only when the <code class="docutils literal notranslate"><span class="pre">interval</span></code> timer fires
 due to the precise timing nature of pulse counting.</p>
 </div>
-<div class="section" id="paths">
-<h2>Paths<a class="headerlink" href="#paths" title="Permalink to this headline">¶</a></h2>
+<section id="paths">
+<h2>Paths<a class="headerlink" href="#paths" title="Permalink to this headline"></a></h2>
 <p>The report of a counter pin is available on the path <code class="docutils literal notranslate"><span class="pre">gpio/{pin-id}</span></code>.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -292,9 +205,9 @@ see the Functions section for more details.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline"></a></h2>
 <p>The following additional options are added to the configuration. Optional
 settings are commented out with default values shown.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">gpio</span><span class="p">:</span>
@@ -324,8 +237,8 @@ settings are commented out with default values shown.</p>
       <span class="c1">#divider: 1</span>
 </pre></div>
 </div>
-<div class="section" id="module-settings">
-<h3>Module Settings<a class="headerlink" href="#module-settings" title="Permalink to this headline">¶</a></h3>
+<section id="module-settings">
+<h3>Module Settings<a class="headerlink" href="#module-settings" title="Permalink to this headline"></a></h3>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 29%" />
@@ -344,9 +257,9 @@ settings are commented out with default values shown.</p>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="single-and-multiple-pin-definitions">
-<h3>Single and Multiple Pin Definitions<a class="headerlink" href="#single-and-multiple-pin-definitions" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="single-and-multiple-pin-definitions">
+<h3>Single and Multiple Pin Definitions<a class="headerlink" href="#single-and-multiple-pin-definitions" title="Permalink to this headline"></a></h3>
 <p>Pin configuration section names must be unique as they are used as property IDs.
 Property IDs can only contain lowercase letters <code class="docutils literal notranslate"><span class="pre">a-z</span></code>, numbers <code class="docutils literal notranslate"><span class="pre">0-9</span></code>, and
 hyphens <code class="docutils literal notranslate"><span class="pre">-</span></code>. The following settings apply to both single and multiple pin
@@ -405,12 +318,12 @@ be multiplied by this amount before publishing.</p>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section" id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="raw">
-<h3><code class="docutils literal notranslate"><span class="pre">raw</span></code><a class="headerlink" href="#raw" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h2>
+<section id="raw">
+<h3><code class="docutils literal notranslate"><span class="pre">raw</span></code><a class="headerlink" href="#raw" title="Permalink to this headline"></a></h3>
 <p>The raw function will publish a JSON payload containing an array of all of
 the intervals in <code class="docutils literal notranslate"><span class="pre">unit</span></code>
 s between events during the last <code class="docutils literal notranslate"><span class="pre">interval</span></code>. This function ignores the
@@ -424,100 +337,75 @@ previous event to measure from.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="count">
-<h3><code class="docutils literal notranslate"><span class="pre">count</span></code><a class="headerlink" href="#count" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="count">
+<h3><code class="docutils literal notranslate"><span class="pre">count</span></code><a class="headerlink" href="#count" title="Permalink to this headline"></a></h3>
 <p>The count function is the simplest and will publish an integer representing the
 number of pulses recorded during the last interval. The count will be multiplied
 by the <code class="docutils literal notranslate"><span class="pre">divider</span></code> factor.</p>
-</div>
-<div class="section" id="average">
-<h3><code class="docutils literal notranslate"><span class="pre">average</span></code><a class="headerlink" href="#average" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="average">
+<h3><code class="docutils literal notranslate"><span class="pre">average</span></code><a class="headerlink" href="#average" title="Permalink to this headline"></a></h3>
 <p>The average function will calculate the average time in integer <code class="docutils literal notranslate"><span class="pre">unit</span></code>
 s of all events during the last interval. The result will be multiplied by
 <code class="docutils literal notranslate"><span class="pre">divider</span></code> and then published.</p>
-</div>
-<div class="section" id="median">
-<h3><code class="docutils literal notranslate"><span class="pre">median</span></code><a class="headerlink" href="#median" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="median">
+<h3><code class="docutils literal notranslate"><span class="pre">median</span></code><a class="headerlink" href="#median" title="Permalink to this headline"></a></h3>
 <p>The median function will calculate the mathmatical median of all times in
 integer <code class="docutils literal notranslate"><span class="pre">unit</span></code>
 s of all events during the last interval. The result will be multiplied by
 <code class="docutils literal notranslate"><span class="pre">divider</span></code> and then published.</p>
-</div>
-<div class="section" id="min-and-max">
-<h3><code class="docutils literal notranslate"><span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">max</span></code><a class="headerlink" href="#min-and-max" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="min-and-max">
+<h3><code class="docutils literal notranslate"><span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">max</span></code><a class="headerlink" href="#min-and-max" title="Permalink to this headline"></a></h3>
 <p>The min and max functions will select the lowest or highest time and convert it
 to integer <code class="docutils literal notranslate"><span class="pre">unit</span></code>
 s. The result will be multiplied by <code class="docutils literal notranslate"><span class="pre">divider</span></code> and published.</p>
-</div>
-<div class="section" id="frequency">
-<h3><code class="docutils literal notranslate"><span class="pre">frequency</span></code><a class="headerlink" href="#frequency" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="frequency">
+<h3><code class="docutils literal notranslate"><span class="pre">frequency</span></code><a class="headerlink" href="#frequency" title="Permalink to this headline"></a></h3>
 <p>The average will be taken of all events in the last interval and the frequency
 will be calculated from this in hertz. The result will be multiplied by
 <code class="docutils literal notranslate"><span class="pre">divider</span></code>, rounded to 3 decimal places and published.</p>
-</div>
-<div class="section" id="frequency-min-and-frequency-max">
-<h3><code class="docutils literal notranslate"><span class="pre">frequency</span> <span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">frequency</span> <span class="pre">max</span></code><a class="headerlink" href="#frequency-min-and-frequency-max" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="frequency-min-and-frequency-max">
+<h3><code class="docutils literal notranslate"><span class="pre">frequency</span> <span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">frequency</span> <span class="pre">max</span></code><a class="headerlink" href="#frequency-min-and-frequency-max" title="Permalink to this headline"></a></h3>
 <p>These functions work like <code class="docutils literal notranslate"><span class="pre">frequency</span></code> but will select the lowest or highest
 time between events for the calculation.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../../i2c/index.html" class="btn btn-neutral float-right" title="I2C" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="digital.html" class="btn btn-neutral float-left" title="Digital Pin" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="digital.html" class="btn btn-neutral float-left" title="Digital Pin" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../i2c/index.html" class="btn btn-neutral float-right" title="I2C" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2021, MQTTany Contributors
-
-    </p>
+    <p>&#169; Copyright 2021, MQTTany Contributors.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(false);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

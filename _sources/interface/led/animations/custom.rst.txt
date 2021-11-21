@@ -13,6 +13,34 @@ but you can specify multiple other locations using the ``anim dir`` option in
 the config file.
 
 
+File Header
+===========
+
+You will likely want to add the following to the top of each of your files to
+get the best experience writing your own animations. This will provide type
+hints and autocompletion while creating animations.
+
+.. code-block:: python
+
+    import typing as t
+
+    if t.TYPE_CHECKING:
+        import threading, sys
+
+        sys.path.append("/opt/mqttany")
+        from mqttany.modules.led.anim import parse_color, parse_pixel
+        from mqttany.modules.led.array.base import baseArray
+        from mqttany.modules.led.common import Color
+        from mqttany.logger import mqttanyLogger
+
+        log: mqttanyLogger
+        FRAME_MS: float
+
+If you did not install MQTTany in the default ``/opt/mqttany`` directory you
+will need to modify the path in the above header or otherwise ensure that the
+imports are available.
+
+
 Function Naming
 ===============
 
@@ -42,14 +70,18 @@ reliably:
 
 .. code-block:: python
 
-    def anim_blink(array: baseArray, cancel: threading.Event, **kwargs: t.Any) -> None:
+    def anim_blink(
+        array,  # type: baseArray
+        cancel,  # type: threading.Event
+        **kwargs,  # type: t.Any
+    ) -> None:
 
 +--------------+----------------------------------------------------------------+
 |  Parameter   |                          Description                           |
 +==============+================================================================+
 | ``array``    | This is the LED array object subclassed from                   |
-|              | ``led.array.baseLED``. All operations to change the LEDs are   |
-|              | done using this object. See                                    |
+|              | ``led.array.base.baseArray``. All operations to change the     |
+|              | LEDs are done using this object. See                           |
 |              | :ref:`interface/led/animations/custom:\`\`array\`\` Object`    |
 |              | for details.                                                   |
 +--------------+----------------------------------------------------------------+
@@ -78,7 +110,7 @@ reliably:
 
 The ``array`` object provides methods to get information about the array and
 set LED colors. The ``array`` object received will be subclassed from
-``modules.led.array.baseArray``.
+``modules.led.array.base.baseArray``.
 
 +----------------------------------------+------------------------------------------------------+
 |           Method / Property            |                     Description                      |
@@ -95,8 +127,8 @@ set LED colors. The ``array`` object received will be subclassed from
 |                                        | ``b``, and ``w`` properties representing the pixel   |
 |                                        | color.                                               |
 +----------------------------------------+------------------------------------------------------+
-| ``setPixelColorRGB``                   | Sets the specified ``pixel`` to the provided         |
-| ``(pixel, red, green, blue, white=0)`` | ``red``, ``green``, ``blue``, and ``white`` values.  |
+| ``setPixelColorRGB                     | Sets the specified ``pixel`` to the provided         |
+| (pixel, red, green, blue, white=0)``   | ``red``, ``green``, ``blue``, and ``white`` values.  |
 +----------------------------------------+------------------------------------------------------+
 | ``getPixelColorRGB(pixel) -> tuple``   | Returns a tuple of ``red``, ``green``, ``blue``,     |
 |                                        | and ``white`` integers representing the pixel        |
@@ -154,7 +186,7 @@ animation file.
 +--------------------------------------+----------------------------------------------------------------+
 | ``FRAME_MIN``                        | The configuration value ``anim fps`` is used to calulate the   |
 |                                      | duration of each frame in milliseconds and is made available   |
-|                                      | as ``FRAME_MS`` to help with the frame timing of animations.   |
+|                                      | as ``FRAME_MIN`` to help with the frame timing of animations.  |
 |                                      | See the built in fade animations to see how you might use this |
 |                                      | value.                                                         |
 +--------------------------------------+----------------------------------------------------------------+

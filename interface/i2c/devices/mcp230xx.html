@@ -1,73 +1,38 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MCP230xx &mdash; MQTTany v0.14.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/overrides.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-
-    
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="OneWire" href="../../onewire/index.html" />
     <link rel="prev" title="I2C" href="../index.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> MQTTany
-          
-
-          
+            <a href="../../../index.html" class="icon icon-home"> MQTTany
           </a>
-
-          
-            
-            
               <div class="version">
                 v0.14.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -75,18 +40,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../start.html">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../start.html#modules">Modules</a></li>
@@ -192,78 +146,37 @@
 <li class="toctree-l1"><a class="reference external" href="https://github.com/CrazyIvan359/mqttany/blob/master/CHANGELOG.md">Change Log</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">MQTTany</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content style-external-links">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="../../index.html">Interface Modules</a> &raquo;</li>
-        
           <li><a href="../index.html">I2C</a> &raquo;</li>
-        
       <li>MCP230xx</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../../../_sources/interface/i2c/devices/mcp230xx.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="mcp230xx">
-<h1>MCP230xx<a class="headerlink" href="#mcp230xx" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="mcp230xx">
+<h1>MCP230xx<a class="headerlink" href="#mcp230xx" title="Permalink to this headline"></a></h1>
 <p>This device class supports the MCP23008 and MCP23017 I/O expander chips.</p>
-<div class="section" id="paths">
-<h2>Paths<a class="headerlink" href="#paths" title="Permalink to this headline">¶</a></h2>
+<section id="paths">
+<h2>Paths<a class="headerlink" href="#paths" title="Permalink to this headline"></a></h2>
 <p>All pins configured in this module are available as properties of the device node.
 The value of a pin is available on the path <code class="docutils literal notranslate"><span class="pre">{device</span> <span class="pre">id}/{pin</span> <span class="pre">id}</span></code> and, for pins that
 accept them, commands can be sent to <code class="docutils literal notranslate"><span class="pre">{device</span> <span class="pre">id}/{pin</span> <span class="pre">id}/set</span></code>. Values for pin states
@@ -313,9 +226,9 @@ required in the JSON here.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline"></a></h2>
 <p>The following additional options are added to the configuration. Optional
 settings are commented out with default values shown.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">i2c</span><span class="p">:</span>
@@ -344,8 +257,8 @@ settings are commented out with default values shown.</p>
         <span class="c1">#first index: 0</span>
 </pre></div>
 </div>
-<div class="section" id="module-settings">
-<h3>Module Settings<a class="headerlink" href="#module-settings" title="Permalink to this headline">¶</a></h3>
+<section id="module-settings">
+<h3>Module Settings<a class="headerlink" href="#module-settings" title="Permalink to this headline"></a></h3>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 18%" />
@@ -362,9 +275,9 @@ settings are commented out with default values shown.</p>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="single-pin-definition">
-<h3>Single Pin Definition<a class="headerlink" href="#single-pin-definition" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="single-pin-definition">
+<h3>Single Pin Definition<a class="headerlink" href="#single-pin-definition" title="Permalink to this headline"></a></h3>
 <p>Pin configuration section names must be unique as they are used as property IDs.
 Property IDs can only contain lowercase letters <code class="docutils literal notranslate"><span class="pre">a-z</span></code>, numbers <code class="docutils literal notranslate"><span class="pre">0-9</span></code>, and
 hyphens <code class="docutils literal notranslate"><span class="pre">-</span></code>. The following settings are for single pin definitions:</p>
@@ -418,9 +331,9 @@ Setting to <code class="docutils literal notranslate"><span class="pre">true</sp
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="multiple-pin-definition">
-<h3>Multiple Pin Definition<a class="headerlink" href="#multiple-pin-definition" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="multiple-pin-definition">
+<h3>Multiple Pin Definition<a class="headerlink" href="#multiple-pin-definition" title="Permalink to this headline"></a></h3>
 <p>It is also possible to define settings for several pins at the same time.
 Settings from single pin definitions apply here also, except those shown below.</p>
 <table class="docutils align-default">
@@ -453,64 +366,39 @@ to start numbering at 1, set this to 1.</p>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../../onewire/index.html" class="btn btn-neutral float-right" title="OneWire" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="../index.html" class="btn btn-neutral float-left" title="I2C" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="I2C" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../onewire/index.html" class="btn btn-neutral float-right" title="OneWire" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2021, MQTTany Contributors
-
-    </p>
+    <p>&#169; Copyright 2021, MQTTany Contributors.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(false);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
