@@ -4,6 +4,7 @@
 [![Gitter](https://img.shields.io/gitter/room/mqttany/community)](https://gitter.im/mqttany/community)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/CrazyIvan359/mqttany/blob/master/LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Donate](https://img.shields.io/badge/Donate-Support%20me%20on%20Ko--fi-ff5e5b?logo=kofi)](https://ko-fi.com/crazyivan359)
 
 MQTTany is designed to make it easy to connect hardware on single board computers to
 your home automation solution.
