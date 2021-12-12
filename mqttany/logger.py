@@ -88,7 +88,7 @@ _LOG_SECONDARY_COLORS = {
     }
 }
 
-_log_handlers: t.List[logging.Handler] = []  # type:ignore
+_log_handlers = []  # type:t.List[logging.Handler]
 
 
 class LogLevel(enum.IntEnum):
