@@ -62,6 +62,10 @@ settings are commented out with default values shown.
         device: ''
 
         mcp230xx:
+          #interrupt polling interval: 0
+          #interrupt pin: -1
+          #interrupt pin resistor: 'up'
+
           pin-id:
             pin:
             #name: '{pin_id}'
@@ -92,9 +96,49 @@ Module Settings
 +------------+------------------------------------------------------+
 
 
+Device Settings
+---------------
+
++--------------------------------+------------------------------------------------+
+|             Option             |                  Description                   |
++================================+================================================+
+| ``interrupt polling interval`` | The polling interval in milliseconds to        |
+|                                | check this device's interrupt register for     |
+|                                | pin change interrupts.                         |
+|                                |                                                |
+|                                | **Be aware that using this method will create  |
+|                                | a lot of traffic on the I2C bus!**             |
+|                                |                                                |
+|                                |                                                |
+|                                | *Optional, default* ``0``.                     |
+|                                |                                                |
+|                                | *Minimum* ``50``.                              |
+|                                |                                                |
+|                                | *Recommended* ``50-500``.                      |
++--------------------------------+------------------------------------------------+
+| ``interrupt pin``              | GPIO pin on the host device that is connected  |
+|                                | to the interrupt pin on the MCP230xx device.   |
+|                                | This always uses the SoC numbering scheme.     |
+|                                |                                                |
+|                                | If a pin is specified interrupt polling will   |
+|                                | not be used.                                   |
+|                                |                                                |
+|                                | **Currently only one device per pin is**       |
+|                                | **supported! Using the same pin on multiple**  |
+|                                | **devices will cause errors or strange**       |
+|                                | **behaviour.**                                 |
++--------------------------------+------------------------------------------------+
+| ``interrupt pin resistor``     | Resistor setting for the interrupt pin. This   |
+|                                | allows disabling the pull-up resistor if using |
+|                                | an external resistor.                          |
+|                                |                                                |
+|                                | *Optional default* ``pullup``.                 |
++--------------------------------+------------------------------------------------+
+
+
+
 Single Pin Definition
 ---------------------
-
 
 Pin configuration section names must be unique as they are used as property IDs.
 Property IDs can only contain lowercase letters ``a-z``, numbers ``0-9``, and
