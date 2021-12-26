@@ -6,12 +6,6 @@ OneWire
 The OneWire module provides access to Dallas/Maxim OneWire devices using the
 ``w1`` kernel module.
 
-.. admonition:: Don't forget to install the requirements
-
-    .. code-block:: shell
-
-        pip3 install -r requirements/onewire.txt
-
 .. attention::
 
     You need to have ``wire-1`` installed and configured for this module to work.

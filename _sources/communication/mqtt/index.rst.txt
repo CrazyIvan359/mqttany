@@ -5,6 +5,12 @@ MQTT
 The MQTT module wraps the Paho MQTT Client library and connects to a broker to
 allow communication with home automation solutions or other controllers.
 
+.. admonition:: Don't forget to install the requirements
+
+    .. code-block:: shell
+
+        pip3 install -r requirements/mqtt.txt
+
 
 Paths
 =====
