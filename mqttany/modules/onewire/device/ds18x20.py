@@ -123,7 +123,7 @@ class DS18x20(OneWireDevice):
                 )
 
                 itemp = int.from_bytes(data[:2], byteorder="little", signed=False)
-                itemp = int(f"0b{itemp >> 4:08b}"[-8:], base=0)
+                itemp >>= 4
                 itemp = int.from_bytes(bytes([itemp]), "big", signed=True)
                 ftemp = float(itemp)
                 data = int.from_bytes(data, byteorder="little", signed=False)

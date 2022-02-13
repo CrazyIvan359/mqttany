@@ -15,6 +15,8 @@
   * I2C MCP230xx devices would not turn off their outputs on shutdown because `setup` flag was never set.
   * Moved inline type to comment in logging to restore compatibility.
     [[#131](https://github.com/CrazyIvan359/mqttany/pull/131)]
+  * OneWire DS18x20 devices unable to read data due to incorrect data processing causing read operation to crash. Fixes [#136](https://github.com/CrazyIvan359/mqttany/issues/136).
+    [[#137](https://github.com/CrazyIvan359/mqttany/pull137)]
 
 ## 0.14.3
 
