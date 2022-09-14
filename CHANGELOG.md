@@ -5,6 +5,8 @@
 * **Changed**
   * Bump minimum Python version to 3.7.
     [[#144](https://github.com/CrazyIvan359/mqttany/pull/144)]
+  * Update Adafruit Platform Detect to version 3. Fixes [#125](https://github.com/CrazyIvan359/mqttany/issues/125).
+    [[#145](https://github.com/CrazyIvan359/mqttany/pull/145)]
 
 * **Added**
   * I2C Add interrupt support to MCP230xx devices. Supports interrupts via polling device rapidly or using interrupt pin and a GPIO pin on the host device.
