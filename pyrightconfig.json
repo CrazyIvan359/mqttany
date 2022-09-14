@@ -2,12 +2,13 @@
     "include": [
         "./mqttany"
     ],
-    "pythonVersion": "3.6",
+    "pythonVersion": "3.7",
     "pythonPlatform": "Linux",
     "typeCheckingMode": "strict",
     "reportImportCycles": "none",
     "reportMissingTypeStubs": "warning",
     "reportUnusedImport": "warning",
     "reportUnusedVariable": "warning",
-    "reportGeneralTypeIssues": "warning"
+    "reportGeneralTypeIssues": "warning",
+    "reportTypeCommentUsage": "none"
 }

@@ -39,7 +39,7 @@ __all__ = [
     "update_dict",
 ]
 
-import collections
+from collections.abc import MutableMapping, Mapping
 import re
 import signal
 import typing as t
@@ -362,9 +362,9 @@ def update_dict(
     """
     for k in u:
         dv = d.get(k, {})
-        if not isinstance(dv, collections.MutableMapping):  # type: ignore
+        if not isinstance(dv, MutableMapping):  # type: ignore
             d[k] = u[k]
-        elif isinstance(u[k], collections.Mapping):  # type: ignore
+        elif isinstance(u[k], Mapping):  # type: ignore
             d[k] = update_dict(dv, u[k])
         else:
             d[k] = u[k]

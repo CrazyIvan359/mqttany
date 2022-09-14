@@ -2,6 +2,10 @@
 
 ## Development
 
+* **Changed**
+  * Bump minimum Python version to 3.7.
+    [[#144](https://github.com/CrazyIvan359/mqttany/pull/144)]
+
 * **Added**
   * I2C Add interrupt support to MCP230xx devices. Supports interrupts via polling device rapidly or using interrupt pin and a GPIO pin on the host device.
     [[#130](https://github.com/CrazyIvan359/mqttany/pull/130)]
@@ -17,6 +21,7 @@
     [[#131](https://github.com/CrazyIvan359/mqttany/pull/131)]
   * OneWire DS18x20 devices unable to read data due to incorrect data processing causing read operation to crash. Fixes [#136](https://github.com/CrazyIvan359/mqttany/issues/136).
     [[#137](https://github.com/CrazyIvan359/mqttany/pull137)]
+  * Compatibility fixes for newer versions of Python. Fixes [#142](https://github.com/CrazyIvan359/mqttany/issues/142).
 
 ## 0.14.3
 

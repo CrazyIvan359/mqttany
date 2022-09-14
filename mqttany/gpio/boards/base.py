@@ -136,7 +136,7 @@ class structPin:
                 ]
             )
 
-        if not self._lock.value:
+        if not self._lock.value:  # type: ignore
             self._lock.raw = module.encode()  # type: ignore
             if log:
                 log.debug(
