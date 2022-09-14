@@ -16,13 +16,30 @@
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true,
         "editor.renderWhitespace": "all",
-        "editor.formatOnSave": true,
         "editor.rulers": [
             88
         ],
+        "[python]": {
+            "editor.formatOnSave": true,
+        },
+        "[yaml]": {
+            "editor.insertSpaces": true,
+            "editor.tabSize": 2,
+            "editor.formatOnSave": true,
+            "editor.autoIndent": "keep",
+            "editor.quickSuggestions": {
+                "other": true,
+                "comments": false,
+                "strings": true
+            }
+        },
         "[markdown]": {
             "editor.wordWrap": "on",
-            "editor.quickSuggestions": false,
+            "editor.quickSuggestions": {
+                "other": "off",
+                "comments": "off",
+                "strings": "off"
+            },
             "files.trimTrailingWhitespace": false
         }
     },
