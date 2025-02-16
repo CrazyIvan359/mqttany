@@ -12,7 +12,6 @@
         "python.autoComplete.extraPaths": [
             "./mqttany"
         ],
-        "python.formatting.provider": "black",
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true,
         "editor.renderWhitespace": "all",
@@ -21,6 +20,7 @@
         ],
         "[python]": {
             "editor.formatOnSave": true,
+            "editor.defaultFormatter": "ms-python.black-formatter",
         },
         "[yaml]": {
             "editor.insertSpaces": true,
