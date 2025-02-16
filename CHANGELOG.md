@@ -1,6 +1,6 @@
 # MQTTany Change Log
 
-## Development
+## 0.14.4
 
 * **Changed**
   * Bump minimum Python version to 3.7.
