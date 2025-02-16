@@ -41,7 +41,8 @@
                 "strings": "off"
             },
             "files.trimTrailingWhitespace": false
-        }
+        },
+        "githubLocalActions.actCommand": "d:/act.exe"
     },
     "launch": {
         "version": "0.2.0",
