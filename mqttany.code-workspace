@@ -42,6 +42,9 @@
             },
             "files.trimTrailingWhitespace": false
         },
+        "markdownlint.config": {
+            "MD024": false,
+        },
         "githubLocalActions.actCommand": "d:/act.exe"
     },
     "launch": {
